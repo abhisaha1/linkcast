@@ -19,6 +19,10 @@ const user = new function() {
         $("#profile-color").val(this.info.color);
         $("#bio").val(this.info.bio);
         $(".step1").hide();
+        $("#profile-color").spectrum({
+            preferredFormat: "hsl",
+            color: this.info.color
+        });
     };
     /**
      * Some post processing after login/registration
@@ -27,7 +31,9 @@ const user = new function() {
         if (data.defaultGroup) {
             storage.setItem("defaultGroup", data.defaultGroup);
             storage.setItem("defaultGroupName", data.defaultGroupName);
-            storage.setItem("uid", data.uid);
+            storage.setItem("uid", data.id);
+            storage.setItem("chrome_id", data.chrome_id);
+
             $("#group-display").html(data.defaultGroupName);
             group.fetchGroups();
         }
@@ -148,10 +154,45 @@ const user = new function() {
                 var data = common.getDataString(params);
 
                 request.get(data, response => {
+                    this.info = response.data;
                     callback(response);
                 });
             });
         }
+    };
+
+    this.checkEmailSet = () => {
+        if (!this.info.email) {
+            $(".no-confirm").hide();
+            $(".no-email").show();
+            $("#email-modal").modal();
+        } else if (!parseInt(this.info.verified)) {
+            $(".no-confirm").show();
+            $(".no-email").hide();
+            $("#email-modal").modal();
+        } else {
+            $("#email-modal").modal("hide");
+        }
+    };
+
+    this.editUnverifiedEmail = () => {
+        $(".no-email").show();
+        $(".no-confirm").hide();
+    };
+
+    this.saveEmail = email => {
+        auth.getUserId(chrome_id => {
+            var params = {
+                chrome_id: chrome_id,
+                email: email,
+                action: "saveEmail"
+            };
+            request.post(params, response => {
+                //message.show("Done! Enjoy Linkcast", "success");
+                user.info = response.data;
+                user.checkEmailSet();
+            });
+        });
     };
 }();
 

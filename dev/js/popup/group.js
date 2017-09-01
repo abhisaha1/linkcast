@@ -288,12 +288,11 @@ module.exports = new function() {
      * This is usually seen if the user is not logged in
      */
     this.groupNotSetMessage = () => {
-        console.log(typeof storage.getItem("defaultGroup"));
         if (typeof storage.getItem("defaultGroup") === "undefined") {
             $(
                 "#tab-feed .items,#tab-notifications .items,#tab-favourites .items,#tab-sent .items"
             ).html(
-                "<div id='instructions'>- Login/register to get started<br>- You will automatically be a part of Global group. You can manage your groups from settings. <br>- All links will be displayed in a tab called <b>Wall</b></div>"
+                "<div id='instructions'>- Login/register to get started<br>- You will automatically be a part of Global group, where you can post links and mark them favourite. You can join public/private groups from Groups Tab. <br>- All links will be displayed in a tab called <b>Feed</b></div>"
             );
         }
     };

@@ -1,5 +1,5 @@
-const chromeWebStore = require("./chrome_web_store");
-const extensionVersion = require("./extension_version");
+const chromeWebStore = require("./lib/chrome_web_store");
+const extensionVersion = require("./lib/extension_version");
 const FileSystem = require("fs");
 const path = require("path");
 const sprintf = require("sprintf");
@@ -20,7 +20,6 @@ const store = function(params) {
     chromeWebStore
         .getAccessToken(clientId, clientSecret, refreshToken)
         .then(_accessTokenParams => {
-            console.log("Uploading updated package", manifestPath);
             accessTokenParams = _accessTokenParams;
             return chromeWebStore.getPackage(
                 appId,

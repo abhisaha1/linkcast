@@ -221,7 +221,7 @@ a:hover {
 
 .nav-tabs {
     background: var(--secondary_color);
-    border-bottom: 1px solid var(--dividers);
+    border-bottom: none;
 }
 
 .nav-tabs > li > a {

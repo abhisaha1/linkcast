@@ -7,19 +7,18 @@ window.$ = require("jquery");
 window.jQuery = $;
 require("bootstrap");
 window.moment = require("moment");
-//require("bootstrap-material-design");
-require("./color-picker");
+require("./js/color-picker");
 
-const storage = require("./popup/storage");
-const request = require("./popup/request");
-const common = require("./common/common");
-const item = require("./popup/item");
-const group = require("./popup/group");
-const user = require("./popup/user");
-const auth = require("./popup/auth");
-const comments = require("./popup/comments");
-const likes = require("./popup/likes");
-const notification = require("./popup/notification");
+const storage = require("./js/popup/storage");
+const request = require("./js/popup/request");
+const common = require("./js/common/common");
+const item = require("./js/popup/item");
+const group = require("./js/popup/group");
+const user = require("./js/popup/user");
+const auth = require("./js/popup/auth");
+const comments = require("./js/popup/comments");
+const likes = require("./js/popup/likes");
+const notification = require("./js/popup/notification");
 
 var plugin = () => {
     /**
@@ -69,7 +68,9 @@ var plugin = () => {
                 } else {
                     main._detectSite();
                     $(".authorized").removeClass("hide");
-                    user.info = result.data;
+
+                    //check for email
+                    user.checkEmailSet();
                     /* Show notifications */
                     notification.getNotifications();
                     group.fetchGroups();
@@ -111,6 +112,18 @@ var plugin = () => {
             $("#post-btn").click(item.addItem);
             $("#default-group").click(() => {
                 group.makeGroupDefault("#settings #groups-dd");
+            });
+            $("#change-email").click(e => {
+                e.preventDefault();
+                user.editUnverifiedEmail();
+            });
+            $(".email-btn").click(e => {
+                var email = $("#add-email").val();
+                var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                if (re.test(email)) {
+                    //save it
+                    user.saveEmail(email);
+                }
             });
             $(document).on("click", ".favourite", item.makeFavourite);
             $(document).on("click", ".delete-item", item.deleteItem);
@@ -244,7 +257,6 @@ var plugin = () => {
                 group.leaveGroup
             );
             $("#tab-customize #sound-setting .btn").click(e => {
-                debugger;
                 storage.setItem("sound", $(e.target).find(".radio").val());
             });
             $("#tab-customize #theme-setting .btn").click(e => {
@@ -316,6 +328,8 @@ var plugin = () => {
                         notification.getNotifications();
                     } else if (target === "#tab-about") {
                         main._getRandomQuote();
+                    } else if (target === "#tab-post") {
+                        $("#item-modal").modal("hide");
                     } else if (target === "#tab-manage-groups") {
                         group.editGroup();
                         $("#tab-groups #groups-dd").trigger("change");
@@ -480,13 +494,15 @@ var plugin = () => {
             auth.getUserId(chrome_id => {
                 var params = {
                     chrome_id: chrome_id,
-                    nickname: $("#nickname").val(),
-                    password: $("#password").val(),
+                    nickname: $("#r-nickname").val(),
+                    password: $("#r-password").val(),
+                    email: $("#r-email").val(),
                     action: "registerUser"
                 };
-                auth.register(params, data => {
+                auth.register(params, response => {
+                    user.info = response.data;
                     user.welcomeUser(params.nickname);
-                    user.afterLogin(data);
+                    user.afterLogin(response.data);
                     main.bgPage.updateVersion();
                 });
             });
@@ -502,9 +518,14 @@ var plugin = () => {
                     password: $("#password").val(),
                     action: "loginUser"
                 };
-                auth.login(params, data => {
+                auth.login(params, response => {
+                    user.info = response.data;
                     user.welcomeUser(params.nickname);
-                    user.afterLogin(data);
+                    user.afterLogin(response.data);
+                    $("#profile-color").spectrum({
+                        preferredFormat: "hsl",
+                        color: user.info.color
+                    });
                     main.bgPage.updateVersion();
                 });
             });

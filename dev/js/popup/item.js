@@ -291,8 +291,7 @@ module.exports = new function() {
                 item_id: item_id
             };
             var bgPage = chrome.extension.getBackgroundPage();
-            var data = common.getDataString(params);
-            bgPage.sendClickedStat(data);
+            bgPage.sendClickedStat(params);
             window.open($(e.target).attr("href"));
         });
     };

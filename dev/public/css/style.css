@@ -152,13 +152,25 @@ header #img-logo {
 }
 
 /*------------------------------MESSAGE BOX-------------------------------------*/
-
-#msg .alert {
+#msg {
+    bottom: 30px;
     margin-bottom: 0px;
     position: absolute;
-    width: 784px;
+    width: 400px;
     z-index: 1;
-    opacity: 0.95;
+    opacity: 0.85;
+    margin: auto;
+    left: 50%;
+    margin-left: -200px;
+}
+#msg .alert {
+    text-align: center;
+    padding: 5px;
+}
+.alert-success {
+    background: #2c8151;
+    border: none;
+    color: #fff;
 }
 
 /*-----------------------------------FORM--------------------------------------*/
