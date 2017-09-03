@@ -1,0 +1,45 @@
+<div class="hide" id="item-template">
+    <div class="left clearfix item" data-liked="{LIKED}" data-id="{ITEM_ID}" data-uid="{USER_ID}">
+        <span class="items-img pull-left"><span class="favourite glyphicon {STAR}"></span><img class="lazy" width="60" src="public/images/default.png"
+            data-src="{THUMB}"></span>
+        <div class="items-body clearfix">
+            <div class="header">
+                <a href="" class="username" data-id="{USER_ID}"><strong class="primary-font" style="color:{COLOR}">{NICKNAME}</strong></a>                <span class="label label-default">{GROUP_NAME}</span>
+                <small class="pull-right text-muted">
+                        <span class="glyphicon glyphicon-time"></span>{CREATED_AT}
+                        </small>
+            </div>
+            <div class="item-body">
+                <div><a href="{URL}" target="_blank" class="item-link">{TITLE}</a></div>
+                <div><span class="item-comments">{COMMENTS}</span></div>
+                <div class="action-items">
+                    <a href="#" class="grey likes-item action-links">
+                            <i class="fa fa-{LIKE_ICON} heart" aria-hidden="true"></i>
+                            <span class="term likes">{LIKES_COUNT}</span>
+                        </a>
+                    <a href="#" class="grey comments-item action-links">
+                            <i class="fa fa-{COMMENT_ICON}" aria-hidden="true"></i>
+                            <span class="term">{COMMENTS_COUNT}</span>
+                        </a>
+                    <a href="#" class="grey forward-item action-links">
+                            <i class="fa fa-share" aria-hidden="true"></i>
+                        </a>
+                    <a class="grey action-links">
+                            <i class="fa fa-eye" aria-hidden="true"></i>
+                            <span class="term">{TIMES_CLICKED}</span>
+                        </a>
+                    <a href="#" class="delete-item grey action-links">
+                            <i class="fa fa-trash" aria-hidden="true"></i>
+                        </a>
+                </div>
+                <div class="comments-section hide">
+                    <div class="comment-wrapper">
+                        <input placeholder="Comment here.." class="form-control comment-input" maxlength="140" type="text" />
+                    </div>
+                    <div class="comments">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

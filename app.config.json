@@ -1,5 +1,5 @@
 {
-    "dev": "http://localhost:8000",
-    "prod": "http://playground.ajaxtown.com/linkcast/index.php",
-    "wpServer": "http://localhost:3000/"
+  "dev": "http://playground.ajaxtown.com/youtube_chrome_backend/index.php",
+  "prod": "http://playground.ajaxtown.com/youtube_chrome_backend/index.php",
+  "wpServer": "http://localhost:3000/"
 }
