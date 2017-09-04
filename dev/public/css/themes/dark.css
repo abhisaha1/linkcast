@@ -4,54 +4,54 @@
  **/
 
 :root {
-    --primary_color: #121212;
-    --primary_text: rgba(255, 255, 255, 0.7);
-    --secondary_color: #272b30;
-    --secondary_text: rgba(255, 255, 255, 0.6);
-    --dividers: rgba(111, 111, 111, 0.16);
-    --hint-text: rgba(255, 255, 255, 0.5);
-    --item-desc-color: #cf4a71;
-    --dialogs-color: #34373b;
-    --backgrounds: #212429;
-    --link-color: rgba(255, 255, 255, 0.5);
-    --link-hover-color: rgba(255, 255, 255, 1);
-    --light-dark: #555;
-    --table-font-color: #999;
-    --panel_color: #2e3338;
-    --panel_footer: #3e444c;
-    --comments_background: #202427;
-    --tab_hover_color: #222;
-    --border: #222;
-    --dark: #1c1e22;
+  --primary_color: #121212;
+  --primary_text: rgba(255, 255, 255, 0.7);
+  --secondary_color: #272b30;
+  --secondary_text: rgba(255, 255, 255, 0.6);
+  --dividers: rgba(111, 111, 111, 0.16);
+  --hint-text: rgba(255, 255, 255, 0.5);
+  --item-desc-color: #cf4a71;
+  --dialogs-color: #34373b;
+  --backgrounds: #212429;
+  --link-color: rgba(255, 255, 255, 0.5);
+  --link-hover-color: rgba(255, 255, 255, 1);
+  --light-dark: #555;
+  --table-font-color: #999;
+  --panel_color: #2e3338;
+  --panel_footer: #3e444c;
+  --comments_background: #202427;
+  --tab_hover_color: #222;
+  --border: #222;
+  --dark: #1c1e22;
 }
 
 body {
-    color: var(--primary_text);
-    background-color: #444;
+  color: var(--primary_text);
+  background-color: #444;
 }
 
 .container {
-    background: var(--dialogs-color);
+  background: var(--dialogs-color);
 }
 
 .form-control,
 .form-control:focus {
-    box-shadow: none;
-    outline: none;
+  box-shadow: none;
+  outline: none;
 }
 
 .notification-item:hover {
-    background: var(--dialogs-color);
+  background: var(--dialogs-color);
 }
 .fa-heart:before {
-    content: "\f004";
-    color: #b33660;
+  content: "\f004";
+  color: #b33660;
 }
 .fa-group:before,
 .fa-users:before,
 .fa-user:before {
-    color: dodgerblue;
-    margin: 0px 4px;
+  color: dodgerblue;
+  margin: 0px 4px;
 }
 /**                                                 **
  * --------------------BUTTONS---------------------- *
@@ -61,34 +61,34 @@ body {
 .input-group-btn .btn:not(.btn-raised),
 .btn:not(.btn-raised).btn-default,
 .input-group-btn .btn:not(.btn-raised).btn-default {
-    border: 1px solid var(--dividers);
+  border: 1px solid var(--dividers);
 }
 
 .btn-default {
-    background: #333333;
-    color: #fff;
+  background: #333333;
+  color: #fff;
 }
 .btn-default.active,
 .btn-default.active:hover,
 .btn-default.active:focus,
 .btn-default.active:active {
-    background: #777676 !important;
-    color: #fff !important;
+  background: #777676 !important;
+  color: #fff !important;
 }
 .btn-default:hover,
 .btn-default:active,
 .btn-default:focus {
-    background: #222;
-    color: #777676;
+  background: #222;
+  color: #777676;
 }
 
 .btn-group .btn {
-    background: rgba(12, 12, 12, 0) !important;
+  background: rgba(12, 12, 12, 0) !important;
 }
 .btn-group .btn.active,
 .btn-group .btn:hover {
-    background: #1a1a1a !important;
-    color: #fff;
+  background: #1a1a1a !important;
+  color: #fff;
 }
 /**                                                 **
  * --------------------RADIO------------------------ *
@@ -98,19 +98,19 @@ body {
 
 .radio .circle,
 label.radio-inline .circle {
-    border-color: var(--secondary_text);
+  border-color: var(--secondary_text);
 }
 
 /*--checked--*/
 
-.radio input[type=radio]:checked ~ .check,
-label.radio-inline input[type=radio]:checked ~ .check {
-    background-color: var(--primary_text);
+.radio input[type="radio"]:checked ~ .check,
+label.radio-inline input[type="radio"]:checked ~ .check {
+  background-color: var(--primary_text);
 }
 
-.radio input[type=radio]:checked ~ .circle,
-label.radio-inline input[type=radio]:checked ~ .circle {
-    border-color: var(--primary_text);
+.radio input[type="radio"]:checked ~ .circle,
+label.radio-inline input[type="radio"]:checked ~ .circle {
+  border-color: var(--primary_text);
 }
 
 /**                                                 **
@@ -119,57 +119,57 @@ label.radio-inline input[type=radio]:checked ~ .circle {
 
 .form-group.is-focused label,
 .form-group.is-focused label.control-label {
-    color: var(--hint-text) !important;
+  color: var(--hint-text) !important;
 }
 
 .form-group .form-control {
-    background: transparent;
-    border: 1px solid #333;
-    border-radius: 0px;
-    padding: 2px 12px;
+  background: transparent;
+  border: 1px solid #333;
+  border-radius: 0px;
+  padding: 2px 12px;
 }
 
 .form-group.is-focused .form-control {
-    background-image: linear-gradient(#5a5a5a, #333),
-        linear-gradient(#d2d2d2, #d2d2d2);
+  background-image: linear-gradient(#5a5a5a, #333),
+    linear-gradient(#d2d2d2, #d2d2d2);
 }
 
 .form-group .form-control {
-    color: var(--primary_text);
+  color: var(--primary_text);
 }
 .form-horizontal .form-group {
-    background: #1e1e1e;
-    padding: 4px 0px;
-    margin: 8px 0px 8px;
+  background: #1e1e1e;
+  padding: 4px 0px;
+  margin: 8px 0px 8px;
 }
 /**                                                 **
  * --------------------ITEMS------------------------ *
  *-------------------------------------------------- */
 
 .items > div:hover {
-    background: var(--backgrounds);
+  background: var(--backgrounds);
 }
 
 .label.label-default {
-    border-radius: 3px;
-    padding: 1px 4px;
-    background: rgb(55, 55, 55);
-    border: 1px solid #3d3d3d;
-    color: var(--secondary_text);
-    font-weight: 100;
-    margin-left: 10px;
-    box-shadow: 1px 3px 10px 3px rgba(22, 22, 22, 0.35);
+  border-radius: 3px;
+  padding: 1px 4px;
+  background: rgb(55, 55, 55);
+  border: 1px solid #3d3d3d;
+  color: var(--secondary_text);
+  font-weight: 100;
+  margin-left: 10px;
+  box-shadow: 1px 3px 10px 3px rgba(22, 22, 22, 0.35);
 }
 
 .action-items a {
-    text-shadow: 1px 2px 2px rgba(0, 0, 0, 0.69);
+  text-shadow: 1px 2px 2px rgba(0, 0, 0, 0.69);
 }
 
 .item-comments {
-    /* color: var(--item-desc-color); */
-    font-weight: 100;
-    font-size: 11px;
-    font-style: italic;
+  /* color: var(--item-desc-color); */
+  font-weight: 100;
+  font-size: 11px;
+  font-style: italic;
 }
 
 /**                                                 **
@@ -179,22 +179,22 @@ label.radio-inline input[type=radio]:checked ~ .circle {
 a,
 a:focus,
 a:active {
-    color: var(--link-color);
-    transition: color 0.3s linear;
+  color: var(--link-color);
+  transition: color 0.3s linear;
 }
 
 a:hover {
-    color: var(--link-hover-color);
+  color: var(--link-hover-color);
 }
 
 /*------------------------MAIN CONTENT AREA-------------------------------------*/
 
 .main-content-area {
-    background: var(--primary_color);
+  background: var(--primary_color);
 }
 
-.footer {
-    border: 1px solid #2e3339;
+.header {
+  border: 1px solid #2e3339;
 }
 
 /**                                                 **
@@ -202,13 +202,13 @@ a:hover {
  *-------------------------------------------------- */
 
 .panel {
-    background-color: var(--primary_color);
-    border: 1px solid var(--border);
+  background-color: var(--primary_color);
+  border: 1px solid var(--border);
 }
 
 .panel-footer {
-    background-color: var(--panel_footer);
-    border-top: 1px solid var(--border);
+  background-color: var(--panel_footer);
+  border-top: 1px solid var(--border);
 }
 
 /**                                                 **
@@ -220,32 +220,32 @@ a:hover {
 } */
 
 .nav-tabs {
-    background: var(--secondary_color);
-    border-bottom: none;
+  background: var(--secondary_color);
+  border-bottom: none;
 }
 
 .nav-tabs > li > a {
-    transition: all 0.3s linear;
-    color: var(--link-color);
+  transition: all 0.3s linear;
+  color: var(--link-color);
 }
 
 .nav-tabs > li.active > a,
 .nav-tabs > li.active > a:hover,
 .nav-tabs > li.active > a:focus {
-    color: var(--primary_text);
-    background-color: var(--primary_color);
-    border: 1px solid var(--border);
-    border-bottom-color: transparent;
+  color: var(--primary_text);
+  background-color: var(--primary_color);
+  border: 1px solid var(--border);
+  border-bottom-color: transparent;
 }
 
 .nav-tabs > li > a:hover,
 .nav-tabs > li > a:focus {
-    border-color: transparent;
-    background-color: var(--primary_color);
+  border-color: transparent;
+  background-color: var(--primary_color);
 }
 
 .main-nav li.active {
-    /* border-bottom: 1px groove #fff; */
+  /* border-bottom: 1px groove #fff; */
 }
 
 /**                                                 **
@@ -255,19 +255,19 @@ a:hover {
 .nav-pills > li.active > a,
 .nav-pills > li.active > a:focus,
 .nav-pills > li.active > a:hover {
-    background: transparent;
+  background: transparent;
 }
 
 .nav > li > a:focus,
 .nav > li > a:hover {
-    background: transparent;
+  background: transparent;
 }
 
 .inner-tab-content {
-    padding: 0px;
+  padding: 0px;
 }
 .nav.secondary-nav {
-    border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 /* .inner-tab-content .tab-pane {
     height: 375px;
@@ -281,19 +281,19 @@ a:hover {
  *-------------------------------------------------- */
 
 ::-webkit-scrollbar-track {
-    background-color: var(--primary_color);
+  background-color: var(--primary_color);
 }
 
 ::-webkit-scrollbar {
-    background-color: var(--secondary_color);
+  background-color: var(--secondary_color);
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: var(--secondary_color);
+  background-color: var(--secondary_color);
 }
 
 .comments-section {
-    background: var(--comments_background);
+  background: var(--comments_background);
 }
 
 /**                                                 **
@@ -303,21 +303,21 @@ a:hover {
 .table td,
 .table th,
 .table thead th {
-    border-color: hsla(0, 0%, 100%, .06);
+  border-color: hsla(0, 0%, 100%, 0.06);
 }
 
 .table td,
 .table th,
 .table thead th {
-    border-color: var(--dividers);
+  border-color: var(--dividers);
 }
 
 .table {
-    color: var(--table-font-color);
+  color: var(--table-font-color);
 }
 
 .table > thead > tr > th {
-    border-bottom: 1px solid var(--dividers);
+  border-bottom: 1px solid var(--dividers);
 }
 
 .table > tbody > tr > td,
@@ -326,13 +326,13 @@ a:hover {
 .table > tfoot > tr > th,
 .table > thead > tr > td,
 .table > thead > tr > th {
-    padding: 1rem 0.8rem;
-    vertical-align: top;
-    border-top: 1px solid var(--dividers);
+  padding: 1rem 0.8rem;
+  vertical-align: top;
+  border-top: 1px solid var(--dividers);
 }
 
 .table-hover > tbody > tr:hover {
-    background-color: transparent;
+  background-color: transparent;
 }
 
 /**                                                 **
@@ -340,8 +340,8 @@ a:hover {
  *-------------------------------------------------- */
 
 #tab-feed #groups-dd {
-    background: var(--light-dark);
-    border: 1px solid #000;
+  background: var(--light-dark);
+  border: 1px solid #000;
 }
 
 /**                                                 **
@@ -349,16 +349,16 @@ a:hover {
  *-------------------------------------------------- */
 
 .well {
-    background-color: var(--dark);
-    border: 1px solid var(--border);
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+  background-color: var(--dark);
+  border: 1px solid var(--border);
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
 }
 
 .modal-backdrop {
-    background-color: #939393;
+  background-color: #939393;
 }
 
 .modal-content {
-    background: var(--primary_color);
+  background: var(--primary_color);
 }
