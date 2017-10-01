@@ -104,9 +104,8 @@ var plugin = () => {
         _addEventListeners: () => {
             var self = main;
 
-            $("button.register-btn").click(self.registerUser);
-            $("button.login-btn").click(self.loginUser);
-
+            $("#landing-login ").on("submit", self.loginUser);
+            $("#landing-register ").on("submit", self.registerUser);
             $("#tab-create-groups #create-group").click(group.createEditGroup);
             $("#edit-group-save-btn").click(group.createEditGroup);
             $("#join-group").click(group.joinPrivateGroup);
@@ -144,7 +143,7 @@ var plugin = () => {
                 window.open(link);
             });
             $("#tab-groups #groups-dd").on("change", group.groupDDChanged);
-            $("#linkcast-web").click(function(e) {
+            $("#linkcast-web").click(function (e) {
                 e.preventDefault();
                 var link = `chrome-extension://${chrome.runtime.id}/popup.html`;
                 window.open(link);
@@ -176,7 +175,7 @@ var plugin = () => {
             $(document).on("click", "#send-invites", group.sendInvites);
             $(document).on("click", "a.group-accept", group.acceptInvite);
             $(document).on("click", "a.group-reject", group.rejectInvite);
-            $(document).on("click", ".user-enabled .username", function(e) {
+            $(document).on("click", ".user-enabled .username", function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 var target_user_id = $(this).data("id");
@@ -203,7 +202,7 @@ var plugin = () => {
             $(document).on("click", ".modal .username", e => {
                 e.preventDefault();
             });
-            $(document).on("click", "a.group-name", function(e) {
+            $(document).on("click", "a.group-name", function (e) {
                 e.preventDefault();
                 let gid = $(this)
                     .parents("tr")
@@ -265,16 +264,16 @@ var plugin = () => {
                 storage.setItem(
                     "sound",
                     $(e.target)
-                        .find(".radio")
-                        .val()
+                    .find(".radio")
+                    .val()
                 );
             });
             $("#tab-customize #theme-setting .btn").click(e => {
                 storage.setItem(
                     "theme",
                     $(e.target)
-                        .find(".radio")
-                        .val()
+                    .find(".radio")
+                    .val()
                 );
                 self.setTheme();
             });
@@ -282,8 +281,8 @@ var plugin = () => {
                 storage.setItem(
                     "richNotification",
                     $(e.target)
-                        .find(".radio")
-                        .val()
+                    .find(".radio")
+                    .val()
                 );
             });
             // $("#tab-customize #sound-setting .radio").click(e => {
@@ -369,8 +368,8 @@ var plugin = () => {
                         if (richNotification !== null) {
                             $(
                                 "#rich-notification label[data-val='" +
-                                    richNotification +
-                                    "']"
+                                richNotification +
+                                "']"
                             ).click();
                         }
                         if (sound !== null) {
@@ -393,12 +392,17 @@ var plugin = () => {
          * Detects if the active chrome tab is youtube or soudcloud
          */
         _detectSite: () => {
-            chrome.tabs.query({ currentWindow: true, active: true }, function(
+            chrome.tabs.query({
+                currentWindow: true,
+                active: true
+            }, function (
                 tabs
             ) {
                 //var url = tabs[0].url;
 
-                var payload = { action: "get-meta" };
+                var payload = {
+                    action: "get-meta"
+                };
 
                 main.bgPage.retrieveSiteMeta(payload, data => {
                     if (data && data.url) {
@@ -443,8 +447,8 @@ var plugin = () => {
                         .replace(
                             "{CREATED_AT}",
                             moment(item.created_at)
-                                .add(moment().utcOffset(), "minutes")
-                                .fromNow()
+                            .add(moment().utcOffset(), "minutes")
+                            .fromNow()
                         );
                 });
                 notification.fetchNotifications(
@@ -463,7 +467,7 @@ var plugin = () => {
                 "#tab-notifications .scroll, #tab-feed .scroll, #tab-sent .scroll, #tab-favourites .scroll, #user-links .panel-body"
             );
 
-            $windows.scroll(function(e) {
+            $windows.scroll(function (e) {
                 var height = $(this).innerHeight();
                 var scroll_top = $(this).scrollTop();
                 var scrollHeight = $(this)[0].scrollHeight;
@@ -472,8 +476,8 @@ var plugin = () => {
                 var window_id =
                     "#" +
                     $(this)
-                        .parent()
-                        .attr("id");
+                    .parent()
+                    .attr("id");
                 if (scroll_top + height == scrollHeight && loading === true) {
                     item.page++;
                     if (item.page <= item.totalPages) {
@@ -489,7 +493,7 @@ var plugin = () => {
                 return false;
             });
 
-            $("#profile-modal .scroll").scroll(function(e) {
+            $("#profile-modal .scroll").scroll(function (e) {
                 var height = $(this).innerHeight();
                 var scroll_top = $(this).scrollTop();
                 var scrollHeight = $(this)[0].scrollHeight;
@@ -517,7 +521,8 @@ var plugin = () => {
         /**
          * Register a new user.
          */
-        registerUser: () => {
+        registerUser: (e) => {
+            e.preventDefault();
             auth.getUserId(chrome_id => {
                 var params = {
                     chrome_id: chrome_id,
@@ -537,7 +542,8 @@ var plugin = () => {
         /**
          * Login
          */
-        loginUser: () => {
+        loginUser: (e) => {
+            e.preventDefault();
             auth.getUserId(chrome_id => {
                 var params = {
                     chrome_id: chrome_id,

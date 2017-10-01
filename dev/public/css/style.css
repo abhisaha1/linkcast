@@ -1,13 +1,13 @@
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600');
 body {
-    font-family: "Open Sans", "Lucida Grande", "Lucida Sans Unicode",
-        "Lucida Sans", Garuda, Verdana, Tahoma, sans-serif;
+    font-family: "Open Sans", "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Garuda, Verdana, Tahoma, sans-serif;
     /*"Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Garuda, Verdana, Tahoma, sans-serif;*/
     line-height: 1.6;
     font-size: 1.2em;
     display: flex;
     justify-content: center;
 }
+
 .btn:focus,
 .btn:active:focus,
 .btn.active:focus,
@@ -16,6 +16,7 @@ body {
 .btn.active.focus {
     outline: none;
 }
+
 .container {
     width: 784px;
     margin: 0 auto;
@@ -94,6 +95,7 @@ header #img-logo {
     cursor: pointer;
 }
 
+
 /*------------------------------modal full-------------------------------------*/
 
 .modal-open .modal-full {
@@ -118,6 +120,7 @@ header #img-logo {
     overflow-y: scroll;
 }
 
+
 /*------------------------------PROFILE-------------------------------------*/
 
 .groups-wrapper .group-item {
@@ -125,11 +128,13 @@ header #img-logo {
     font-size: 11px;
 }
 
+
 /*------------------------------MAIN NAV-------------------------------------*/
 
-.nav.main-nav > li > a {
+.nav.main-nav>li>a {
     padding: 18px 15px;
 }
+
 
 /*------------------------------SECONDARY NAV---------------------------------*/
 
@@ -147,7 +152,9 @@ header #img-logo {
     margin-top: -8px;
 }
 
+
 /*------------------------------MESSAGE BOX-------------------------------------*/
+
 #msg {
     bottom: 30px;
     margin-bottom: 0px;
@@ -159,15 +166,18 @@ header #img-logo {
     left: 50%;
     margin-left: -200px;
 }
+
 #msg .alert {
     text-align: center;
     padding: 5px;
 }
+
 .alert-success {
     background: #2c8151;
     border: none;
     color: #fff;
 }
+
 
 /*-----------------------------------FORM--------------------------------------*/
 
@@ -184,6 +194,7 @@ header #img-logo {
     color: #717171;
 }
 
+
 /*----Floating inputs-----*/
 
 .form-group.label-floating label.control-label,
@@ -195,6 +206,7 @@ header #img-logo {
 .form-group.label-floating.is-focused label.control-label {
     top: -25px;
 }
+
 .required:after {
     color: #d00;
     content: "*";
@@ -202,6 +214,8 @@ header #img-logo {
     margin-left: 3px;
     top: 4px;
 }
+
+
 /*----------------------------CONTENT-AREA--------------------------------------*/
 
 .inner-inset {
@@ -217,6 +231,7 @@ header #img-logo {
     height: 40px;
     padding: 8px;
 }
+
 
 /*-----------------------------------ITEMS--------------------------------------*/
 
@@ -279,40 +294,51 @@ header #img-logo {
     -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
 }
 
+
 /* notification */
 
 .notification-item {
     padding: 8px 24px;
     display: flex;
 }
+
 .notification-item .username {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
     align-self: center;
 }
+
 .notification-item .link {
     flex: 6 0 0;
 }
+
 .notification-item .comment-meta {
     margin-left: 8px;
 }
+
 .notification-item .comment-wrapper {
     /* display: inline-flex;
     width: 520px; */
 }
+
 .notification-item .comment {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
 .notification-item .activity {
     margin-right: 8px;
 }
+
 .notification-item .group-leave {
     display: none;
 }
+
+
 /* Backdrop */
+
 .backdrop {
     position: absolute;
     width: 784px;
@@ -321,6 +347,8 @@ header #img-logo {
     opacity: 0.6;
     margin-top: 10px;
 }
+
+
 /*Modal*/
 
 .modal-dialog {
@@ -348,6 +376,7 @@ header #img-logo {
     border-top: none;
 }
 
+
 /*Comments*/
 
 .comments {
@@ -364,11 +393,16 @@ header #img-logo {
 .comments-section {
     padding: 4px 10px;
 }
+
+
 /* Table */
-.table > tbody > tr > td,
-.table > thead > tr > th {
+
+.table>tbody>tr>td,
+.table>thead>tr>th {
     padding-left: 0px;
 }
+
+
 /**Vertival tabs**/
 
 h3 {
@@ -379,8 +413,8 @@ h3 {
     border-bottom: none;
 }
 
-.nav-tabs > li > a,
-.nav-pills > li > a {
+.nav-tabs>li>a,
+.nav-pills>li>a {
     text-transform: uppercase;
     font-size: 0.9em;
 }
@@ -410,21 +444,21 @@ h3 {
     border-radius: 0;
 }
 
-.vertical-tabs .nav-tabs > li.active > a,
-.vertical-tabs .nav-tabs > li.active > a:focus,
-.vertical-tabs .nav-tabs > li.active > a:hover {
+.vertical-tabs .nav-tabs>li.active>a,
+.vertical-tabs .nav-tabs>li.active>a:focus,
+.vertical-tabs .nav-tabs>li.active>a:hover {
     border: 1px solid transparent;
 }
 
-.vertical-tabs .nav-tabs > li > a,
-.vertical-tabs .nav-tabs > li > a:focus,
-.vertical-tabs .nav-tabs > li > a:hover {
+.vertical-tabs .nav-tabs>li>a,
+.vertical-tabs .nav-tabs>li>a:focus,
+.vertical-tabs .nav-tabs>li>a:hover {
     border: 1px solid transparent;
 }
 
-.light .vertical-tabs .nav-tabs > li.active > a,
-.light .vertical-tabs .nav-tabs > li.active > a:focus,
-.light .vertical-tabs .nav-tabs > li.active > a:hover {
+.light .vertical-tabs .nav-tabs>li.active>a,
+.light .vertical-tabs .nav-tabs>li.active>a:focus,
+.light .vertical-tabs .nav-tabs>li.active>a:hover {
     color: #555;
     cursor: default;
     background-color: #fff;
@@ -460,6 +494,7 @@ h3 {
     line-height: 11px;
 }
 
+
 /* #group-users-block {
     overflow-y: scroll;
     height: 200px;
@@ -468,6 +503,12 @@ h3 {
 #tab-public-group {
     overflow-y: scroll;
     height: 385px;
+}
+
+#tab-feed .invite-btn {
+    cursor: pointer;
+    color: #337ab7;
+    text-decoration: underline;
 }
 
 .tab-content {
@@ -480,7 +521,7 @@ h3 {
     overflow-y: scroll;
 }
 
-.tab-content > .active {
+.tab-content>.active {
     /* display: flex; */
 }
 
@@ -488,20 +529,31 @@ h3 {
     height: auto;
 }
 
+#tab-manage-groups #groups-dd option {
+    color: var(--light-dark);
+}
+
 #instructions {
     padding: 20px;
 }
 
+
 /*-------------------------- TOOLTIP  -------------------------*/
+
+
 /* Tooltip container */
+
 .ttip {
     position: relative;
     cursor: pointer;
     display: inline-block;
-    border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+    border-bottom: 1px dotted black;
+    /* If you want dots under the hoverable text */
 }
 
+
 /* Tooltip text */
+
 .ttip .ttiptext {
     visibility: hidden;
     width: 120px;
@@ -510,22 +562,24 @@ h3 {
     text-align: center;
     padding: 5px 0;
     border-radius: 6px;
-
     /* Position the tooltip text */
     position: absolute;
     z-index: 1;
     bottom: 125%;
     left: 50%;
     margin-left: -60px;
-
     /* Fade in tooltip */
     opacity: 0;
     transition: opacity 1s;
 }
+
 .ttiptext .strong {
     font-weight: normal;
 }
+
+
 /* Tooltip arrow */
+
 .ttip .ttiptext::after {
     content: "";
     position: absolute;
@@ -537,20 +591,28 @@ h3 {
     border-color: #555 transparent transparent transparent;
 }
 
+
 /* Show the tooltip text when you mouse over the tooltip container */
+
 .ttip:hover .ttiptext {
     visibility: visible;
     opacity: 1;
 }
+
+
 /*-------------------------- PRELOADER-------------------------*/
 
 .preloader {
     padding: 20px;
 }
+
 .processor {
     height: 8px;
 }
+
+
 /*color*/
+
 
 /***
 Spectrum Colorpicker v1.8.0
@@ -575,6 +637,7 @@ License: MIT
     position: relative;
 }
 
+
 /* Fix for * { box-sizing: border-box; } */
 
 .sp-container,
@@ -583,6 +646,7 @@ License: MIT
     -moz-box-sizing: content-box;
     box-sizing: content-box;
 }
+
 
 /* http://ansciath.tumblr.com/post/7347495869/css-aspect-ratio */
 
@@ -686,6 +750,7 @@ License: MIT
     height: 28px;
 }
 
+
 /* Don't allow text selection */
 
 .sp-container,
@@ -728,125 +793,40 @@ License: MIT
     display: none;
 }
 
+
 /* Gradients for hue, saturation and value instead of images.  Not pretty... but it works */
 
 .sp-sat {
-    background-image: -webkit-gradient(
-        linear,
-        0 0,
-        100% 0,
-        from(#fff),
-        to(rgba(204, 154, 129, 0))
-    );
-    background-image: -webkit-linear-gradient(
-        left,
-        #fff,
-        rgba(204, 154, 129, 0)
-    );
+    background-image: -webkit-gradient( linear, 0 0, 100% 0, from(#fff), to(rgba(204, 154, 129, 0)));
+    background-image: -webkit-linear-gradient( left, #fff, rgba(204, 154, 129, 0));
     background-image: -moz-linear-gradient(left, #fff, rgba(204, 154, 129, 0));
     background-image: -o-linear-gradient(left, #fff, rgba(204, 154, 129, 0));
     background-image: -ms-linear-gradient(left, #fff, rgba(204, 154, 129, 0));
     background-image: linear-gradient(to right, #fff, rgba(204, 154, 129, 0));
     -ms-filter: "progid:DXImageTransform.Microsoft.gradient(GradientType = 1, startColorstr=#FFFFFFFF, endColorstr=#00CC9A81)";
-    filter: progid:DXImageTransform.Microsoft.gradient(
-            GradientType=1,
-            startColorstr="#FFFFFFFF",
-            endColorstr="#00CC9A81"
-        );
+    filter: progid:DXImageTransform.Microsoft.gradient( GradientType=1, startColorstr="#FFFFFFFF", endColorstr="#00CC9A81");
 }
 
 .sp-val {
-    background-image: -webkit-gradient(
-        linear,
-        0 100%,
-        0 0,
-        from(#000000),
-        to(rgba(204, 154, 129, 0))
-    );
-    background-image: -webkit-linear-gradient(
-        bottom,
-        #000000,
-        rgba(204, 154, 129, 0)
-    );
-    background-image: -moz-linear-gradient(
-        bottom,
-        #000,
-        rgba(204, 154, 129, 0)
-    );
+    background-image: -webkit-gradient( linear, 0 100%, 0 0, from(#000000), to(rgba(204, 154, 129, 0)));
+    background-image: -webkit-linear-gradient( bottom, #000000, rgba(204, 154, 129, 0));
+    background-image: -moz-linear-gradient( bottom, #000, rgba(204, 154, 129, 0));
     background-image: -o-linear-gradient(bottom, #000, rgba(204, 154, 129, 0));
     background-image: -ms-linear-gradient(bottom, #000, rgba(204, 154, 129, 0));
     background-image: linear-gradient(to top, #000, rgba(204, 154, 129, 0));
     -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#00CC9A81, endColorstr=#FF000000)";
-    filter: progid:DXImageTransform.Microsoft.gradient(
-            startColorstr="#00CC9A81",
-            endColorstr="#FF000000"
-        );
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr="#00CC9A81", endColorstr="#FF000000");
 }
 
 .sp-hue {
-    background: -moz-linear-gradient(
-        top,
-        #ff0000 0%,
-        #ffff00 17%,
-        #00ff00 33%,
-        #00ffff 50%,
-        #0000ff 67%,
-        #ff00ff 83%,
-        #ff0000 100%
-    );
-    background: -ms-linear-gradient(
-        top,
-        #ff0000 0%,
-        #ffff00 17%,
-        #00ff00 33%,
-        #00ffff 50%,
-        #0000ff 67%,
-        #ff00ff 83%,
-        #ff0000 100%
-    );
-    background: -o-linear-gradient(
-        top,
-        #ff0000 0%,
-        #ffff00 17%,
-        #00ff00 33%,
-        #00ffff 50%,
-        #0000ff 67%,
-        #ff00ff 83%,
-        #ff0000 100%
-    );
-    background: -webkit-gradient(
-        linear,
-        left top,
-        left bottom,
-        from(#ff0000),
-        color-stop(0.17, #ffff00),
-        color-stop(0.33, #00ff00),
-        color-stop(0.5, #00ffff),
-        color-stop(0.67, #0000ff),
-        color-stop(0.83, #ff00ff),
-        to(#ff0000)
-    );
-    background: -webkit-linear-gradient(
-        top,
-        #ff0000 0%,
-        #ffff00 17%,
-        #00ff00 33%,
-        #00ffff 50%,
-        #0000ff 67%,
-        #ff00ff 83%,
-        #ff0000 100%
-    );
-    background: linear-gradient(
-        to bottom,
-        #ff0000 0%,
-        #ffff00 17%,
-        #00ff00 33%,
-        #00ffff 50%,
-        #0000ff 67%,
-        #ff00ff 83%,
-        #ff0000 100%
-    );
+    background: -moz-linear-gradient( top, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+    background: -ms-linear-gradient( top, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+    background: -o-linear-gradient( top, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+    background: -webkit-gradient( linear, left top, left bottom, from(#ff0000), color-stop(0.17, #ffff00), color-stop(0.33, #00ff00), color-stop(0.5, #00ffff), color-stop(0.67, #0000ff), color-stop(0.83, #ff00ff), to(#ff0000));
+    background: -webkit-linear-gradient( top, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+    background: linear-gradient( to bottom, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
 }
+
 
 /* IE filters do not support multiple color stops.
    Generate 6 divs, line them up, and do two color gradients for each.
@@ -855,55 +835,38 @@ License: MIT
 
 .sp-1 {
     height: 17%;
-    filter: progid:DXImageTransform.Microsoft.gradient(
-            startColorstr="#ff0000",
-            endColorstr="#ffff00"
-        );
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr="#ff0000", endColorstr="#ffff00");
 }
 
 .sp-2 {
     height: 16%;
-    filter: progid:DXImageTransform.Microsoft.gradient(
-            startColorstr="#ffff00",
-            endColorstr="#00ff00"
-        );
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr="#ffff00", endColorstr="#00ff00");
 }
 
 .sp-3 {
     height: 17%;
-    filter: progid:DXImageTransform.Microsoft.gradient(
-            startColorstr="#00ff00",
-            endColorstr="#00ffff"
-        );
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr="#00ff00", endColorstr="#00ffff");
 }
 
 .sp-4 {
     height: 17%;
-    filter: progid:DXImageTransform.Microsoft.gradient(
-            startColorstr="#00ffff",
-            endColorstr="#0000ff"
-        );
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr="#00ffff", endColorstr="#0000ff");
 }
 
 .sp-5 {
     height: 16%;
-    filter: progid:DXImageTransform.Microsoft.gradient(
-            startColorstr="#0000ff",
-            endColorstr="#ff00ff"
-        );
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr="#0000ff", endColorstr="#ff00ff");
 }
 
 .sp-6 {
     height: 17%;
-    filter: progid:DXImageTransform.Microsoft.gradient(
-            startColorstr="#ff00ff",
-            endColorstr="#ff0000"
-        );
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr="#ff00ff", endColorstr="#ff0000");
 }
 
 .sp-hidden {
     display: none !important;
 }
+
 
 /* Clearfix hack */
 
@@ -920,6 +883,7 @@ License: MIT
 .sp-cf {
     *zoom: 1;
 }
+
 
 /* Mobile devices, make hue slider bigger so it is easier to slide */
 
@@ -959,6 +923,7 @@ License: MIT
     opacity: 0.8;
 }
 
+
 /*
 Theme authors:
 Here are the basic themeable display options (colors, fonts, global widths).
@@ -978,8 +943,7 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
 .sp-color,
 .sp-hue,
 .sp-clear {
-    font: normal 12px "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans",
-        Geneva, Verdana, sans-serif;
+    font: normal 12px "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Geneva, Verdana, sans-serif;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     -ms-box-sizing: border-box;
@@ -995,6 +959,7 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
 .sp-clear {
     border: solid 1px #666;
 }
+
 
 /* Input */
 
@@ -1042,6 +1007,7 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
     border-left: solid 1px #fff;
 }
 
+
 /* Palettes */
 
 .sp-palette-container {
@@ -1072,6 +1038,7 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
     position: relative;
 }
 
+
 /* Initial */
 
 .sp-initial {
@@ -1092,12 +1059,14 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
     background-position: center;
 }
 
+
 /* Buttons */
 
 .sp-palette-button-container,
 .sp-button-container {
     float: right;
 }
+
 
 /* Replacer (the little preview div that shows up instead of the <input>) */
 
@@ -1160,6 +1129,7 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
 .sp-container {
     padding-bottom: 0;
 }
+
 
 /* Buttons: http://hellohappy.org/css3-buttons/ */
 
@@ -1262,6 +1232,7 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
     background-image: url(data:image/gif;base64,R0lGODlhFAAUAPcAAAAAAJmZmZ2dnZ6enqKioqOjo6SkpKWlpaampqenp6ioqKmpqaqqqqurq/Hx8fLy8vT09PX19ff39/j4+Pn5+fr6+vv7+wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAP8ALAAAAAAUABQAAAihAP9FoPCvoMGDBy08+EdhQAIJCCMybCDAAYUEARBAlFiQQoMABQhKUJBxY0SPICEYHBnggEmDKAuoPMjS5cGYMxHW3IiT478JJA8M/CjTZ0GgLRekNGpwAsYABHIypcAgQMsITDtWJYBR6NSqMico9cqR6tKfY7GeBCuVwlipDNmefAtTrkSzB1RaIAoXodsABiZAEFB06gIBWC1mLVgBa0AAOw==);
 }
 
+
 /* Invite */
 
 #invite-modal .wrapper {
@@ -1272,6 +1243,7 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
     overflow-y: scroll;
     padding-right: 8px;
 }
+
 .invite-item {
     flex: 1 0 31%;
     max-width: 31%;
@@ -1280,7 +1252,10 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
     display: flex;
     justify-content: space-between;
 }
+
+
 /* Tags */
+
 ul.token-input-list-facebook {
     overflow: hidden;
     height: auto !important;
@@ -1398,23 +1373,27 @@ div.token-input-dropdown-facebook ul li em {
     font-style: normal;
 }
 
-div.token-input-dropdown-facebook
-    ul
-    li.token-input-selected-dropdown-item-facebook {
+div.token-input-dropdown-facebook ul li.token-input-selected-dropdown-item-facebook {
     background-color: rgba(28, 27, 27, 0.8);
     color: #fff;
 }
 
+
 /* Pending Invites */
+
 .invite {
     display: flex;
     justify-content: space-between;
 }
+
+
 /*Announcement*/
+
 .announcement .fa {
     font-weight: bold;
     color: crimson;
 }
+
 .blink_me {
     animation: blinker 1s linear infinite;
 }

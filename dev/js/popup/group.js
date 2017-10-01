@@ -4,44 +4,44 @@ var request = require("./request");
 var message = require("./message");
 var storage = require("./storage");
 
-module.exports = new function() {
+module.exports = new function () {
     this.groups = [];
     (this.invites = []),
-        (this.fetchGroups = callback => {
-            auth.getUserId(chrome_id => {
-                let params = {
-                    chrome_id: chrome_id,
-                    action: "fetchUserGroups"
-                };
-                var data = common.getDataString(params);
-                var groups = {
-                    all: "<option value='0'>All</option>",
-                    withPostAccess: "",
-                    admin: ""
-                };
+    (this.fetchGroups = callback => {
+        auth.getUserId(chrome_id => {
+            let params = {
+                chrome_id: chrome_id,
+                action: "fetchUserGroups"
+            };
+            var data = common.getDataString(params);
+            var groups = {
+                all: "<option value='0'>All</option>",
+                withPostAccess: "",
+                admin: ""
+            };
 
-                request.get(data, data => {
-                    var html = "<option value='0'>Select</option>";
-                    this.groups = data;
-                    data.forEach(item => {
-                        let options = this.getGroupsTemplate(item);
-                        if (item.group_rights == "can_post") {
-                            groups.withPostAccess += options;
-                        }
-                        if (item.admin === item.uid) {
-                            groups.admin += options;
-                        }
-                        groups.all += options;
-                    });
-                    $("#tab-feed #groups-dd").html(groups.all);
-                    $("#tab-post #groups-dd").html(groups.withPostAccess);
-                    $("#tab-groups #groups-dd").html(groups.admin);
-                    if (typeof callback == "function") {
-                        callback();
+            request.get(data, data => {
+                var html = "<option value='0'>Select</option>";
+                this.groups = data;
+                data.forEach(item => {
+                    let options = this.getGroupsTemplate(item);
+                    if (item.group_rights == "can_post") {
+                        groups.withPostAccess += options;
                     }
+                    if (item.admin === item.uid) {
+                        groups.admin += options;
+                    }
+                    groups.all += options;
                 });
+                $("#tab-feed #groups-dd").html(groups.all);
+                $("#tab-post #groups-dd").html(groups.withPostAccess);
+                $("#tab-groups #groups-dd").html(groups.admin);
+                if (typeof callback == "function") {
+                    callback();
+                }
             });
         });
+    });
     this.getGroupsTemplate = item => {
         var admin = false;
         var defaultGroup = storage.getItem("defaultGroup");
@@ -327,9 +327,9 @@ module.exports = new function() {
                 var html = "";
                 data.forEach(item => {
                     var status =
-                        item.status == "1"
-                            ? "<a href='#' class='red group-leave'>Leave</a>"
-                            : "<a href='#' class='green group-join'>Join</a>";
+                        item.status == "1" ?
+                        "<a href='#' class='red group-leave'>Leave</a>" :
+                        "<a href='#' class='green group-join'>Join</a>";
                     html += `<tr class="group_row" data-gid="${item.id}">
                                 <td>
                                     <a href="#" class="group-name"><strong>${item.name}</strong></a>
@@ -361,7 +361,7 @@ module.exports = new function() {
             request.get(params, data => {
                 var users = data.map(
                     user =>
-                        `<a href="#" data-id="${user.id}" class="username" style="color:${user.color}">${user.nickname}</a> - ${user.bio}`
+                    `<a href="#" data-id="${user.id}" class="username" style="color:${user.color}">${user.nickname}</a> - ${user.bio}`
                 );
                 var html = users.join("<br/> ");
                 callback(html, data && data[0].name);
@@ -388,23 +388,23 @@ module.exports = new function() {
         //update group name
         $handle.find("#inputGroupCreate").val(
             $option
-                .text()
-                .replace("(admin)", "")
-                .trim()
+            .text()
+            .replace("(admin)", "")
+            .trim()
         );
         //update group desc
         $handle.find("#inputGrpDesc").val($option.data("desc"));
         //update private/public visibility
         $(
             "#tab-manage-groups #group-visibility .radio[value='" +
-                $option.attr("is_public") +
-                "']"
+            $option.attr("is_public") +
+            "']"
         ).click();
         //update public rights
         $(
             "#tab-manage-groups #group-rights .radio[value='" +
-                $option.attr("group_rights") +
-                "']"
+            $option.attr("group_rights") +
+            "']"
         ).click();
     };
     this._editGroupSave = () => {
@@ -503,8 +503,8 @@ module.exports = new function() {
         });
     };
 
-    this.inviteUsers = (resetInvites = true) => {
-        let group_id = $("#tab-manage-groups #groups-dd").val();
+    this.inviteUsers = (e, resetInvites = true) => {
+        let group_id = $(e.currentTarget).parents('.tab-pane').find('#groups-dd').val();
         $("#invite-modal")
             .attr("data-gid", group_id)
             .modal();
@@ -570,15 +570,15 @@ module.exports = new function() {
                         }
                     });
                 },
-                onResult: function(results) {
+                onResult: function (results) {
                     var tagsearch = $(
                         "#token-input-tags-input-send-invites"
                     ).val();
                     return results.filter(item => {
                         return (
                             item.nickname
-                                .toLowerCase()
-                                .indexOf(tagsearch.toLowerCase()) === 0
+                            .toLowerCase()
+                            .indexOf(tagsearch.toLowerCase()) === 0
                         );
                     });
                 }
@@ -601,7 +601,7 @@ module.exports = new function() {
             params = common.getDataString(params);
             request.post(params, data => {
                 $item.remove();
-                this.inviteUsers(false);
+                this.inviteUsers(e, false);
             });
         });
     };

@@ -2,3 +2,5 @@ node_modules
 build
 linkcast.zip
 tokens.js
+app.config.json
+.history
