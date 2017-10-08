@@ -1,6 +1,6 @@
 machine:
   node:
-    # Circle will use node v6.9.1
+    # Circle will use node v6.9
     version: 6.9.1
 
 test:
