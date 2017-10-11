@@ -33,7 +33,9 @@ body {
     background-size: cover;
     background-repeat: no-repeat;
 }
-
+#groups-dd option {
+    background: #333;
+}
 .form-control,
 .form-control:focus {
     box-shadow: none;

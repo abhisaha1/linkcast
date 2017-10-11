@@ -14,6 +14,9 @@ export const TabComponent = ({
             <ul class={`nav ${type} ${classes}`}>
                 {Object.keys(state[stateKey].tabs).map(tab_id => {
                     let tab = state[stateKey].tabs[tab_id];
+                    if (tab.authorized && !localStorage.loggedIn) {
+                        return false;
+                    }
                     let active =
                         state[stateKey].active == tab_id ? "active" : "";
                     let label = tab.name;

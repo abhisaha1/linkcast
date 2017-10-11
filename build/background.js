@@ -107,7 +107,7 @@ var retrieveSiteMeta = function(passed_message, callback) {
 
 var countStore = 0;
 var countData = { links: { rows: [] }, groups: { rows: [] } };
-var endpoint = "http://playground.ajaxtown.com/linkcast/11/index.php";
+var endpoint = "http://playground.ajaxtown.com/linkcast/12/index.php";
 
 function checkStorage() {
     if (typeof localStorage.notification === "undefined") {

@@ -25,7 +25,8 @@ const plugins = [
         { context: "dev", from: "background.js", to: "../" },
         { context: "dev", from: "content.js", to: "../" },
         { context: "dev", from: "manifest.json", to: "../" },
-        { context: "dev", from: "popup.html", to: "../" }
+        { context: "dev", from: "popup.html", to: "../" },
+        { context: "dev", from: "options.html", to: "../" }
     ]),
     new webpack.optimize.UglifyJsPlugin({
         compress: { warnings: false },
@@ -84,10 +85,7 @@ module.exports = function webpackStuff(env) {
                     test: /\.css$/,
                     use: ExtractTextPlugin.extract({
                         use: "css-loader?importLoaders=1"
-                    }),
-                    options: {
-                        minimize: true
-                    }
+                    })
                 },
                 {
                     test: /\.scss$/,
@@ -109,8 +107,22 @@ module.exports = function webpackStuff(env) {
                     })
                 },
                 {
-                    test: /\.(jpe|jpg|woff|woff2|eot|ttf|svg)(\?.*$|$)/,
-                    use: [{ loader: "file-loader" }]
+                    test: /\.(jpg|jpe|jpeg|svg)(\?.*$|$)/,
+                    use: [
+                        {
+                            loader:
+                                "file-loader?name=../../../images/[name].[ext]"
+                        }
+                    ]
+                },
+                {
+                    test: /\.(woff|woff2|eot|ttf)(\?.*$|$)/,
+                    use: [
+                        {
+                            loader:
+                                "file-loader?name=../../../fonts/[name].[ext]"
+                        }
+                    ]
                 }
             ]
         },

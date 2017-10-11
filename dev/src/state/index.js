@@ -9,7 +9,8 @@ const mainNav = {
                 page: 1,
                 pages: 0,
                 total: 0
-            }
+            },
+            authorized: true
         },
         feed: {
             name: "Feed",
@@ -20,10 +21,23 @@ const mainNav = {
                 page: 1,
                 pages: 0,
                 total: 0
-            }
+            },
+            authorized: true
         },
-        post: { name: "Post", isFetching: false, loadMore: false, data: [] },
-        links: { name: "Links", isFetching: false, loadMore: false, data: [] },
+        post: {
+            name: "Post",
+            isFetching: false,
+            loadMore: false,
+            data: [],
+            authorized: true
+        },
+        links: {
+            name: "Links",
+            isFetching: false,
+            loadMore: false,
+            data: [],
+            authorized: true
+        },
         search: {
             name: "Search",
             isFetching: false,
@@ -34,13 +48,15 @@ const mainNav = {
                 page: 1,
                 pages: 0,
                 total: 0
-            }
+            },
+            authorized: true
         },
         groups: {
             name: "Groups",
             isFetching: false,
             loadMore: false,
-            data: []
+            data: [],
+            authorized: true
         },
         settings: {
             name: "Settings",

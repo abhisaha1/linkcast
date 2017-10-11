@@ -124,10 +124,13 @@ export const doLogin = (state, actions, data) => {
             update(state);
             request(params).then(result => {
                 if (result.flag == 1) {
+                    if (!localStorage.defaultGroup) {
+                        localStorage.defaultGroup = 1;
+                    }
                     //update localstorage
-                    localStorage.setItem("nickname", data.nickname);
-                    localStorage.setItem("loggedIn", true);
-                    localStorage.setItem("chrome_id", result.data.chrome_id);
+                    localStorage.nickname = data.nickname;
+                    localStorage.loggedIn = true;
+                    localStorage.chrome_id = result.data.chrome_id;
                     actions.fetchGroups();
                     //update the state
                     state.user.data = result.data;
@@ -165,9 +168,10 @@ export const doRegister = (state, actions, data) => {
             request(params).then(result => {
                 if (result.flag == 1) {
                     //update localstorage
-                    localStorage.setItem("nickname", data.nickname);
-                    localStorage.setItem("loggedIn", true);
-                    localStorage.setItem("chrome_id", result.data.chrome_id);
+                    localStorage.nickname = data.nickname;
+                    localStorage.loggedIn = true;
+                    localStorage.chrome_id = result.data.chrome_id;
+                    localStorage.defaultGroup = 1;
                     actions.fetchGroups();
                     //update the state
                     state.user.data = result.data;
