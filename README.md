@@ -1,41 +1,78 @@
-# Linkcast
+[![Build Status](https://travis-ci.org/selfup/hyperapp-one.svg?branch=master)](https://travis-ci.org/selfup/hyperapp-one)
 
-Linkcast is a chrome extension which organises your links facilitates sharing. Few of the features are:
-- Post a link in a group and all users in that group get notified.
-- Create a public or private group
-- Like a particular post, mark favourite and also add comments
-- As an admin, you will have full control of users and thier permissions
+# [HyperApp](https://github.com/hyperapp/hyperapp) *JSX* Boilerplate Repo
 
-## History
-Linkcast was developed with the intention of keeping all music tracks that my friends would share in one place. Then gradually, felt the need 
-of having comments. To make it a bit more interactive, the like button was added along with comments. Linkcast is still an experiment. The scope of this project has not been defined.
+### To get started:
 
-## ToDo's
-There are couple of things that needs to be done. Linkcast doesnt use any framework, still the code is modular. But I would like to add a tiny 
-framework around, write some tests, create some themes, etc. Create a mysql staging server
+```bash
+npm install
+npm start
+```
 
-## Install
-- Clone the project
-` git clone git@github.com:ajaxtown/linkcast.git` 
-- Step inside the directory
-` cd linkcast`
-- Install all packages/dependencies
-`npm install`
-- Run
-`npm run dev`
-- Navigate to `chrome://extensions/`
+Visit: [webpack-dev-server](http://localhost:8080/webpack-dev-server/index.html)
 
-- Click `Load Unpacked Extensions` and add the `dev` directory
+This will reload as you save new code :smile:
 
-## Contribute
-If you have any ideas or would like to contribute, feel free to send PR's or create issues or ask for feature requests. Below is the structure of Linkcast.
+*Now go code something awesome!*
 
-- `dev` - Main development directory
-- `dev/js` - Main files of linkcast
-- `dev/public` - Contains css, fonts, icons and images
-- `dev/js/popup.js` is the main file. Everything starts here.
+***
 
-## Thanks
-Thanks for contributing folks:
-- @fleshsword - For designs
-- @farokojil, @bi6o - for ideas and filing bugs and for being power users
+### To wipe commit history:
+
+**Make sure you are in the boilerplate root:**
+
+You can either:
+
+```bash
+npm run wipe
+```
+
+And then add your remote: `git remote add origin <ssh_or_https_url>`
+
+**OR** 
+
+```bash
+rm -rf .git
+git init
+git add .
+git commit -m "initial commit"
+```
+
+And then add your remote: `git remote add origin <ssh_or_https_url>`
+
+Then work as normal :smile:
+
+***
+
+### Deploy to GitHub Pages:
+
+**First Time**:
+
+```bash
+git checkout -b gh-pages
+npm run build
+git add . && git commit -m "built"
+git push origin gh-pages
+```
+
+**Every time after that**:
+
+```bash
+git checkout gh-pages
+git merge master
+npm run build
+git add . && git commit -m "built"
+git push origin gh-pages
+```
+
+**Now go visit**:
+
+(No custom domain) -> `<your_username>.github.io/<your_repo_name>`
+
+(Custom domain) -> `<custom_domain>/<your_repo_name>`
+
+***
+
+### Website:
+
+[Over Here!](http://selfup.github.io/hyperapp-one)

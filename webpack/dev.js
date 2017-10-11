@@ -1,85 +1,96 @@
-var webpack = require("webpack");
-var SassPlugin = require("sass-webpack-plugin");
-var StringReplacePlugin = require("string-replace-webpack-plugin");
-var FileSystem = require("fs");
-var path = require("path");
-var watch = require("node-watch");
+const path = require("path");
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const BabiliPlugin = require("babili-webpack-plugin");
+const webpack = require("webpack");
 
-watch(path.join(__dirname, "../dev/view"), { recursive: true }, function(
-    evt,
-    name
-) {
-    console.log("%s changed.", name);
-    producePopup();
+const extractSass1 = new ExtractTextPlugin({
+    filename: "../public/css/style.css"
+});
+const extractSass2 = new ExtractTextPlugin({
+    filename: "../public/css/dark.css"
 });
 
-function producePopup() {
-    // replace html
-    var template = FileSystem.readFileSync(
-        path.join(__dirname, "../dev/view/popup_dev.html"),
-        "utf8"
-    );
-    var reg = /<!--include (.*?) -->/gi;
-    var data = template.replace(reg, function(text, match, idx) {
-        var view = path.join(__dirname, "../dev", match.trim());
-        //get contents of view
-        var contents = FileSystem.readFileSync(view, "utf8");
-        return contents;
-    });
-    FileSystem.writeFileSync(path.join(__dirname, "../dev/popup.html"), data);
-}
-module.exports = {
-    entry: {
-        popup: "./dev/popup.js"
-    },
-    output: {
-        path: path.join(__dirname, "build"),
-        publicPath: "/build",
-        filename: "[name].js"
-    },
-    devServer: {
-        host: "localhost",
-        port: 3000
-    },
-    plugins: [
-        // //new SassPlugin("dev/css/themes/dark.scss"),
-        function() {
-            this.plugin("done", function(statsData) {
-                producePopup();
-            });
-        }
-    ],
-    module: {
-        rules: [
-            {
-                test: /\.html$/,
-                use: [{ loader: "raw-loader" }]
-            },
-            {
-                test: /\.js$/,
-                use: [
-                    {
-                        loader: "babel-loader"
-                    }
-                ]
-            },
-            {
-                test: /\.scss$/,
-                use: [
-                    {
-                        loader: "style-loader"
+const plugins = [
+    extractSass1,
+    extractSass2,
+    // new ExtractTextPlugin({
+    //     filename: "./bundle.css",
+    //     allChunks: true
+    // }),
+    new webpack.optimize.ModuleConcatenationPlugin()
+];
+
+module.exports = function webpackStuff(env) {
+    if (env === "production") plugins.push(new BabiliPlugin());
+
+    return {
+        devtool: "source-map",
+        entry: [
+            "./dev/src/index.js",
+            "./dev/public/scss/app/style.scss",
+            "./dev/public/scss/themes/dark/dark.scss"
+        ],
+        output: {
+            path: path.join(__dirname, "../dev/src"),
+            publicPath: "src",
+            filename: "popup.js"
+        },
+        module: {
+            rules: [
+                {
+                    test: /\.js$/,
+                    loader: "babel-loader",
+                    query: {
+                        presets: ["es2015"],
+                        plugins: []
                     },
-                    {
-                        loader: "css-loader"
-                    },
-                    {
-                        loader: "sass-loader",
-                        options: {
-                            includePaths: ["dev/css/themes/dark.scss"]
+                    include: [path.resolve(__dirname, "../")]
+                },
+                {
+                    test: /\.css$/,
+                    use: ExtractTextPlugin.extract({
+                        use: "css-loader?importLoaders=1"
+                    })
+                },
+                {
+                    test: /\.scss$/,
+                    include: path.resolve(__dirname, "../dev/public/scss/app"),
+                    use: extractSass1.extract({
+                        fallback: "style-loader",
+                        use: ["css-loader", "sass-loader"]
+                    })
+                },
+                {
+                    test: /\.scss$/,
+                    include: path.resolve(
+                        __dirname,
+                        "../dev/public/scss/themes/dark/"
+                    ),
+                    use: extractSass2.extract({
+                        fallback: "style-loader",
+                        use: ["css-loader", "sass-loader"]
+                    })
+                },
+                {
+                    test: /\.(jpg|jpe|jpeg|svg)(\?.*$|$)/,
+                    use: [
+                        {
+                            loader:
+                                "file-loader?name=../../../images/[name].[ext]"
                         }
-                    }
-                ]
-            }
-        ]
-    }
+                    ]
+                },
+                {
+                    test: /\.(woff|woff2|eot|ttf)(\?.*$|$)/,
+                    use: [
+                        {
+                            loader:
+                                "file-loader?name=../../../fonts/[name].[ext]"
+                        }
+                    ]
+                }
+            ]
+        },
+        plugins
+    };
 };

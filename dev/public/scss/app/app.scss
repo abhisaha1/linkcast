@@ -1,0 +1,613 @@
+body {
+    font-family: "Open Sans", "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Garuda, Verdana, Tahoma, sans-serif;
+    /*"Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Garuda, Verdana, Tahoma, sans-serif;*/
+    line-height: 1.6;
+    font-size: 1.2em;
+    display: flex;
+    justify-content: center;
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn.active:focus,
+.btn.focus,
+.btn:active.focus,
+.btn.active.focus {
+    outline: none;
+}
+
+.container {
+    width: 784px;
+    margin: 0 auto;
+    height: 100%;
+    min-height: 430px;
+    display: flex;
+    flex-direction: column;
+    padding: 0px;
+    margin: 8px;
+    background: #272b30;
+}
+
+a:active,
+a:hover,
+a:focus {
+    outline: none;
+    text-decoration: none;
+}
+
+.nav li a:hover {
+    cursor: pointer;
+}
+
+.form-control {
+    font-size: 1em;
+}
+
+.gname {
+    color: #a0a0a0;
+}
+
+.red,
+.red:active,
+.red:focus,
+.red:hover {
+    color: #ce4d4d;
+}
+
+.grey,
+.grey:active,
+.grey:focus,
+.grey:hover {
+    color: #9c9c9c;
+}
+
+.green,
+.green:active,
+.green:focus,
+.green:hover {
+    color: #44b93a;
+}
+
+header {
+    font-size: 16px;
+    padding: 10px 0;
+}
+
+header .version {
+    color: #888;
+}
+
+header #img-logo {
+    margin-top: -13px;
+}
+
+.groups-wrapper {
+    height: 280px;
+    overflow-y: auto;
+}
+
+.pt20 {
+    padding-top: 20px !important;
+}
+
+.username {
+    cursor: pointer;
+}
+
+#picker {
+    width: 80px;
+    height: 80px;
+}
+
+#slide {
+    width: 20px;
+    height: 80px;
+}
+
+
+/*------------------------------modal full-------------------------------------*/
+
+.modal-open .modal-full {
+    overflow: hidden;
+}
+
+.modal-full .modal-dialog {
+    width: 782px;
+}
+
+.modal-full .modal-content {
+    height: 430px;
+    margin-top: -10px;
+}
+
+.modal-full .modal-body {
+    height: 340px;
+}
+
+#users-modal .wrapper {
+    height: 300px;
+    overflow-y: scroll;
+}
+
+
+/*------------------------------PROFILE-------------------------------------*/
+
+.groups-wrapper .group-item {
+    text-transform: uppercase;
+    font-size: 11px;
+}
+
+
+/*------------------------------MAIN NAV-------------------------------------*/
+
+.main-nav.nav>li>a {
+    padding: 18px 15px;
+}
+
+
+/*------------------------------SECONDARY NAV---------------------------------*/
+
+.nav.secondary-nav {
+    z-index: 1;
+    padding: 8px;
+}
+
+.nav .active .short-border {
+    width: 20px;
+    height: 1px;
+    position: absolute;
+    left: 50%;
+    margin-left: -10px;
+    margin-top: -8px;
+}
+
+
+/*------------------------------MESSAGE BOX-------------------------------------*/
+
+#msg {
+    bottom: 30px;
+    margin-bottom: 0px;
+    position: absolute;
+    width: 400px;
+    z-index: 1;
+    opacity: 0.85;
+    margin: auto;
+    left: 50%;
+    margin-left: -200px;
+}
+
+#msg .alert {
+    text-align: center;
+    padding: 5px;
+}
+
+.alert-success {
+    background: #2c8151;
+    border: none;
+    color: #fff;
+}
+
+
+/*-----------------------------------FORM--------------------------------------*/
+
+.form-group input.form-control::-webkit-input-placeholder {
+    font-size: 12px;
+}
+
+.form-group {
+    margin: 8px 0 0 0;
+}
+
+.form-group label {
+    font-size: inherit;
+    color: #717171;
+}
+
+
+/*----Floating inputs-----*/
+
+.form-group.label-floating label.control-label,
+.form-group.label-placeholder label.control-label {
+    top: -2px;
+    font-size: inherit;
+}
+
+.form-group.label-floating.is-focused label.control-label {
+    top: -25px;
+}
+
+.required:after {
+    color: #d00;
+    content: "*";
+    position: absolute;
+    margin-left: 3px;
+    top: 4px;
+}
+
+
+/*----------------------------CONTENT-AREA--------------------------------------*/
+
+.inner-inset {
+    padding: 8px 24px;
+}
+
+.secondary-nav .tab-pane {
+    padding: 16px 24px;
+}
+
+.footer {
+    position: relative;
+    height: 40px;
+    padding: 8px;
+}
+
+
+/*-----------------------------------ITEMS--------------------------------------*/
+
+.items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex: 1;
+}
+
+.items .item {
+    margin-bottom: 1px;
+    padding: 8px 16px;
+    cursor: pointer;
+}
+
+.items .item.left .items-body {
+    margin-left: 85px;
+}
+
+.items .item .items-body p {
+    margin: 0;
+}
+
+.items span.favourite {
+    color: #ce4d4d;
+    cursor: pointer;
+}
+
+.items-img {
+    margin-top: 4px;
+}
+
+.action-links {
+    margin-right: 25px;
+    font-size: 11px;
+}
+
+.action-links .term {
+    margin-left: 0px;
+}
+
+.count {
+    background: rgba(255, 15, 15, 0.84);
+    color: #fff;
+    padding: 2px 5px;
+    font-size: 9px;
+    margin-left: -60px;
+}
+
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+
+/* notification */
+
+.notification-item {
+    padding: 8px 0px;
+    display: flex;
+}
+
+.notification-item .username {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    align-self: center;
+}
+
+.notification-item .link {
+    flex: 6 0 0;
+}
+
+.notification-item .comment-meta {
+    margin-left: 8px;
+}
+
+.notification-item .comment-wrapper {
+    /* display: inline-flex;
+    width: 520px; */
+}
+
+.notification-item .comment {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.notification-item .activity {
+    margin-right: 8px;
+}
+
+.notification-item .group-leave {
+    display: none;
+}
+
+.notification-item .item-meta .fa {
+    margin-right: 8px;
+}
+
+
+/* Backdrop */
+
+.backdrop {
+    position: absolute;
+    width: 784px;
+    height: 430px;
+    background: #000;
+    opacity: 0.6;
+    margin-top: 10px;
+}
+
+
+/*Modal*/
+
+.modal-dialog {
+    width: 700px;
+}
+
+.modal-content {
+    border-radius: 0px;
+}
+
+.modal-header {
+    padding: 8px 15px;
+    border-bottom: none;
+}
+
+.modal-body {
+    padding: 0px 15px;
+}
+
+.modal-body .panel {
+    margin-bottom: 0px;
+}
+
+.modal-footer {
+    border-top: none;
+}
+
+
+/*Comments*/
+
+.comments {
+    max-height: 200px;
+    overflow: auto;
+}
+
+.comment-input {
+    border-radius: 0px;
+    height: 26px;
+    margin: 10px 0;
+}
+
+.comments-section {
+    padding: 4px 10px;
+}
+
+
+/* Table */
+
+.table>tbody>tr>td,
+.table>thead>tr>th {
+    padding-left: 0px;
+}
+
+
+/**Vertival tabs**/
+
+h3 {
+    margin-top: 0;
+}
+
+.nav-tabs {
+    border-bottom: none;
+}
+
+.nav-tabs>li>a,
+.nav-pills>li>a {
+    text-transform: uppercase;
+    font-size: 0.9em;
+}
+
+
+/* #group-users-block {
+    overflow-y: scroll;
+    height: 200px;
+} */
+
+#tab-public-group {
+    overflow-y: scroll;
+    height: 385px;
+}
+
+.tab-content {
+    height: 100%;
+    flex: 1;
+}
+
+.scroll {
+    height: 360px;
+    overflow-y: scroll;
+}
+
+.notLinks .scroll {
+    height: 292px;
+}
+
+.tab-content>.active {
+    /* display: flex; */
+}
+
+#wall #groups-dd {
+    height: auto;
+}
+
+#instructions {
+    padding: 20px;
+}
+
+
+/*-------------------------- TOOLTIP  -------------------------*/
+
+
+/* Tooltip container */
+
+.ttip {
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+    /* If you want dots under the hoverable text */
+}
+
+
+/* Tooltip text */
+
+.ttip .ttiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: #393939;
+    color: #fff;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+    /* Position the tooltip text */
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+    /* Fade in tooltip */
+    opacity: 0;
+    transition: opacity 1s;
+}
+
+.ttiptext .strong {
+    font-weight: normal;
+}
+
+
+/* Tooltip arrow */
+
+.ttip .ttiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+
+
+/* Show the tooltip text when you mouse over the tooltip container */
+
+.ttip:hover .ttiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+
+/*-------------------------- PRELOADER-------------------------*/
+
+.preloader {
+    padding: 20px;
+}
+
+.processor {
+    height: 8px;
+}
+
+
+/* Invite */
+
+#invite-modal .wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    height: 200px;
+    overflow-y: scroll;
+    padding-right: 8px;
+}
+
+.invite-item {
+    flex: 1 0 31%;
+    max-width: 31%;
+    height: 20px;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+
+/* Tags */
+
+
+/* Pending Invites */
+
+.invite {
+    display: flex;
+    justify-content: space-between;
+}
+
+
+/*Announcement*/
+
+.announcement .fa {
+    font-weight: bold;
+    color: crimson;
+}
+
+.blink_me {
+    animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
+}
+
+
+/*Search box */
+
+input.search-box:focus,
+input.search-box {
+    width: 700px;
+    margin-left: 8px;
+    background: transparent;
+    border: none;
+    border-left: 1px solid #333;
+    padding-left: 8px;
+    outline: none;
+}
+
+body {
+    .tab-content {
+        background: red !important;
+    }
+}

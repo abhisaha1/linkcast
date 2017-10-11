@@ -4,7 +4,7 @@ var package = require("../package.json");
 var path = require("path");
 
 function writeToDisk(fileName, content) {
-    FileSystem.writeFile(fileName, JSON.stringify(content), "utf8");
+    FileSystem.writeFile(fileName, JSON.stringify(content, null, 4), "utf8");
 }
 
 module.exports = (function() {
