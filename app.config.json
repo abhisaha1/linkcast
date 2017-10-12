@@ -1,5 +1,5 @@
 {
     "dev": "http://localhost:8000",
-    "prod": "http://playground.ajaxtown.com/linkcast/11/index.php",
+    "prod": "http://playground.ajaxtown.com/linkcast/12/index.php",
     "wpServer": "http://localhost:3000/"
 }
