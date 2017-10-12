@@ -2,3 +2,5 @@ node_modules
 .vscode
 npm-debug.log
 tokens.js
+build
+linkcast.zip
