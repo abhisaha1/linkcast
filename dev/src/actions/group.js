@@ -153,3 +153,29 @@ export const rejectGroupInvite = (state, actions, { e, index, activity }) => {
         });
     };
 };
+
+export const saveEditedGroup = (state, actions, data) => {
+    return update => {
+        let params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.chrome_id,
+                is_public: data.is_public,
+                action: "createEditGroup",
+                desc: data.desc,
+                mode: data.mode,
+                name: data.name,
+                group_id: data.id,
+                group_rights: data.group_rights,
+                group_password: data.group_password
+            }
+        };
+
+        request(params).then(result => {
+            if (result.flag == 1) {
+                state.message = result.msg;
+                update(state);
+            }
+        });
+    };
+};

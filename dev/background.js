@@ -166,6 +166,15 @@ var getEmoji = function(type) {
             return "";
     }
 };
+
+const isJson = data => {
+    try {
+        var data = JSON.parse(response);
+    } catch (e) {
+        return false;
+    }
+    return true;
+};
 //Start polling
 setInterval(function() {
     checkStorage();
@@ -182,7 +191,11 @@ setInterval(function() {
                         chrome_id: userid
                     },
                     function(response) {
+                        if (!isJson(response)) {
+                            return;
+                        }
                         var data = JSON.parse(response);
+
                         if (data.lastUpdateId == countData.lastUpdateId) {
                             return;
                         }

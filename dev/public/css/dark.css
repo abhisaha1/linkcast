@@ -294,9 +294,42 @@ a:hover {
 * --------------------MANAGE GROUPS---------------- *
 *-------------------------------------------------- */
 .modal-backdrop {
-  background-color: #939393; }
+  background-color: #3e3e3e;
+  opacity: 0.8; }
 
 .modal-content {
   background: var(--primary_color); }
+
+/**                                                 **
+* --------------------RADIO BUTTONS---------------- *
+*-------------------------------------------------- */
+input[type="radio"]:focus {
+  outline: none; }
+
+input[type="radio"] {
+  background-color: #333;
+  border-radius: 10px;
+  cursor: pointer;
+  display: inline-block;
+  height: 15px;
+  margin-right: 15px;
+  position: relative;
+  width: 15px;
+  -webkit-appearance: none;
+  outline: none; }
+
+input[type="radio"]:after {
+  background-color: #444;
+  border-radius: 25px;
+  content: "";
+  display: block;
+  height: 7px;
+  left: 4px;
+  position: relative;
+  top: 4px;
+  width: 7px; }
+
+input[type="radio"]:checked:after {
+  background-color: #fff; }
 
 /*# sourceMappingURL=dark.css.map*/

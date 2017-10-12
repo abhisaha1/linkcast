@@ -3,7 +3,8 @@ import {
     fetchData,
     onScroll,
     closeModal,
-    setVersion
+    setVersion,
+    resetMessage
 } from "./common";
 import {
     fetchNotifications,
@@ -20,7 +21,8 @@ import {
     joinGroup,
     leaveGroup,
     acceptGroupInvite,
-    rejectGroupInvite
+    rejectGroupInvite,
+    saveEditedGroup
 } from "./group";
 import { onTabChange } from "./tab";
 import {
@@ -97,5 +99,7 @@ export default {
     withdrawInvite,
     notificationJoinedGroup,
     acceptGroupInvite,
-    rejectGroupInvite
+    rejectGroupInvite,
+    saveEditedGroup,
+    resetMessage
 };

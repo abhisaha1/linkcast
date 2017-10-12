@@ -11247,10 +11247,12 @@ header #img-logo {
     position: absolute;
     width: 400px;
     z-index: 1;
-    opacity: 0.85;
+    opacity: 1;
     margin: auto;
     left: 50%;
     margin-left: -200px;
+    padding: 6px;
+    text-align: center;
 }
 
 #msg .alert {
@@ -11320,6 +11322,7 @@ header #img-logo {
 .notification-item {
     padding: 8px 0px;
     display: flex;
+    cursor: pointer;
 }
 
 .notification-item .username {

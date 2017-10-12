@@ -54,7 +54,10 @@ const ManageGroups = ({ state, actions }) => {
                             />
                         </div>
                     </div>
-                    <GroupEditForm state={state} />
+                    <GroupEditForm
+                        saveEditedGroup={actions.saveEditedGroup}
+                        state={state}
+                    />
                 </div>
                 <div class="col-sm-6 form-group scroll" id="group-users-block">
                     <label>Group Users:</label>
@@ -73,14 +76,38 @@ const ManageGroups = ({ state, actions }) => {
         </div>
     );
 };
-
-const GroupEditForm = ({ state }) => {
+let password = null;
+const GroupEditForm = ({ state, saveEditedGroup }) => {
     let selectedGroup = {};
-    state.allGroups.data.map(group => {
-        if (state.groupUsers.group_id == group.id) selectedGroup = group;
+    state.allGroups.data.map((group, i) => {
+        if (state.groupUsers.group_id == group.id) {
+            selectedGroup = group;
+        }
     });
-    let can_post = selectedGroup.group_rights == "can_post";
-    let can_read = selectedGroup.group_rights == "can_read";
+
+    let localState = { mode: "edit" };
+
+    const onBlur = (e, key) => {
+        localState[key] = e.target.value;
+        if (key == "is_public") {
+            password.closest("#group-private").classList.remove("hide");
+            if (e.target.value == "1") {
+                password.closest("#group-private").classList.add("hide");
+            }
+        }
+    };
+    const saveGroup = () => {
+        let data = Object.assign(selectedGroup, localState);
+        if (
+            data.is_public == "0" &&
+            (!data.group_password || data.group_password.length == 0)
+        ) {
+            alert("Password is mandatory");
+            return;
+        }
+        saveEditedGroup(data);
+    };
+
     return (
         <div class="editgroup-block">
             <div class="form-group">
@@ -95,6 +122,7 @@ const GroupEditForm = ({ state }) => {
                         class="form-control"
                         value={selectedGroup.name}
                         type="text"
+                        onblur={e => onBlur(e, "name")}
                     />
                 </div>
             </div>
@@ -111,6 +139,7 @@ const GroupEditForm = ({ state }) => {
                         class="form-control"
                         value={selectedGroup.desc}
                         type="text"
+                        onblur={e => onBlur(e, "desc")}
                     />
                 </div>
             </div>
@@ -127,6 +156,7 @@ const GroupEditForm = ({ state }) => {
                             value="1"
                             name="group-visibility"
                             checked={selectedGroup.is_public == "1"}
+                            onclick={e => onBlur(e, "is_public")}
                         />Public
                     </label>
                     <label class="radio-inline">
@@ -136,11 +166,15 @@ const GroupEditForm = ({ state }) => {
                             value="0"
                             name="group-visibility"
                             checked={selectedGroup.is_public == "0"}
+                            onclick={e => onBlur(e, "is_public")}
                         />Private
                     </label>
                 </div>
             </div>
-            <div id="group-private" class="hide">
+            <div
+                id="group-private"
+                class={selectedGroup.is_public == "1" ? "hide" : ""}
+            >
                 <div class="form-group">
                     <label class="control-label col-sm-3" for="group-password">
                         Password:
@@ -150,6 +184,10 @@ const GroupEditForm = ({ state }) => {
                             type="password"
                             id="group-password"
                             class="form-control group-private"
+                            onblur={e => onBlur(e, "group_password")}
+                            oncreate={e => {
+                                password = e;
+                            }}
                         />
                     </div>
                 </div>
@@ -157,48 +195,33 @@ const GroupEditForm = ({ state }) => {
             <div class="form-group" id="group-rights">
                 <label class="control-label col-sm-3">Permissions:</label>
                 <div class="col-sm-9">
-                    <div class="btn-group" data-toggle="buttons">
-                        <label
-                            class={
-                                "btn btn-default btn-sm " +
-                                (can_post && "active")
-                            }
-                        >
-                            <Radio
-                                class="radio"
-                                type="radio"
-                                value="can_post"
-                                name="optradio"
-                                checked={
-                                    selectedGroup.group_rights == "can_post"
-                                }
-                            />Can Post
-                        </label>
-                        <label
-                            class={
-                                "btn btn-default btn-sm " +
-                                (can_read && "active")
-                            }
-                        >
-                            <Radio
-                                class="radio"
-                                type="radio"
-                                value="can_read"
-                                name="optradio"
-                                checked={
-                                    selectedGroup.group_rights == "can_post"
-                                }
-                            />Can Read
-                        </label>
-                    </div>
+                    <label class={"radio-inline"}>
+                        <Radio
+                            class="radio"
+                            type="radio"
+                            value="can_post"
+                            name="group_rights"
+                            checked={selectedGroup.group_rights == "can_post"}
+                            onclick={e => onBlur(e, "group_rights")}
+                        />Can Post
+                    </label>
+                    <label class={"radio-inline"}>
+                        <Radio
+                            class="radio"
+                            type="radio"
+                            value="can_read"
+                            name="group_rights"
+                            checked={selectedGroup.group_rights == "can_read"}
+                            onclick={e => onBlur(e, "group_rights")}
+                        />Can Read
+                    </label>
                 </div>
             </div>
 
             <div class="col-xs-offset-3 col-xs-9">
                 <button
-                    data-action="edit"
                     type="submit"
-                    id="edit-group-save-btn"
+                    onclick={saveGroup}
                     class="btn btn-default btn-sm"
                 >
                     Save

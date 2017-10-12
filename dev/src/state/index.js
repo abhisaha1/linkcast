@@ -192,6 +192,7 @@ export default {
     linkTabs,
     groupTabs,
     settingsTabs,
+    message: "hello world",
     version: "1.0.0",
     notificationStatus: {
         count: 0,

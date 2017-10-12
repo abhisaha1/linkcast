@@ -5,8 +5,7 @@ export const doPost = (state, actions, data) => {
         state.post.posting = true;
         update(state);
         data.action = "insertTrack";
-        data.chrome_id =
-            state.chrome_id;
+        data.chrome_id = state.chrome_id;
         let params = {
             method: "POST",
             queryParams: data
@@ -14,6 +13,8 @@ export const doPost = (state, actions, data) => {
         request(params).then(result => {
             state.post.posting = false;
             state.groups.defaultGroup = data.group;
+            state.mainNav.active = "feed";
+            actions.fetchItems({ stateKey: "mainNav", tab_id: "feed" });
             update(state);
         });
     };

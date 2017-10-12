@@ -4934,53 +4934,54 @@ var ModalHoc = function ModalHoc(Component) {
     return function (props) {
         return (0, _hyperapp.h)(
             "div",
-            {
-                "class": "modal fade in",
-                tabindex: "-1",
-                role: "dialog",
-                style: { display: "block" }
-            },
+            null,
             (0, _hyperapp.h)(
                 "div",
-                { "class": "modal-dialog", role: "document" },
+                {
+                    "class": "modal fade in",
+                    tabindex: "-1",
+                    role: "dialog",
+                    style: { display: "block" }
+                },
                 (0, _hyperapp.h)(
                     "div",
-                    { "class": "modal-content" },
+                    { "class": "modal-dialog", role: "document" },
                     (0, _hyperapp.h)(
                         "div",
-                        { "class": "modal-header" },
+                        { "class": "modal-content" },
                         (0, _hyperapp.h)(
-                            "button",
-                            {
-                                type: "button",
-                                "class": "close",
-                                onclick: function onclick() {
-                                    return props.actions.closeModal(props.name);
-                                }
-                            },
+                            "div",
+                            { "class": "modal-header" },
                             (0, _hyperapp.h)(
-                                "span",
-                                { "aria-hidden": "true" },
-                                "\xD7"
-                            )
+                                "button",
+                                {
+                                    type: "button",
+                                    "class": "close",
+                                    onclick: function onclick() {
+                                        return props.actions.closeModal(props.name);
+                                    }
+                                },
+                                (0, _hyperapp.h)(
+                                    "span",
+                                    { "aria-hidden": "true" },
+                                    "\xD7"
+                                )
+                            ),
+                            (0, _hyperapp.h)("h4", { "class": "modal-title" })
                         ),
                         (0, _hyperapp.h)(
-                            "h4",
-                            { "class": "modal-title" },
-                            "Modal title"
-                        )
-                    ),
-                    (0, _hyperapp.h)(
-                        "div",
-                        { "class": "modal-body" },
-                        (0, _hyperapp.h)(
-                            "p",
-                            null,
-                            (0, _hyperapp.h)(Component, props)
+                            "div",
+                            { "class": "modal-body" },
+                            (0, _hyperapp.h)(
+                                "p",
+                                null,
+                                (0, _hyperapp.h)(Component, props)
+                            )
                         )
                     )
                 )
-            )
+            ),
+            (0, _hyperapp.h)("div", { "class": "modal-backdrop" })
         );
     };
 };
@@ -5032,7 +5033,7 @@ var Radio = exports.Radio = function Radio(_ref) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.unescape = exports.escape = exports.deepFind = exports.setVersion = exports.closeModal = exports.onScroll = exports.navClicked = undefined;
+exports.unescape = exports.escape = exports.deepFind = exports.setVersion = exports.resetMessage = exports.closeModal = exports.onScroll = exports.navClicked = undefined;
 
 var _request = __webpack_require__(2);
 
@@ -5062,6 +5063,17 @@ var onScroll = exports.onScroll = function onScroll(state, actions, _ref) {
 var closeModal = exports.closeModal = function closeModal(state, actions, name) {
     state.modals[name].open = false;
     return state;
+};
+
+var resetMessage = exports.resetMessage = function resetMessage(state, actions) {
+    return function (update) {
+        setTimeout(function () {
+            if (state.message != "") {
+                state.message = "";
+                update(state);
+            }
+        }, 3000);
+    };
 };
 
 var setVersion = exports.setVersion = function setVersion(state, actions, version) {
@@ -17165,7 +17177,9 @@ exports.default = {
     withdrawInvite: _invite.withdrawInvite,
     notificationJoinedGroup: _notification.notificationJoinedGroup,
     acceptGroupInvite: _group.acceptGroupInvite,
-    rejectGroupInvite: _group.rejectGroupInvite
+    rejectGroupInvite: _group.rejectGroupInvite,
+    saveEditedGroup: _group.saveEditedGroup,
+    resetMessage: _common.resetMessage
 };
 
 /***/ }),
@@ -17258,7 +17272,7 @@ var notificationJoinedGroup = exports.notificationJoinedGroup = function notific
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.rejectGroupInvite = exports.acceptGroupInvite = exports.joinGroup = exports.leaveGroup = exports.setDefaultGroup = exports.setGroups = exports.fetchGroupUsers = exports.fetchAllGroups = exports.fetchGroups = undefined;
+exports.saveEditedGroup = exports.rejectGroupInvite = exports.acceptGroupInvite = exports.joinGroup = exports.leaveGroup = exports.setDefaultGroup = exports.setGroups = exports.fetchGroupUsers = exports.fetchAllGroups = exports.fetchGroups = undefined;
 
 var _request = __webpack_require__(2);
 
@@ -17422,6 +17436,32 @@ var rejectGroupInvite = exports.rejectGroupInvite = function rejectGroupInvite(s
         (0, _request.request)(params).then(function (result) {
             if (result.flag == 1) {
                 delete state.notificationTabs.tabs.notGroups.data.rows[index];
+                update(state);
+            }
+        });
+    };
+};
+
+var saveEditedGroup = exports.saveEditedGroup = function saveEditedGroup(state, actions, data) {
+    return function (update) {
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.chrome_id,
+                is_public: data.is_public,
+                action: "createEditGroup",
+                desc: data.desc,
+                mode: data.mode,
+                name: data.name,
+                group_id: data.id,
+                group_rights: data.group_rights,
+                group_password: data.group_password
+            }
+        };
+
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag == 1) {
+                state.message = result.msg;
                 update(state);
             }
         });
@@ -18089,6 +18129,8 @@ var doPost = exports.doPost = function doPost(state, actions, data) {
         (0, _request.request)(params).then(function (result) {
             state.post.posting = false;
             state.groups.defaultGroup = data.group;
+            state.mainNav.active = "feed";
+            actions.fetchItems({ stateKey: "mainNav", tab_id: "feed" });
             update(state);
         });
     };
@@ -18469,6 +18511,7 @@ exports.default = {
     linkTabs: linkTabs,
     groupTabs: groupTabs,
     settingsTabs: settingsTabs,
+    message: "hello world",
     version: "1.0.0",
     notificationStatus: {
         count: 0,
@@ -18631,6 +18674,7 @@ __webpack_require__(165);
 
 var main = function main(state, actions) {
     var data = null;
+    actions.resetMessage();
     switch (state.mainNav.active) {
         case "notification":
             data = (0, _hyperapp.h)(_Notifications2.default, {
@@ -18713,7 +18757,12 @@ var main = function main(state, actions) {
             actions: actions,
             name: "profile"
         }),
-        state.modals.invite.open && (0, _hyperapp.h)(_InviteModal2.default, { state: state, actions: actions, name: "invite" })
+        state.modals.invite.open && (0, _hyperapp.h)(_InviteModal2.default, { state: state, actions: actions, name: "invite" }),
+        state.message != "" && (0, _hyperapp.h)(
+            "div",
+            { id: "msg", "class": "alert alert-warning" },
+            state.message
+        )
     );
 };
 
@@ -20017,7 +20066,10 @@ var ManageGroups = function ManageGroups(_ref) {
                         })
                     )
                 ),
-                (0, _hyperapp.h)(GroupEditForm, { state: state })
+                (0, _hyperapp.h)(GroupEditForm, {
+                    saveEditedGroup: actions.saveEditedGroup,
+                    state: state
+                })
             ),
             (0, _hyperapp.h)(
                 "div",
@@ -20063,16 +20115,38 @@ var ManageGroups = function ManageGroups(_ref) {
         )
     );
 };
-
+var password = null;
 var GroupEditForm = function GroupEditForm(_ref2) {
-    var state = _ref2.state;
+    var state = _ref2.state,
+        saveEditedGroup = _ref2.saveEditedGroup;
 
     var selectedGroup = {};
-    state.allGroups.data.map(function (group) {
-        if (state.groupUsers.group_id == group.id) selectedGroup = group;
+    state.allGroups.data.map(function (group, i) {
+        if (state.groupUsers.group_id == group.id) {
+            selectedGroup = group;
+        }
     });
-    var can_post = selectedGroup.group_rights == "can_post";
-    var can_read = selectedGroup.group_rights == "can_read";
+
+    var localState = { mode: "edit" };
+
+    var onBlur = function onBlur(e, key) {
+        localState[key] = e.target.value;
+        if (key == "is_public") {
+            password.closest("#group-private").classList.remove("hide");
+            if (e.target.value == "1") {
+                password.closest("#group-private").classList.add("hide");
+            }
+        }
+    };
+    var saveGroup = function saveGroup() {
+        var data = Object.assign(selectedGroup, localState);
+        if (data.is_public == "0" && (!data.group_password || data.group_password.length == 0)) {
+            alert("Password is mandatory");
+            return;
+        }
+        saveEditedGroup(data);
+    };
+
     return (0, _hyperapp.h)(
         "div",
         { "class": "editgroup-block" },
@@ -20093,7 +20167,10 @@ var GroupEditForm = function GroupEditForm(_ref2) {
                 (0, _hyperapp.h)("input", {
                     "class": "form-control",
                     value: selectedGroup.name,
-                    type: "text"
+                    type: "text",
+                    onblur: function onblur(e) {
+                        return onBlur(e, "name");
+                    }
                 })
             )
         ),
@@ -20115,7 +20192,10 @@ var GroupEditForm = function GroupEditForm(_ref2) {
                     size: "140",
                     "class": "form-control",
                     value: selectedGroup.desc,
-                    type: "text"
+                    type: "text",
+                    onblur: function onblur(e) {
+                        return onBlur(e, "desc");
+                    }
                 })
             )
         ),
@@ -20138,7 +20218,10 @@ var GroupEditForm = function GroupEditForm(_ref2) {
                         type: "radio",
                         value: "1",
                         name: "group-visibility",
-                        checked: selectedGroup.is_public == "1"
+                        checked: selectedGroup.is_public == "1",
+                        onclick: function onclick(e) {
+                            return onBlur(e, "is_public");
+                        }
                     }),
                     "Public"
                 ),
@@ -20150,7 +20233,10 @@ var GroupEditForm = function GroupEditForm(_ref2) {
                         type: "radio",
                         value: "0",
                         name: "group-visibility",
-                        checked: selectedGroup.is_public == "0"
+                        checked: selectedGroup.is_public == "0",
+                        onclick: function onclick(e) {
+                            return onBlur(e, "is_public");
+                        }
                     }),
                     "Private"
                 )
@@ -20158,7 +20244,10 @@ var GroupEditForm = function GroupEditForm(_ref2) {
         ),
         (0, _hyperapp.h)(
             "div",
-            { id: "group-private", "class": "hide" },
+            {
+                id: "group-private",
+                "class": selectedGroup.is_public == "1" ? "hide" : ""
+            },
             (0, _hyperapp.h)(
                 "div",
                 { "class": "form-group" },
@@ -20173,7 +20262,13 @@ var GroupEditForm = function GroupEditForm(_ref2) {
                     (0, _hyperapp.h)("input", {
                         type: "password",
                         id: "group-password",
-                        "class": "form-control group-private"
+                        "class": "form-control group-private",
+                        onblur: function onblur(e) {
+                            return onBlur(e, "group_password");
+                        },
+                        oncreate: function oncreate(e) {
+                            password = e;
+                        }
                     })
                 )
             )
@@ -20190,36 +20285,34 @@ var GroupEditForm = function GroupEditForm(_ref2) {
                 "div",
                 { "class": "col-sm-9" },
                 (0, _hyperapp.h)(
-                    "div",
-                    { "class": "btn-group", "data-toggle": "buttons" },
-                    (0, _hyperapp.h)(
-                        "label",
-                        {
-                            "class": "btn btn-default btn-sm " + (can_post && "active")
-                        },
-                        (0, _hyperapp.h)(_Radio.Radio, {
-                            "class": "radio",
-                            type: "radio",
-                            value: "can_post",
-                            name: "optradio",
-                            checked: selectedGroup.group_rights == "can_post"
-                        }),
-                        "Can Post"
-                    ),
-                    (0, _hyperapp.h)(
-                        "label",
-                        {
-                            "class": "btn btn-default btn-sm " + (can_read && "active")
-                        },
-                        (0, _hyperapp.h)(_Radio.Radio, {
-                            "class": "radio",
-                            type: "radio",
-                            value: "can_read",
-                            name: "optradio",
-                            checked: selectedGroup.group_rights == "can_post"
-                        }),
-                        "Can Read"
-                    )
+                    "label",
+                    { "class": "radio-inline" },
+                    (0, _hyperapp.h)(_Radio.Radio, {
+                        "class": "radio",
+                        type: "radio",
+                        value: "can_post",
+                        name: "group_rights",
+                        checked: selectedGroup.group_rights == "can_post",
+                        onclick: function onclick(e) {
+                            return onBlur(e, "group_rights");
+                        }
+                    }),
+                    "Can Post"
+                ),
+                (0, _hyperapp.h)(
+                    "label",
+                    { "class": "radio-inline" },
+                    (0, _hyperapp.h)(_Radio.Radio, {
+                        "class": "radio",
+                        type: "radio",
+                        value: "can_read",
+                        name: "group_rights",
+                        checked: selectedGroup.group_rights == "can_read",
+                        onclick: function onclick(e) {
+                            return onBlur(e, "group_rights");
+                        }
+                    }),
+                    "Can Read"
                 )
             )
         ),
@@ -20229,9 +20322,8 @@ var GroupEditForm = function GroupEditForm(_ref2) {
             (0, _hyperapp.h)(
                 "button",
                 {
-                    "data-action": "edit",
                     type: "submit",
-                    id: "edit-group-save-btn",
+                    onclick: saveGroup,
                     "class": "btn btn-default btn-sm"
                 },
                 "Save"

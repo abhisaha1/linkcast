@@ -17,6 +17,7 @@ require("../lib/token-input");
 
 const main = (state, actions) => {
     let data = null;
+    actions.resetMessage();
     switch (state.mainNav.active) {
         case "notification":
             data = (
@@ -114,6 +115,11 @@ const main = (state, actions) => {
             )}
             {state.modals.invite.open && (
                 <InviteModal state={state} actions={actions} name="invite" />
+            )}
+            {state.message != "" && (
+                <div id="msg" class="alert alert-warning">
+                    {state.message}
+                </div>
             )}
         </div>
     );

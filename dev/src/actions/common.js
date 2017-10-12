@@ -25,6 +25,17 @@ export const closeModal = (state, actions, name) => {
     return state;
 };
 
+export const resetMessage = (state, actions) => {
+    return update => {
+        setTimeout(() => {
+            if (state.message != "") {
+                state.message = "";
+                update(state);
+            }
+        }, 3000);
+    };
+};
+
 export const setVersion = (state, actions, version) => {
     state.version = version;
     return state;
