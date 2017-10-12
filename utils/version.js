@@ -4,7 +4,7 @@ var package = require("../package.json");
 var path = require("path");
 
 function writeToDisk(fileName, content) {
-    FileSystem.writeFile(fileName, JSON.stringify(content), "utf8");
+    FileSystem.writeFile(fileName, JSON.stringify(content, null, 4), "utf8");
 }
 
 module.exports = (function() {
@@ -13,6 +13,8 @@ module.exports = (function() {
         var newVersion = process.argv[2];
         package.version = newVersion;
         manifest.version = newVersion;
+        manifest.content_security_policy =
+            "script-src 'self' http://localhost:3000/build/popup.js 'unsafe-eval'; object-src 'self'";
         writeToDisk(path.join(__dirname, "../dev/manifest.json"), manifest);
         console.log("Updated version to ", process.argv[2]);
     }

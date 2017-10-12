@@ -106,26 +106,18 @@ var retrieveSiteMeta = function(passed_message, callback) {
 };
 
 var countStore = 0;
-var countData = { rows: [], pages: 0 };
+var countData = { links: { rows: [] }, groups: { rows: [] } };
 var endpoint = "http://localhost:8000";
 
 function checkStorage() {
-    if (typeof localStorage.richNotification === "undefined") {
-        localStorage.richNotification = 1;
+    if (typeof localStorage.notification === "undefined") {
+        localStorage.notification = 1;
     }
     if (typeof localStorage.sound === "undefined") {
         localStorage.sound = 1;
     }
     localStorage.theme = "dark";
 }
-/**
- * This function is being called by the popup to get the notication count
- * for various tabs
- * @param  {Function} Callback function
- */
-var getNotifications = function(callback) {
-    callback(countData);
-};
 
 var getTitle = function(linkCount, commentCount, likeCount, others) {
     const getVerb = (count, word) => {
@@ -185,30 +177,29 @@ setInterval(function() {
                 $.get(
                     endpoint,
                     {
-                        handle: "tab-notifications",
                         group: group,
-                        action: "readTracks",
-                        bg: 1,
-                        count: null,
+                        action: "getNotificatonUpdates",
                         chrome_id: userid
                     },
                     function(response) {
                         var data = JSON.parse(response);
+                        if (data.lastUpdateId == countData.lastUpdateId) {
+                            return;
+                        }
                         nData = data;
-                        //data contains wallCount and updateCount
-                        var totalCount = data.rows.length;
+                        //data contains link updates and group updates
+                        var totalCount = data.count;
                         var views = chrome.extension.getViews({
                             type: "popup"
                         });
 
-                        if (data.rows.length > 0 && views.length === 0) {
+                        if (data.count > 0 && views.length === 0) {
                             chrome.browserAction.setBadgeText({
                                 text: totalCount.toString()
                             });
 
                             var sound = localStorage.sound;
-                            var richNotification =
-                                localStorage.richNotification;
+                            var notification = localStorage.notification;
 
                             if (sound !== null && sound == "1") {
                                 var yourSound = new Audio(
@@ -217,16 +208,13 @@ setInterval(function() {
                                 yourSound.play();
                             }
 
-                            if (
-                                richNotification !== null &&
-                                richNotification == "1"
-                            ) {
+                            if (notification !== null && notification == "1") {
                                 var itemList = [];
                                 var linkCount = 0;
                                 var likeCount = 0;
                                 var commentCount = 0;
                                 var others = 0;
-                                data.rows.forEach(activity => {
+                                data.links.rows.forEach(activity => {
                                     var type = "link";
                                     if (activity.type == "link") {
                                         linkCount++;
@@ -243,6 +231,16 @@ setInterval(function() {
                                         message: getEmoji(activity.type)
                                     });
                                 });
+
+                                data.groups.rows.forEach(activity => {
+                                    others++;
+                                    var title = getFormatedText(activity);
+                                    itemList.push({
+                                        title: title,
+                                        message: getEmoji(activity.type)
+                                    });
+                                });
+
                                 var title = getTitle(
                                     linkCount,
                                     commentCount,
@@ -283,7 +281,9 @@ var sendClickedStat = function(data) {
 
 window.nData = {};
 chrome.notifications.onClicked.addListener(t => {
-    window.open(nData.rows[0].url);
+    if (isset(nData.links.rows[0])) {
+        window.open(nData.links.rows[0].url);
+    }
 });
 
 //update the version
@@ -309,7 +309,7 @@ var updateVersion = function() {
                             localStorage.ACTORS = result.data.ACTORS;
                             localStorage.loggedIn = true;
                             localStorage.chrome_id = response.userid;
-                            localStorage.richNotification = 1;
+                            localStorage.notification = 1;
                             localStorage.sound = 1;
                             localStorage.theme = "dark";
                             localStorage.uid = result.data.id;
