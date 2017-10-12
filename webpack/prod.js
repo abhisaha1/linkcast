@@ -11,7 +11,7 @@ const extractSass1 = new ExtractTextPlugin({
     filename: "../public/css/style.css"
 });
 const extractSass2 = new ExtractTextPlugin({
-    filename: "../public/css/dark.css"
+    filename: "../public/css/themes/dark/dark.css"
 });
 const plugins = [
     extractSass1,
@@ -89,7 +89,7 @@ module.exports = function webpackStuff(env) {
                 },
                 {
                     test: /\.scss$/,
-                    include: path.resolve(__dirname, "../dev/public/scss/app"),
+                    include: path.resolve(__dirname, "../dev/public/scss"),
                     use: extractSass1.extract({
                         fallback: "style-loader",
                         use: ["css-loader", "sass-loader"]

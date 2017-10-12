@@ -30,9 +30,9 @@ const PublicGroups = ({ actions, state, tab }) => {
 
 const PublicGroupsTable = ({ actions, item, key }) => {
     let isPublic = parseInt(item.is_public);
-    const joinGroup = (e, group) => {
+    const joinGroup = ({ e, group }) => {
         e.preventDefault();
-        actions.joinGroup(group);
+        actions.joinGroup({ group });
     };
     return (
         <tr class="group_row">

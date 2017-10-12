@@ -71,6 +71,8 @@ export const setDefaultGroup = (state, actions, index) => {
         total: 0
     };
     actions.fetchItems({ stateKey: "mainNav", tab_id: "feed" });
+    state.message = "Default group set to " + state.groups.data[index].name;
+
     return state;
 };
 

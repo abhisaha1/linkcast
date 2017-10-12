@@ -27,7 +27,7 @@ module.exports = function webpackStuff(env) {
         devtool: "source-map",
         entry: [
             "./dev/src/index.js",
-            "./dev/public/scss/app/style.scss",
+            "./dev/public/scss/style.scss",
             "./dev/public/scss/themes/dark/dark.scss"
         ],
         output: {
@@ -54,7 +54,7 @@ module.exports = function webpackStuff(env) {
                 },
                 {
                     test: /\.scss$/,
-                    include: path.resolve(__dirname, "../dev/public/scss/app"),
+                    include: path.resolve(__dirname, "../dev/public/scss"),
                     use: extractSass1.extract({
                         fallback: "style-loader",
                         use: ["css-loader", "sass-loader"]

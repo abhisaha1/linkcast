@@ -15,9 +15,6 @@ window.moment = require("moment");
 require("../lib/jquery");
 require("../lib/token-input");
 
-import "../../public/scss/app/style.scss";
-import "../../public/scss/themes/dark/dark.scss";
-
 const main = (state, actions) => {
     let data = null;
     switch (state.mainNav.active) {

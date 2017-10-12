@@ -11,7 +11,7 @@ const Feed = props => {
     return (
         <div>
             <div class="footer">
-                <div class="pull-left">Group:</div>
+                <div class="pull-left">Switch Group: </div>
                 <div class="pull-left">
                     <DropDown
                         classes="groups-dd"

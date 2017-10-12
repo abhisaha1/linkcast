@@ -17146,6 +17146,8 @@ var setDefaultGroup = exports.setDefaultGroup = function setDefaultGroup(state, 
         total: 0
     };
     actions.fetchItems({ stateKey: "mainNav", tab_id: "feed" });
+    state.message = "Default group set to " + state.groups.data[index].name;
+
     return state;
 };
 
@@ -17437,8 +17439,16 @@ var handleFavourite = exports.handleFavourite = function handleFavourite(state, 
     var item = (0, _common.deepFind)(state, model).data.rows[key];
     var favourite = parseInt(item.favourite);
     item.favourite = favourite ? 0 : 1;
-    state.mainNav.tabs[state.mainNav.active].data.rows[key] = item;
 
+    var _model$split3 = model.split("."),
+        _model$split4 = _slicedToArray(_model$split3, 1),
+        root = _model$split4[0];
+
+    if (root == "modals") {
+        state[root].notification.data.rows[key] = item;
+    } else {
+        state[root].tabs[state[root].active].data.rows[key] = item;
+    }
     var params = {
         queryParams: {
             chrome_id: state.chrome_id,
@@ -17463,9 +17473,9 @@ var handleLike = exports.handleLike = function handleLike(state, actions, _ref4)
     item.liked = parseInt(item.liked) ? 0 : 1;
     item.likes_count = parseInt(item.likes_count) + (item.liked ? 1 : -1);
 
-    var _model$split3 = model.split("."),
-        _model$split4 = _slicedToArray(_model$split3, 1),
-        root = _model$split4[0];
+    var _model$split5 = model.split("."),
+        _model$split6 = _slicedToArray(_model$split5, 1),
+        root = _model$split6[0];
 
     if (root == "modals") {
         state[root].notification.data.rows[key] = item;
@@ -17496,9 +17506,9 @@ var showComments = exports.showComments = function showComments(state, actions, 
     var item = (0, _common.deepFind)(state, model).data.rows[key];
     item.showComments = 1;
 
-    var _model$split5 = model.split("."),
-        _model$split6 = _slicedToArray(_model$split5, 1),
-        root = _model$split6[0];
+    var _model$split7 = model.split("."),
+        _model$split8 = _slicedToArray(_model$split7, 1),
+        root = _model$split8[0];
 
     if (root == "modals") {
         state[root].notification.data.rows[key] = item;
@@ -17529,9 +17539,9 @@ var handleDelete = exports.handleDelete = function handleDelete(state, actions, 
     var model = e.target.parentElement.closest("[model]").model;
     var item = (0, _common.deepFind)(state, model).data.rows[key];
 
-    var _model$split7 = model.split("."),
-        _model$split8 = _slicedToArray(_model$split7, 1),
-        root = _model$split8[0];
+    var _model$split9 = model.split("."),
+        _model$split10 = _slicedToArray(_model$split9, 1),
+        root = _model$split10[0];
 
     if (root == "modals") {
         delete state[root].notification.data.rows[key];
@@ -17565,9 +17575,9 @@ var handleCommentInput = exports.handleCommentInput = function handleCommentInpu
     var comment = e.target.value;
     var item = (0, _common.deepFind)(state, model).data.rows[key];
 
-    var _model$split9 = model.split("."),
-        _model$split10 = _slicedToArray(_model$split9, 1),
-        root = _model$split10[0];
+    var _model$split11 = model.split("."),
+        _model$split12 = _slicedToArray(_model$split11, 1),
+        root = _model$split12[0];
 
     if (!item.commentList) {
         item.commentList = [];
@@ -17612,9 +17622,9 @@ var itemClicked = exports.itemClicked = function itemClicked(state, actions, _re
     var model = e.target.parentElement.closest("[model]").model;
     var item = (0, _common.deepFind)(state, model).data.rows[key];
 
-    var _model$split11 = model.split("."),
-        _model$split12 = _slicedToArray(_model$split11, 1),
-        root = _model$split12[0];
+    var _model$split13 = model.split("."),
+        _model$split14 = _slicedToArray(_model$split13, 1),
+        root = _model$split14[0];
 
     if (item.uid != state.user.data.id) {
         var count = parseInt(item.times_clicked) + 1;
@@ -17680,6 +17690,7 @@ var saveProfile = exports.saveProfile = function saveProfile(state, actions, _re
         };
         (0, _request.request)(params).then(function (result) {
             state.user.data = data;
+            state.message = result.msg;
             update(state);
         });
     };
@@ -17820,6 +17831,7 @@ var doLogin = exports.doLogin = function doLogin(state, actions, data) {
                 state.user.login.requesting = false;
                 state.user.login.msg = result.msg;
                 state.user.login.flag = result.flag;
+                state.groups.defaultGroup = localStorage.defaultGroup;
                 update(state);
             });
         }
@@ -18423,10 +18435,6 @@ var _ProfileModal2 = _interopRequireDefault(_ProfileModal);
 var _InviteModal = __webpack_require__(162);
 
 var _InviteModal2 = _interopRequireDefault(_InviteModal);
-
-__webpack_require__(11);
-
-__webpack_require__(12);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -19228,7 +19236,7 @@ var Feed = function Feed(props) {
             (0, _hyperapp.h)(
                 "div",
                 { "class": "pull-left" },
-                "Group:"
+                "Switch Group: "
             ),
             (0, _hyperapp.h)(
                 "div",
@@ -19647,9 +19655,12 @@ var PublicGroupsTable = function PublicGroupsTable(_ref2) {
         key = _ref2.key;
 
     var isPublic = parseInt(item.is_public);
-    var joinGroup = function joinGroup(e, group) {
+    var joinGroup = function joinGroup(_ref3) {
+        var e = _ref3.e,
+            group = _ref3.group;
+
         e.preventDefault();
-        actions.joinGroup(group);
+        actions.joinGroup({ group: group });
     };
     return (0, _hyperapp.h)(
         "tr",
@@ -20480,6 +20491,7 @@ var Info = function Info(_ref2) {
                     state.user.data.nickname
                 ),
                 ",",
+                " ",
                 (0, _hyperapp.h)(
                     "a",
                     { href: "#", onclick: actions.doLogout },

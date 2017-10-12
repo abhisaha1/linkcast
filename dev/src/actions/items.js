@@ -96,8 +96,12 @@ export const handleFavourite = (state, actions, { e, key }) => {
     let item = deepFind(state, model).data.rows[key];
     let favourite = parseInt(item.favourite);
     item.favourite = favourite ? 0 : 1;
-    state.mainNav.tabs[state.mainNav.active].data.rows[key] = item;
-
+    let [root] = model.split(".");
+    if (root == "modals") {
+        state[root].notification.data.rows[key] = item;
+    } else {
+        state[root].tabs[state[root].active].data.rows[key] = item;
+    }
     let params = {
         queryParams: {
             chrome_id: state.chrome_id,

@@ -15,6 +15,7 @@ export const saveProfile = (state, actions, { e, data }) => {
         };
         request(params).then(result => {
             state.user.data = data;
+            state.message = result.msg;
             update(state);
         });
     };
@@ -145,6 +146,7 @@ export const doLogin = (state, actions, data) => {
                 state.user.login.requesting = false;
                 state.user.login.msg = result.msg;
                 state.user.login.flag = result.flag;
+                state.groups.defaultGroup = localStorage.defaultGroup;
                 update(state);
             });
         }

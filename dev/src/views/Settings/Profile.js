@@ -32,7 +32,7 @@ const Info = ({ state, actions, loggedIn }) => {
                 <div class="status">
                     <div>
                         Connected as
-                        <strong> {state.user.data.nickname}</strong>,
+                        <strong> {state.user.data.nickname}</strong>,{" "}
                         <a href="#" onclick={actions.doLogout}>
                             Logout
                         </a>

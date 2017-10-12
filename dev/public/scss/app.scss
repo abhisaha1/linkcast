@@ -1,5 +1,6 @@
 body {
-    font-family: "Open Sans", "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Garuda, Verdana, Tahoma, sans-serif;
+    font-family: "Open Sans", "Lucida Grande", "Lucida Sans Unicode",
+        "Lucida Sans", Garuda, Verdana, Tahoma, sans-serif;
     /*"Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Garuda, Verdana, Tahoma, sans-serif;*/
     line-height: 1.6;
     font-size: 1.2em;
@@ -104,7 +105,6 @@ header #img-logo {
     height: 80px;
 }
 
-
 /*------------------------------modal full-------------------------------------*/
 
 .modal-open .modal-full {
@@ -129,7 +129,6 @@ header #img-logo {
     overflow-y: scroll;
 }
 
-
 /*------------------------------PROFILE-------------------------------------*/
 
 .groups-wrapper .group-item {
@@ -137,13 +136,11 @@ header #img-logo {
     font-size: 11px;
 }
 
-
 /*------------------------------MAIN NAV-------------------------------------*/
 
-.main-nav.nav>li>a {
+.main-nav.nav > li > a {
     padding: 18px 15px;
 }
-
 
 /*------------------------------SECONDARY NAV---------------------------------*/
 
@@ -160,7 +157,6 @@ header #img-logo {
     margin-left: -10px;
     margin-top: -8px;
 }
-
 
 /*------------------------------MESSAGE BOX-------------------------------------*/
 
@@ -187,7 +183,6 @@ header #img-logo {
     color: #fff;
 }
 
-
 /*-----------------------------------FORM--------------------------------------*/
 
 .form-group input.form-control::-webkit-input-placeholder {
@@ -202,7 +197,6 @@ header #img-logo {
     font-size: inherit;
     color: #717171;
 }
-
 
 /*----Floating inputs-----*/
 
@@ -224,7 +218,6 @@ header #img-logo {
     top: 4px;
 }
 
-
 /*----------------------------CONTENT-AREA--------------------------------------*/
 
 .inner-inset {
@@ -240,69 +233,6 @@ header #img-logo {
     height: 40px;
     padding: 8px;
 }
-
-
-/*-----------------------------------ITEMS--------------------------------------*/
-
-.items {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    flex: 1;
-}
-
-.items .item {
-    margin-bottom: 1px;
-    padding: 8px 16px;
-    cursor: pointer;
-}
-
-.items .item.left .items-body {
-    margin-left: 85px;
-}
-
-.items .item .items-body p {
-    margin: 0;
-}
-
-.items span.favourite {
-    color: #ce4d4d;
-    cursor: pointer;
-}
-
-.items-img {
-    margin-top: 4px;
-}
-
-.action-links {
-    margin-right: 25px;
-    font-size: 11px;
-}
-
-.action-links .term {
-    margin-left: 0px;
-}
-
-.count {
-    background: rgba(255, 15, 15, 0.84);
-    color: #fff;
-    padding: 2px 5px;
-    font-size: 9px;
-    margin-left: -60px;
-}
-
-::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-}
-
-::-webkit-scrollbar {
-    width: 6px;
-}
-
-::-webkit-scrollbar-thumb {
-    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-}
-
 
 /* notification */
 
@@ -349,7 +279,6 @@ header #img-logo {
     margin-right: 8px;
 }
 
-
 /* Backdrop */
 
 .backdrop {
@@ -360,7 +289,6 @@ header #img-logo {
     opacity: 0.6;
     margin-top: 10px;
 }
-
 
 /*Modal*/
 
@@ -389,7 +317,6 @@ header #img-logo {
     border-top: none;
 }
 
-
 /*Comments*/
 
 .comments {
@@ -407,14 +334,12 @@ header #img-logo {
     padding: 4px 10px;
 }
 
-
 /* Table */
 
-.table>tbody>tr>td,
-.table>thead>tr>th {
+.table > tbody > tr > td,
+.table > thead > tr > th {
     padding-left: 0px;
 }
-
 
 /**Vertival tabs**/
 
@@ -426,12 +351,11 @@ h3 {
     border-bottom: none;
 }
 
-.nav-tabs>li>a,
-.nav-pills>li>a {
+.nav-tabs > li > a,
+.nav-pills > li > a {
     text-transform: uppercase;
     font-size: 0.9em;
 }
-
 
 /* #group-users-block {
     overflow-y: scroll;
@@ -457,21 +381,19 @@ h3 {
     height: 292px;
 }
 
-.tab-content>.active {
+.tab-content > .active {
     /* display: flex; */
 }
 
-#wall #groups-dd {
-    height: auto;
+.footer .groups-dd {
+    margin-left: 8px;
 }
 
 #instructions {
     padding: 20px;
 }
 
-
 /*-------------------------- TOOLTIP  -------------------------*/
-
 
 /* Tooltip container */
 
@@ -482,7 +404,6 @@ h3 {
     border-bottom: 1px dotted black;
     /* If you want dots under the hoverable text */
 }
-
 
 /* Tooltip text */
 
@@ -509,7 +430,6 @@ h3 {
     font-weight: normal;
 }
 
-
 /* Tooltip arrow */
 
 .ttip .ttiptext::after {
@@ -523,14 +443,12 @@ h3 {
     border-color: #555 transparent transparent transparent;
 }
 
-
 /* Show the tooltip text when you mouse over the tooltip container */
 
 .ttip:hover .ttiptext {
     visibility: visible;
     opacity: 1;
 }
-
 
 /*-------------------------- PRELOADER-------------------------*/
 
@@ -541,7 +459,6 @@ h3 {
 .processor {
     height: 8px;
 }
-
 
 /* Invite */
 
@@ -563,9 +480,7 @@ h3 {
     justify-content: space-between;
 }
 
-
 /* Tags */
-
 
 /* Pending Invites */
 
@@ -573,7 +488,6 @@ h3 {
     display: flex;
     justify-content: space-between;
 }
-
 
 /*Announcement*/
 
@@ -591,7 +505,6 @@ h3 {
         opacity: 0;
     }
 }
-
 
 /*Search box */
 
