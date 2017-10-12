@@ -13,10 +13,6 @@ const extractSass2 = new ExtractTextPlugin({
 const plugins = [
     extractSass1,
     extractSass2,
-    // new ExtractTextPlugin({
-    //     filename: "./bundle.css",
-    //     allChunks: true
-    // }),
     new webpack.optimize.ModuleConcatenationPlugin()
 ];
 
@@ -55,6 +51,10 @@ module.exports = function webpackStuff(env) {
                 {
                     test: /\.scss$/,
                     include: path.resolve(__dirname, "../dev/public/scss"),
+                    exclude: path.resolve(
+                        __dirname,
+                        "../dev/public/scss/themes"
+                    ),
                     use: extractSass1.extract({
                         fallback: "style-loader",
                         use: ["css-loader", "sass-loader"]
