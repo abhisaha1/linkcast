@@ -10,6 +10,7 @@ import Search from "./Search";
 import request from "../actions/request";
 import ProfileModal from "./Modals/ProfileModal";
 import InviteModal from "./Modals/InviteModal";
+import ForgotPasswordModal from "./Modals/ForgotPasswordModal";
 
 window.moment = require("moment");
 require("../lib/jquery");
@@ -115,6 +116,13 @@ const main = (state, actions) => {
             )}
             {state.modals.invite.open && (
                 <InviteModal state={state} actions={actions} name="invite" />
+            )}
+            {state.modals.forgotPassword.open && (
+                <ForgotPasswordModal
+                    state={state}
+                    actions={actions}
+                    name="forgotPassword"
+                />
             )}
             {state.message != "" && (
                 <div id="msg" class="alert alert-warning">

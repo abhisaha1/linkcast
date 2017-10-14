@@ -1,8 +1,13 @@
 import { h } from "hyperapp";
 
 const ModalHoc = Component => props => {
+    const closeModal = e => {
+        if (e.target.classList.contains("modal")) {
+            props.actions.closeModal(props.name);
+        }
+    };
     return (
-        <div>
+        <div onclick={closeModal}>
             <div
                 class="modal fade in"
                 tabindex="-1"

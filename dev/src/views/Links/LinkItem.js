@@ -46,7 +46,7 @@ const LinkItem = ({ item, user_id, actions, key }) => (
                         href={item.url}
                         target="_blank"
                         class="item-link"
-                        onclick={() => actions.itemClicked({ e, key })}
+                        onclick={e => actions.itemClicked({ e, key })}
                     >
                         {item.title}
                     </a>
@@ -94,7 +94,7 @@ const LinkItem = ({ item, user_id, actions, key }) => (
                     </a>
                     <a class="grey action-links">
                         <i class="fa fa-eye" aria-hidden="true" />
-                        <span class="term">{item.times_clicked}</span>
+                        <span class="term"> {item.times_clicked}</span>
                     </a>
                     {item.uid == user_id && (
                         <a

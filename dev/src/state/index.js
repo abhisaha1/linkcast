@@ -192,7 +192,7 @@ export default {
     linkTabs,
     groupTabs,
     settingsTabs,
-    message: "hello world",
+    message: "",
     version: "1.0.0",
     notificationStatus: {
         count: 0,
@@ -204,6 +204,9 @@ export default {
         notification: {
             open: false,
             data: []
+        },
+        forgotPassword: {
+            open: false
         },
         invite: {
             open: false,

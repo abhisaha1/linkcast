@@ -76,7 +76,8 @@ var templates = {
     new_group: "{NICKNAME} created a new group - {GROUP_NAME}",
     group_invite: "{NICKNAME} invited you to join {GROUP_NAME}",
     group_invite_rejected:
-        "{NICKNAME} rejected your invite to join {GROUP_NAME}"
+        "{NICKNAME} rejected your invite to join {GROUP_NAME}",
+    request_private_group_join: "{NICKNAME} wants to join {GROUP_NAME}"
 };
 
 var NEW_NOTIFICATION = false;
@@ -169,7 +170,7 @@ var getEmoji = function(type) {
 
 const isJson = data => {
     try {
-        var data = JSON.parse(response);
+        var res = JSON.parse(data);
     } catch (e) {
         return false;
     }
@@ -178,6 +179,7 @@ const isJson = data => {
 //Start polling
 setInterval(function() {
     checkStorage();
+    if (!navigator.onLine) return false;
     if (chrome && chrome.storage && chrome.storage.sync) {
         chrome.storage.sync.get("userid", function(items) {
             var userid = items.userid;

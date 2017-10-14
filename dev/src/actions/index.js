@@ -22,7 +22,11 @@ import {
     leaveGroup,
     acceptGroupInvite,
     rejectGroupInvite,
-    saveEditedGroup
+    saveEditedGroup,
+    changePublicRights,
+    removeUserFromGroup,
+    approveGroupRequest,
+    rejectGroupRequest
 } from "./group";
 import { onTabChange } from "./tab";
 import {
@@ -46,7 +50,9 @@ import {
     saveCustomization,
     doLogout,
     showProfile,
-    getUserLinks
+    getUserLinks,
+    sendRecoveryEmail,
+    forgotPassword
 } from "./user";
 import { doPost, detectSite } from "./post";
 import {
@@ -101,5 +107,11 @@ export default {
     acceptGroupInvite,
     rejectGroupInvite,
     saveEditedGroup,
-    resetMessage
+    resetMessage,
+    changePublicRights,
+    removeUserFromGroup,
+    sendRecoveryEmail,
+    forgotPassword,
+    approveGroupRequest,
+    rejectGroupRequest
 };

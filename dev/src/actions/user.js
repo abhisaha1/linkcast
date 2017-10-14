@@ -1,4 +1,5 @@
 import { request } from "./request";
+import { validateEmail, getRandomToken } from "../actions/common";
 
 export const saveProfile = (state, actions, { e, data }) => {
     e.preventDefault();
@@ -113,7 +114,6 @@ export const doLogin = (state, actions, data) => {
         let params = {
             method: "POST",
             queryParams: {
-                chrome_id: state.chrome_id,
                 nickname: data.nickname,
                 password: data.password,
                 action: "loginUser"
@@ -132,16 +132,18 @@ export const doLogin = (state, actions, data) => {
                     localStorage.nickname = data.nickname;
                     localStorage.loggedIn = true;
                     localStorage.chrome_id = result.data.chrome_id;
-                    actions.fetchGroups();
                     //update the state
                     state.user.data = result.data;
                     state.user.loggedIn = true;
+                    actions.fetchGroups();
 
                     if (chrome.storage) {
                         chrome.storage.sync.set({
                             userid: result.data.chrome_id
                         });
                     }
+                } else {
+                    state.message = result.msg;
                 }
                 state.user.login.requesting = false;
                 state.user.login.msg = result.msg;
@@ -149,15 +151,19 @@ export const doLogin = (state, actions, data) => {
                 state.groups.defaultGroup = localStorage.defaultGroup;
                 update(state);
             });
+        } else {
+            state.message = "All fields are required";
+            update(state);
         }
     };
 };
 
 export const doRegister = (state, actions, data) => {
     return update => {
+        let chrome_id = getRandomToken();
         let params = {
             queryParams: {
-                chrome_id: state.chrome_id,
+                chrome_id: chrome_id,
                 nickname: data.nickname,
                 password: data.password,
                 email: data.email,
@@ -174,11 +180,12 @@ export const doRegister = (state, actions, data) => {
                     localStorage.loggedIn = true;
                     localStorage.chrome_id = result.data.chrome_id;
                     localStorage.defaultGroup = 1;
-                    actions.fetchGroups();
                     //update the state
                     state.user.data = result.data;
                     state.user.loggedIn = true;
+                    state.chrome_id = chrome_id;
 
+                    actions.fetchGroups();
                     if (chrome.storage) {
                         chrome.storage.sync.set({
                             userid: response.data.chrome_id
@@ -188,4 +195,40 @@ export const doRegister = (state, actions, data) => {
             });
         }
     };
+};
+
+export const forgotPassword = (state, actions) => {
+    state.modals.forgotPassword.open = true;
+    return state;
+};
+
+export const sendRecoveryEmail = (state, actions, data) => {
+    if (data.email.length == 0) {
+        state.message = "Enter an email";
+        return state;
+    }
+    let valid = validateEmail(data.email);
+    if (valid) {
+        return update => {
+            let params = {
+                method: "POST",
+                queryParams: {
+                    email: data.email,
+                    action: "forgotPassword"
+                }
+            };
+            request(params).then(result => {
+                if (result.flag == 1) {
+                    state.modals.forgotPassword.open = false;
+                    state.message = "Check your email";
+                }
+                state.message = result.msg;
+                update(state);
+            });
+        };
+    } else {
+        state.message = "Invalid Email";
+        return state;
+    }
+    //...
 };

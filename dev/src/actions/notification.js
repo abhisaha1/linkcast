@@ -28,6 +28,7 @@ export const fetchNotifications = (state, actions, tab_id) => {
 };
 
 export const notificationClicked = (state, actions, { active, index }) => {
+    if (active == "notGroups") return;
     return update => {
         let item = state.notificationTabs.tabs[active].data.rows[index];
         let params = {

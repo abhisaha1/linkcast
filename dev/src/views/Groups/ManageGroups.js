@@ -3,9 +3,15 @@ import Users from "./Users";
 import DropDown from "../Common/DropDown";
 import { Radio } from "../Common/Radio";
 const ManageGroups = ({ state, actions }) => {
-    const GroupUsers = state.groupUsers.data.map(item => {
+    const GroupUsers = state.groupUsers.data.map((item, index) => {
         return (
-            <Users item={item} isAdmin={item.id == state.groupUsers.admin_id} />
+            <Users
+                actions={actions}
+                index={index}
+                group_id={state.groupUsers.group_id}
+                item={item}
+                isAdmin={item.id == state.groupUsers.admin_id}
+            />
         );
     });
     let groups = [];
@@ -16,6 +22,8 @@ const ManageGroups = ({ state, actions }) => {
         }
     });
     let selected = groups[0] ? groups[0].id : 0;
+
+    if (groups.length == 0) return <p>You are not an admin of any group.</p>;
     return (
         <div class="tab-pane" id="tab-manage-groups">
             <p>

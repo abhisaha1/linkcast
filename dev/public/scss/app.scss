@@ -339,9 +339,12 @@ header #img-logo {
 
 /* Table */
 
-.table > tbody > tr > td,
-.table > thead > tr > th {
+table.table > tbody > tr > td,
+table.table > thead > tr > th {
     padding-left: 0px;
+}
+#group-users-block table.table > tbody > tr > td {
+    padding: 0px 6px;
 }
 
 /**Vertival tabs**/
@@ -387,9 +390,12 @@ h3 {
 .tab-content > .active {
     /* display: flex; */
 }
-
+select:focus {
+    outline: none;
+}
 .footer .groups-dd {
     margin-left: 8px;
+    border-color: var(--border);
 }
 
 #instructions {

@@ -41,36 +41,44 @@ const PublicGroupsTable = ({ actions, item, key }) => {
                     <strong>{item.name}</strong>
                 </a>
             </td>
-            <td>{isPublic ? "Public" : "Private"}</td>
+            <td style={{ color: isPublic ? "" : "red" }}>
+                {isPublic ? "Public" : "Private"}
+            </td>
             <td>{item.desc}</td>
             <td>{item.group_rights}</td>
-            <td>{item.total}</td>
-            <td>
+            <td align="center">{item.total}</td>
+            <td align="center">
                 {(() => {
-                    return item.status == "1" ? (
-                        <a
-                            href="#"
-                            class="red group-leave"
-                            onclick={e => actions.leaveGroup({ e, key })}
-                        >
-                            Leave
-                        </a>
-                    ) : (
-                        <a
-                            href="#"
-                            class="green group-join"
-                            onclick={e =>
-                                joinGroup({
-                                    e,
-                                    group: {
-                                        group_id: item.id,
-                                        is_public: item.is_public
-                                    }
-                                })}
-                        >
-                            {isPublic ? "Join" : "Request"}
-                        </a>
-                    );
+                    if (item.status == "1") {
+                        return (
+                            <a
+                                href="#"
+                                class="red group-leave"
+                                onclick={e => actions.leaveGroup({ e, key })}
+                            >
+                                Leave
+                            </a>
+                        );
+                    } else if (item.status == "0") {
+                        return (
+                            <a
+                                href="#"
+                                class="green group-join"
+                                onclick={e =>
+                                    joinGroup({
+                                        e,
+                                        group: {
+                                            group_id: item.id,
+                                            is_public: item.is_public
+                                        }
+                                    })}
+                            >
+                                {isPublic ? "Join" : "Request"}
+                            </a>
+                        );
+                    } else if (item.status == "2") {
+                        return <span>Pending</span>;
+                    }
                 })()}
             </td>
         </tr>

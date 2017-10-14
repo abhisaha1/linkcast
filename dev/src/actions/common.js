@@ -82,3 +82,20 @@ export const unescape = str => {
     let reEscapedHtml = /&(?:amp|lt|gt|quot|#39);/g;
     return str.replace(reEscapedHtml, unescapeHtmlChar);
 };
+
+export const getRandomToken = () => {
+    // E.g. 8 * 32 = 256 bits token
+    var randomPool = new Uint8Array(32);
+    crypto.getRandomValues(randomPool);
+    var hex = "";
+    for (var i = 0; i < randomPool.length; ++i) {
+        hex += randomPool[i].toString(16);
+    }
+    // E.g. db18458e2782b2b77e36769c569e263a53885a9944dd0a861e5064eac16f1a
+    return hex;
+};
+
+export const validateEmail = email => {
+    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email);
+};

@@ -71,7 +71,7 @@ const Post = ({ state, actions }) => {
                 </label>
                 <div class="col-sm-9">
                     <DropDown
-                        classes="form-control"
+                        classes="form-control groups-dd"
                         data={state.groups.data}
                         selected={state.groups.defaultGroup}
                         onChange={e => onChange(e, "group")}

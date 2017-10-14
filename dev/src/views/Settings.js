@@ -51,7 +51,6 @@ const Settings = ({ active, state, actions, tabs }) => {
             // });
             break;
     }
-    console.log(data);
     return (
         <TabComponent
             classes="secondary-nav"

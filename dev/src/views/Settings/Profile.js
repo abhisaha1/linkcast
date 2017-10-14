@@ -123,23 +123,24 @@ const Info = ({ state, actions, loggedIn }) => {
         )
     );
 };
+let initialState = {
+    nickname: "",
+    password: "",
+    email: ""
+};
 const LoginRegistration = ({ actions, state, loggedIn }) => {
     if (loggedIn) return null;
 
-    let params = {
-        nickname: "",
-        password: "",
-        email: ""
-    };
     const onBlur = (e, key) => {
-        params[key] = e.target.value;
+        initialState[key] = e.target.value;
     };
     const handleLogin = () => {
-        actions.doLogin(params);
+        actions.doLogin(initialState);
     };
     const handleRegistration = (e, key) => {
-        actions.doRegister(params);
+        actions.doRegister(initialState);
     };
+
     return (
         <div class="step form-horizontal">
             <div class="col-xs-6">
@@ -170,6 +171,12 @@ const LoginRegistration = ({ actions, state, loggedIn }) => {
                     </div>
                 </div>
                 <div class="col-sm-9 col-sm-offset-3">
+                    <a href="#" onclick={actions.forgotPassword}>
+                        Forgot Password
+                    </a>
+                </div>
+                <div class="col-sm-9 col-sm-offset-3">
+                    <br />
                     <button
                         type="submit"
                         class="login-btn btn btn-default btn-sm"

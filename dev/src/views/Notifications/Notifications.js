@@ -7,7 +7,8 @@ import {
     JoinedLinkcast,
     Like,
     Linkcast,
-    NewGroup
+    NewGroup,
+    PrivateGroupRequest
 } from "./NotificationItems";
 import { TabComponent } from "../TabComponent";
 import ScrollHoc from "../Common/ScrollHoc";
@@ -88,6 +89,12 @@ const Notifications = props => {
                             key={i}
                             acceptGroupInvite={props.actions.acceptGroupInvite}
                             rejectGroupInvite={props.actions.rejectGroupInvite}
+                            approveGroupRequest={
+                                props.actions.approveGroupRequest
+                            }
+                            rejectGroupRequest={
+                                props.actions.rejectGroupRequest
+                            }
                             joinGroupFromNotification={joinGroup}
                             {...item}
                         />
@@ -137,6 +144,8 @@ export const NotificationItem = item => {
         return <JoinedLinkcast {...item} />;
     else if (item.type == "new_group") return <NewGroup {...item} />;
     else if (item.type == "group_invite") return <GroupInvite {...item} />;
+    else if (item.type == "request_private_group_join")
+        return <PrivateGroupRequest {...item} />;
 };
 
 export default ScrollHoc(Notifications);

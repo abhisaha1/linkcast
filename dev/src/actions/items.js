@@ -3,6 +3,9 @@ import { deepFind, escape } from "./common";
 
 export const fetchItems = (state, actions, { stateKey, tab_id, q }) => {
     let tab = state[stateKey].tabs[tab_id];
+    if (tab_id == "search") {
+        tab.data.rows = [];
+    }
     if (tab.data.rows.length > 0) {
         return;
     }
@@ -243,6 +246,7 @@ export const handleCommentInput = (state, actions, { e, key }) => {
 };
 
 export const itemClicked = (state, actions, { e, key }) => {
+    e.preventDefault();
     let model = e.target.parentElement.closest("[model]").model;
     let item = deepFind(state, model).data.rows[key];
     let [root] = model.split(".");

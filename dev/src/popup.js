@@ -4751,7 +4751,7 @@ var LinkItem = function LinkItem(_ref) {
                             href: item.url,
                             target: "_blank",
                             "class": "item-link",
-                            onclick: function onclick() {
+                            onclick: function onclick(e) {
                                 return actions.itemClicked({ e: e, key: key });
                             }
                         },
@@ -4828,6 +4828,7 @@ var LinkItem = function LinkItem(_ref) {
                         (0, _hyperapp.h)(
                             "span",
                             { "class": "term" },
+                            " ",
                             item.times_clicked
                         )
                     ),
@@ -4932,9 +4933,14 @@ var _hyperapp = __webpack_require__(1);
 
 var ModalHoc = function ModalHoc(Component) {
     return function (props) {
+        var closeModal = function closeModal(e) {
+            if (e.target.classList.contains("modal")) {
+                props.actions.closeModal(props.name);
+            }
+        };
         return (0, _hyperapp.h)(
             "div",
-            null,
+            { onclick: closeModal },
             (0, _hyperapp.h)(
                 "div",
                 {
@@ -5033,7 +5039,7 @@ var Radio = exports.Radio = function Radio(_ref) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.unescape = exports.escape = exports.deepFind = exports.setVersion = exports.resetMessage = exports.closeModal = exports.onScroll = exports.navClicked = undefined;
+exports.validateEmail = exports.getRandomToken = exports.unescape = exports.escape = exports.deepFind = exports.setVersion = exports.resetMessage = exports.closeModal = exports.onScroll = exports.navClicked = undefined;
 
 var _request = __webpack_require__(2);
 
@@ -5121,6 +5127,23 @@ var unescape = exports.unescape = function unescape(str) {
     var unescapeHtmlChar = basePropertyOf(htmlUnescapes);
     var reEscapedHtml = /&(?:amp|lt|gt|quot|#39);/g;
     return str.replace(reEscapedHtml, unescapeHtmlChar);
+};
+
+var getRandomToken = exports.getRandomToken = function getRandomToken() {
+    // E.g. 8 * 32 = 256 bits token
+    var randomPool = new Uint8Array(32);
+    crypto.getRandomValues(randomPool);
+    var hex = "";
+    for (var i = 0; i < randomPool.length; ++i) {
+        hex += randomPool[i].toString(16);
+    }
+    // E.g. db18458e2782b2b77e36769c569e263a53885a9944dd0a861e5064eac16f1a
+    return hex;
+};
+
+var validateEmail = exports.validateEmail = function validateEmail(email) {
+    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email);
 };
 
 /***/ }),
@@ -17179,7 +17202,13 @@ exports.default = {
     acceptGroupInvite: _group.acceptGroupInvite,
     rejectGroupInvite: _group.rejectGroupInvite,
     saveEditedGroup: _group.saveEditedGroup,
-    resetMessage: _common.resetMessage
+    resetMessage: _common.resetMessage,
+    changePublicRights: _group.changePublicRights,
+    removeUserFromGroup: _group.removeUserFromGroup,
+    sendRecoveryEmail: _user.sendRecoveryEmail,
+    forgotPassword: _user.forgotPassword,
+    approveGroupRequest: _group.approveGroupRequest,
+    rejectGroupRequest: _group.rejectGroupRequest
 };
 
 /***/ }),
@@ -17233,6 +17262,7 @@ var notificationClicked = exports.notificationClicked = function notificationCli
     var active = _ref.active,
         index = _ref.index;
 
+    if (active == "notGroups") return;
     return function (update) {
         var item = state.notificationTabs.tabs[active].data.rows[index];
         var params = {
@@ -17272,7 +17302,7 @@ var notificationJoinedGroup = exports.notificationJoinedGroup = function notific
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.saveEditedGroup = exports.rejectGroupInvite = exports.acceptGroupInvite = exports.joinGroup = exports.leaveGroup = exports.setDefaultGroup = exports.setGroups = exports.fetchGroupUsers = exports.fetchAllGroups = exports.fetchGroups = undefined;
+exports.removeUserFromGroup = exports.changePublicRights = exports.saveEditedGroup = exports.rejectGroupRequest = exports.approveGroupRequest = exports.rejectGroupInvite = exports.acceptGroupInvite = exports.joinGroup = exports.leaveGroup = exports.setDefaultGroup = exports.setGroups = exports.fetchGroupUsers = exports.fetchAllGroups = exports.fetchGroups = undefined;
 
 var _request = __webpack_require__(2);
 
@@ -17441,6 +17471,52 @@ var rejectGroupInvite = exports.rejectGroupInvite = function rejectGroupInvite(s
         });
     };
 };
+var approveGroupRequest = exports.approveGroupRequest = function approveGroupRequest(state, actions, _ref5) {
+    var e = _ref5.e,
+        index = _ref5.index,
+        activity = _ref5.activity;
+
+    return function (update) {
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.chrome_id,
+                action: "approveGroupRequest",
+                group_id: activity.group_id,
+                activity_id: activity.activity_id
+            }
+        };
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag == 1) {
+                delete state.notificationTabs.tabs.notGroups.data.rows[index];
+                update(state);
+            }
+        });
+    };
+};
+var rejectGroupRequest = exports.rejectGroupRequest = function rejectGroupRequest(state, actions, _ref6) {
+    var e = _ref6.e,
+        index = _ref6.index,
+        activity = _ref6.activity;
+
+    return function (update) {
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.chrome_id,
+                action: "rejectGroupRequest",
+                group_id: activity.group_id,
+                activity_id: activity.activity_id
+            }
+        };
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag == 1) {
+                delete state.notificationTabs.tabs.notGroups.data.rows[index];
+                update(state);
+            }
+        });
+    };
+};
 
 var saveEditedGroup = exports.saveEditedGroup = function saveEditedGroup(state, actions, data) {
     return function (update) {
@@ -17461,6 +17537,50 @@ var saveEditedGroup = exports.saveEditedGroup = function saveEditedGroup(state, 
 
         (0, _request.request)(params).then(function (result) {
             if (result.flag == 1) {
+                state.message = result.msg;
+                update(state);
+            }
+        });
+    };
+};
+var changePublicRights = exports.changePublicRights = function changePublicRights(state, actions, data) {
+    return function (update) {
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.chrome_id,
+                action: "changePublicRights",
+                user_id: data.user_id,
+                group_id: data.group_id,
+                group_rights: data.group_rights
+            }
+        };
+
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag == 1) {
+                state.groupUsers.data[data.index].group_rights = data.group_rights;
+                state.message = result.msg;
+                update(state);
+            }
+        });
+    };
+};
+var removeUserFromGroup = exports.removeUserFromGroup = function removeUserFromGroup(state, actions, data) {
+    return function (update) {
+        var user = state.groupUsers.data[data.index];
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.chrome_id,
+                action: "removeUserFromGroup",
+                user_id: user.id,
+                group_id: data.group_id
+            }
+        };
+
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag == 1) {
+                delete state.groupUsers.data[data.index];
                 state.message = result.msg;
                 update(state);
             }
@@ -17563,6 +17683,9 @@ var fetchItems = exports.fetchItems = function fetchItems(state, actions, _ref) 
         q = _ref.q;
 
     var tab = state[stateKey].tabs[tab_id];
+    if (tab_id == "search") {
+        tab.data.rows = [];
+    }
     if (tab.data.rows.length > 0) {
         return;
     }
@@ -17846,6 +17969,7 @@ var itemClicked = exports.itemClicked = function itemClicked(state, actions, _re
     var e = _ref9.e,
         key = _ref9.key;
 
+    e.preventDefault();
     var model = e.target.parentElement.closest("[model]").model;
     var item = (0, _common.deepFind)(state, model).data.rows[key];
 
@@ -17895,9 +18019,11 @@ var lazyLoad = exports.lazyLoad = function lazyLoad(state, actions, _ref10) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.doRegister = exports.doLogin = exports.doLogout = exports.saveCustomization = exports.initialize = exports.getUserLinks = exports.showProfile = exports.saveProfile = undefined;
+exports.sendRecoveryEmail = exports.forgotPassword = exports.doRegister = exports.doLogin = exports.doLogout = exports.saveCustomization = exports.initialize = exports.getUserLinks = exports.showProfile = exports.saveProfile = undefined;
 
 var _request = __webpack_require__(2);
+
+var _common = __webpack_require__(10);
 
 var saveProfile = exports.saveProfile = function saveProfile(state, actions, _ref) {
     var e = _ref.e,
@@ -18025,7 +18151,6 @@ var doLogin = exports.doLogin = function doLogin(state, actions, data) {
         var params = {
             method: "POST",
             queryParams: {
-                chrome_id: state.chrome_id,
                 nickname: data.nickname,
                 password: data.password,
                 action: "loginUser"
@@ -18044,16 +18169,18 @@ var doLogin = exports.doLogin = function doLogin(state, actions, data) {
                     localStorage.nickname = data.nickname;
                     localStorage.loggedIn = true;
                     localStorage.chrome_id = result.data.chrome_id;
-                    actions.fetchGroups();
                     //update the state
                     state.user.data = result.data;
                     state.user.loggedIn = true;
+                    actions.fetchGroups();
 
                     if (chrome.storage) {
                         chrome.storage.sync.set({
                             userid: result.data.chrome_id
                         });
                     }
+                } else {
+                    state.message = result.msg;
                 }
                 state.user.login.requesting = false;
                 state.user.login.msg = result.msg;
@@ -18061,15 +18188,19 @@ var doLogin = exports.doLogin = function doLogin(state, actions, data) {
                 state.groups.defaultGroup = localStorage.defaultGroup;
                 update(state);
             });
+        } else {
+            state.message = "All fields are required";
+            update(state);
         }
     };
 };
 
 var doRegister = exports.doRegister = function doRegister(state, actions, data) {
     return function (update) {
+        var chrome_id = (0, _common.getRandomToken)();
         var params = {
             queryParams: {
-                chrome_id: state.chrome_id,
+                chrome_id: chrome_id,
                 nickname: data.nickname,
                 password: data.password,
                 email: data.email,
@@ -18086,11 +18217,12 @@ var doRegister = exports.doRegister = function doRegister(state, actions, data) 
                     localStorage.loggedIn = true;
                     localStorage.chrome_id = result.data.chrome_id;
                     localStorage.defaultGroup = 1;
-                    actions.fetchGroups();
                     //update the state
                     state.user.data = result.data;
                     state.user.loggedIn = true;
+                    state.chrome_id = chrome_id;
 
+                    actions.fetchGroups();
                     if (chrome.storage) {
                         chrome.storage.sync.set({
                             userid: response.data.chrome_id
@@ -18100,6 +18232,42 @@ var doRegister = exports.doRegister = function doRegister(state, actions, data) 
             });
         }
     };
+};
+
+var forgotPassword = exports.forgotPassword = function forgotPassword(state, actions) {
+    state.modals.forgotPassword.open = true;
+    return state;
+};
+
+var sendRecoveryEmail = exports.sendRecoveryEmail = function sendRecoveryEmail(state, actions, data) {
+    if (data.email.length == 0) {
+        state.message = "Enter an email";
+        return state;
+    }
+    var valid = (0, _common.validateEmail)(data.email);
+    if (valid) {
+        return function (update) {
+            var params = {
+                method: "POST",
+                queryParams: {
+                    email: data.email,
+                    action: "forgotPassword"
+                }
+            };
+            (0, _request.request)(params).then(function (result) {
+                if (result.flag == 1) {
+                    state.modals.forgotPassword.open = false;
+                    state.message = "Check your email";
+                }
+                state.message = result.msg;
+                update(state);
+            });
+        };
+    } else {
+        state.message = "Invalid Email";
+        return state;
+    }
+    //...
 };
 
 /***/ }),
@@ -18511,7 +18679,7 @@ exports.default = {
     linkTabs: linkTabs,
     groupTabs: groupTabs,
     settingsTabs: settingsTabs,
-    message: "hello world",
+    message: "",
     version: "1.0.0",
     notificationStatus: {
         count: 0,
@@ -18523,6 +18691,9 @@ exports.default = {
         notification: {
             open: false,
             data: []
+        },
+        forgotPassword: {
+            open: false
         },
         invite: {
             open: false,
@@ -18666,6 +18837,10 @@ var _InviteModal = __webpack_require__(161);
 
 var _InviteModal2 = _interopRequireDefault(_InviteModal);
 
+var _ForgotPasswordModal = __webpack_require__(188);
+
+var _ForgotPasswordModal2 = _interopRequireDefault(_ForgotPasswordModal);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 window.moment = __webpack_require__(0);
@@ -18758,6 +18933,11 @@ var main = function main(state, actions) {
             name: "profile"
         }),
         state.modals.invite.open && (0, _hyperapp.h)(_InviteModal2.default, { state: state, actions: actions, name: "invite" }),
+        state.modals.forgotPassword.open && (0, _hyperapp.h)(_ForgotPasswordModal2.default, {
+            state: state,
+            actions: actions,
+            name: "forgotPassword"
+        }),
         state.message != "" && (0, _hyperapp.h)(
             "div",
             { id: "msg", "class": "alert alert-warning" },
@@ -18878,6 +19058,8 @@ var Notifications = function Notifications(props) {
                         key: i,
                         acceptGroupInvite: props.actions.acceptGroupInvite,
                         rejectGroupInvite: props.actions.rejectGroupInvite,
+                        approveGroupRequest: props.actions.approveGroupRequest,
+                        rejectGroupRequest: props.actions.rejectGroupRequest,
                         joinGroupFromNotification: joinGroup
                     }, item))
                 );
@@ -18915,7 +19097,7 @@ var Notifications = function Notifications(props) {
 };
 
 var NotificationItem = exports.NotificationItem = function NotificationItem(item) {
-    if (item.type == "joined_group") return (0, _hyperapp.h)(_NotificationItems.JoinedGroup, item);else if (item.type == "link") return (0, _hyperapp.h)(_NotificationItems.Link, item);else if (item.type == "like") return (0, _hyperapp.h)(_NotificationItems.Like, item);else if (item.type == "comment") return (0, _hyperapp.h)(_NotificationItems.Comment, item);else if (item.type == "joined_linkcast") return (0, _hyperapp.h)(_NotificationItems.JoinedLinkcast, item);else if (item.type == "new_group") return (0, _hyperapp.h)(_NotificationItems.NewGroup, item);else if (item.type == "group_invite") return (0, _hyperapp.h)(_NotificationItems.GroupInvite, item);
+    if (item.type == "joined_group") return (0, _hyperapp.h)(_NotificationItems.JoinedGroup, item);else if (item.type == "link") return (0, _hyperapp.h)(_NotificationItems.Link, item);else if (item.type == "like") return (0, _hyperapp.h)(_NotificationItems.Like, item);else if (item.type == "comment") return (0, _hyperapp.h)(_NotificationItems.Comment, item);else if (item.type == "joined_linkcast") return (0, _hyperapp.h)(_NotificationItems.JoinedLinkcast, item);else if (item.type == "new_group") return (0, _hyperapp.h)(_NotificationItems.NewGroup, item);else if (item.type == "group_invite") return (0, _hyperapp.h)(_NotificationItems.GroupInvite, item);else if (item.type == "request_private_group_join") return (0, _hyperapp.h)(_NotificationItems.PrivateGroupRequest, item);
 };
 
 exports.default = (0, _ScrollHoc2.default)(Notifications);
@@ -18930,7 +19112,7 @@ exports.default = (0, _ScrollHoc2.default)(Notifications);
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.Linkcast = exports.GroupInvite = exports.NewGroup = exports.JoinedLinkcast = exports.JoinedGroup = exports.Like = exports.Comment = exports.Link = undefined;
+exports.Linkcast = exports.PrivateGroupRequest = exports.GroupInvite = exports.NewGroup = exports.JoinedLinkcast = exports.JoinedGroup = exports.Like = exports.Comment = exports.Link = undefined;
 
 var _hyperapp = __webpack_require__(1);
 
@@ -19344,6 +19526,86 @@ var GroupInvite = exports.GroupInvite = function GroupInvite(data) {
     );
 };
 
+var PrivateGroupRequest = exports.PrivateGroupRequest = function PrivateGroupRequest(data) {
+    return (0, _hyperapp.h)(
+        "div",
+        null,
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "group_row", "data-aid": "{ID}", "data-group_id": "{group_id}" },
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "strong" },
+                data.actors
+            ),
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "activity" },
+                " ",
+                "wants to join",
+                " ",
+                (0, _hyperapp.h)(
+                    "span",
+                    { style: "font-weight: bold" },
+                    " ",
+                    data.group_name,
+                    "."
+                ),
+                (0, _hyperapp.h)(
+                    "a",
+                    {
+                        href: "#",
+                        "class": "group-accept green",
+                        onclick: function onclick(e) {
+                            return data.approveGroupRequest({
+                                e: e,
+                                index: data.key,
+                                activity: {
+                                    group_id: data.group_id,
+                                    activity_id: data.id
+                                }
+                            });
+                        }
+                    },
+                    " ",
+                    "Approve"
+                ),
+                " ",
+                "|",
+                (0, _hyperapp.h)(
+                    "a",
+                    {
+                        href: "#",
+                        "class": "group-reject red",
+                        onclick: function onclick(e) {
+                            return data.rejectGroupRequest({
+                                e: e,
+                                index: data.key,
+                                activity: {
+                                    group_id: data.group_id,
+                                    activity_id: data.id
+                                }
+                            });
+                        }
+                    },
+                    " ",
+                    "Reject"
+                )
+            )
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "item-meta" },
+            (0, _hyperapp.h)("i", { "class": "fa fa-users", "aria-hidden": "true" }),
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "comment-date grey" },
+                getTimeAgo(data.created_at)
+            )
+        )
+    );
+};
+
 var Linkcast = exports.Linkcast = function Linkcast(data) {
     return (0, _hyperapp.h)(
         "div",
@@ -19623,7 +19885,7 @@ var Post = function Post(_ref) {
                 "div",
                 { "class": "col-sm-9" },
                 (0, _hyperapp.h)(_DropDown2.default, {
-                    classes: "form-control",
+                    classes: "form-control groups-dd",
                     data: state.groups.data,
                     selected: state.groups.defaultGroup,
                     onChange: function onChange(e) {
@@ -19916,7 +20178,7 @@ var PublicGroupsTable = function PublicGroupsTable(_ref2) {
         ),
         (0, _hyperapp.h)(
             "td",
-            null,
+            { style: { color: isPublic ? "" : "red" } },
             isPublic ? "Public" : "Private"
         ),
         (0, _hyperapp.h)(
@@ -19931,40 +20193,50 @@ var PublicGroupsTable = function PublicGroupsTable(_ref2) {
         ),
         (0, _hyperapp.h)(
             "td",
-            null,
+            { align: "center" },
             item.total
         ),
         (0, _hyperapp.h)(
             "td",
-            null,
+            { align: "center" },
             function () {
-                return item.status == "1" ? (0, _hyperapp.h)(
-                    "a",
-                    {
-                        href: "#",
-                        "class": "red group-leave",
-                        onclick: function onclick(e) {
-                            return actions.leaveGroup({ e: e, key: key });
-                        }
-                    },
-                    "Leave"
-                ) : (0, _hyperapp.h)(
-                    "a",
-                    {
-                        href: "#",
-                        "class": "green group-join",
-                        onclick: function onclick(e) {
-                            return joinGroup({
-                                e: e,
-                                group: {
-                                    group_id: item.id,
-                                    is_public: item.is_public
-                                }
-                            });
-                        }
-                    },
-                    isPublic ? "Join" : "Request"
-                );
+                if (item.status == "1") {
+                    return (0, _hyperapp.h)(
+                        "a",
+                        {
+                            href: "#",
+                            "class": "red group-leave",
+                            onclick: function onclick(e) {
+                                return actions.leaveGroup({ e: e, key: key });
+                            }
+                        },
+                        "Leave"
+                    );
+                } else if (item.status == "0") {
+                    return (0, _hyperapp.h)(
+                        "a",
+                        {
+                            href: "#",
+                            "class": "green group-join",
+                            onclick: function onclick(e) {
+                                return joinGroup({
+                                    e: e,
+                                    group: {
+                                        group_id: item.id,
+                                        is_public: item.is_public
+                                    }
+                                });
+                            }
+                        },
+                        isPublic ? "Join" : "Request"
+                    );
+                } else if (item.status == "2") {
+                    return (0, _hyperapp.h)(
+                        "span",
+                        null,
+                        "Pending"
+                    );
+                }
             }()
         )
     );
@@ -20000,8 +20272,14 @@ var ManageGroups = function ManageGroups(_ref) {
     var state = _ref.state,
         actions = _ref.actions;
 
-    var GroupUsers = state.groupUsers.data.map(function (item) {
-        return (0, _hyperapp.h)(_Users2.default, { item: item, isAdmin: item.id == state.groupUsers.admin_id });
+    var GroupUsers = state.groupUsers.data.map(function (item, index) {
+        return (0, _hyperapp.h)(_Users2.default, {
+            actions: actions,
+            index: index,
+            group_id: state.groupUsers.group_id,
+            item: item,
+            isAdmin: item.id == state.groupUsers.admin_id
+        });
     });
     var groups = [];
 
@@ -20011,6 +20289,12 @@ var ManageGroups = function ManageGroups(_ref) {
         }
     });
     var selected = groups[0] ? groups[0].id : 0;
+
+    if (groups.length == 0) return (0, _hyperapp.h)(
+        "p",
+        null,
+        "You are not an admin of any group."
+    );
     return (0, _hyperapp.h)(
         "div",
         { "class": "tab-pane", id: "tab-manage-groups" },
@@ -20352,51 +20636,69 @@ var _Radio = __webpack_require__(9);
 var Users = function Users(_ref) {
     var actions = _ref.actions,
         item = _ref.item,
-        isAdmin = _ref.isAdmin;
+        isAdmin = _ref.isAdmin,
+        group_id = _ref.group_id,
+        index = _ref.index;
 
     var remove = isAdmin ? "" : "remove";
     var can_post = item.group_rights == "can_post";
     var can_read = item.group_rights == "can_read";
-
+    var changePermission = function changePermission(group_rights) {
+        actions.changePublicRights({
+            user_id: item.id,
+            group_rights: group_rights,
+            group_id: group_id,
+            index: index
+        });
+    };
+    var style = {
+        verticalAlign: "middle"
+    };
     return (0, _hyperapp.h)(
         "tr",
         { "class": "user-item", "data-id": "{USER_ID}" },
         (0, _hyperapp.h)(
             "td",
-            null,
-            item.nickname
+            { style: style },
+            (0, _hyperapp.h)(
+                "span",
+                { style: { color: item.color } },
+                item.nickname
+            )
         ),
         (0, _hyperapp.h)(
             "td",
-            null,
+            { style: style },
             (0, _hyperapp.h)(
                 "div",
                 { "class": "btn-group", "data-toggle": "buttons" },
                 (0, _hyperapp.h)(
                     "label",
-                    {
-                        "class": "btn btn-default btn-xs " + (can_post && "active")
-                    },
+                    { "class": "radio" },
                     (0, _hyperapp.h)(_Radio.Radio, {
                         "class": "radio",
                         type: "radio",
                         value: "can_post",
-                        name: "optradio",
-                        checked: can_post
+                        name: "item-" + item.id,
+                        checked: can_post,
+                        onclick: function onclick(e) {
+                            return changePermission("can_post");
+                        }
                     }),
                     "Can Post"
                 ),
                 (0, _hyperapp.h)(
                     "label",
-                    {
-                        "class": "btn btn-default btn-xs " + (can_read && "active")
-                    },
+                    { "class": "radio" },
                     (0, _hyperapp.h)(_Radio.Radio, {
                         "class": "radio",
                         type: "radio",
                         value: "can_read",
-                        name: "optradio",
-                        checked: can_read
+                        name: "item-" + item.id,
+                        checked: can_read,
+                        onclick: function onclick(e) {
+                            return changePermission("can_read");
+                        }
                     }),
                     "Can Read"
                 )
@@ -20404,10 +20706,16 @@ var Users = function Users(_ref) {
         ),
         (0, _hyperapp.h)(
             "td",
-            null,
+            { style: style },
             (0, _hyperapp.h)(
                 "a",
-                { href: "#", "class": "remove-user" },
+                {
+                    href: "#",
+                    "class": "remove-user",
+                    onclick: function onclick(e) {
+                        actions.removeUserFromGroup({ index: index, group_id: group_id });
+                    }
+                },
                 remove
             )
         )
@@ -20428,7 +20736,28 @@ Object.defineProperty(exports, "__esModule", {
 
 var _hyperapp = __webpack_require__(1);
 
+var _Radio = __webpack_require__(9);
+
+var password = null;
 var CreateGroup = function CreateGroup(props) {
+    var localState = { mode: "create" };
+    var onBlur = function onBlur(e, key) {
+        localState[key] = e.target.value;
+        if (key == "is_public") {
+            password.closest("#group-private").classList.remove("hide");
+            if (e.target.value == "1") {
+                password.closest("#group-private").classList.add("hide");
+            }
+        }
+    };
+    var createGroup = function createGroup() {
+        var data = localState;
+        if (data.is_public == "0" && (!data.group_password || data.group_password.length == 0)) {
+            alert("Password is mandatory");
+            return;
+        }
+        saveEditedGroup(data);
+    };
     return (0, _hyperapp.h)(
         "div",
         null,
@@ -20458,9 +20787,11 @@ var CreateGroup = function CreateGroup(props) {
                         "div",
                         { "class": "col-sm-9" },
                         (0, _hyperapp.h)("input", {
+                            size: "30",
                             "class": "form-control",
                             id: "inputGroupCreate",
-                            type: "text"
+                            type: "text",
+                            placeholder: "Enter a group name"
                         })
                     )
                 ),
@@ -20482,7 +20813,8 @@ var CreateGroup = function CreateGroup(props) {
                             size: "140",
                             "class": "form-control",
                             id: "inputGrpDesc",
-                            type: "text"
+                            type: "text",
+                            placeholder: "Enter a group description"
                         })
                     )
                 ),
@@ -20503,23 +20835,29 @@ var CreateGroup = function CreateGroup(props) {
                         (0, _hyperapp.h)(
                             "label",
                             { "class": "radio-inline" },
-                            (0, _hyperapp.h)("input", {
+                            (0, _hyperapp.h)(_Radio.Radio, {
                                 "class": "radio",
-                                checked: true,
                                 type: "radio",
                                 value: "1",
-                                name: "group-visibility"
+                                name: "group-visibility",
+                                checked: "true",
+                                onclick: function onclick(e) {
+                                    return onBlur(e, "is_public");
+                                }
                             }),
                             "Public"
                         ),
                         (0, _hyperapp.h)(
                             "label",
                             { "class": "radio-inline" },
-                            (0, _hyperapp.h)("input", {
+                            (0, _hyperapp.h)(_Radio.Radio, {
                                 "class": "radio",
                                 type: "radio",
                                 value: "0",
-                                name: "group-visibility"
+                                name: "group-visibility",
+                                onclick: function onclick(e) {
+                                    return onBlur(e, "is_public");
+                                }
                             }),
                             "Private"
                         )
@@ -20545,7 +20883,13 @@ var CreateGroup = function CreateGroup(props) {
                             (0, _hyperapp.h)("input", {
                                 type: "password",
                                 id: "group-password",
-                                "class": "form-control group-private"
+                                "class": "form-control group-private",
+                                onblur: function onblur(e) {
+                                    return onBlur(e, "group_password");
+                                },
+                                oncreate: function oncreate(e) {
+                                    password = e;
+                                }
                             })
                         )
                     )
@@ -20562,30 +20906,34 @@ var CreateGroup = function CreateGroup(props) {
                         "div",
                         { "class": "col-sm-9" },
                         (0, _hyperapp.h)(
-                            "div",
-                            { "class": "btn-group", "data-toggle": "buttons" },
-                            (0, _hyperapp.h)(
-                                "label",
-                                { "class": "btn btn-default btn-sm active" },
-                                (0, _hyperapp.h)("input", {
-                                    "class": "radio",
-                                    type: "radio",
-                                    value: "can_post",
-                                    name: "optradio"
-                                }),
-                                "Can Post"
-                            ),
-                            (0, _hyperapp.h)(
-                                "label",
-                                { "class": "btn btn-default btn-sm" },
-                                (0, _hyperapp.h)("input", {
-                                    "class": "radio",
-                                    type: "radio",
-                                    value: "can_read",
-                                    name: "optradio"
-                                }),
-                                "Can Read"
-                            )
+                            "label",
+                            { "class": "radio-inline" },
+                            (0, _hyperapp.h)(_Radio.Radio, {
+                                "class": "radio",
+                                type: "radio",
+                                value: "can_post",
+                                name: "group_rights",
+                                checked: "true",
+                                onclick: function onclick(e) {
+                                    return onBlur(e, "group_rights");
+                                }
+                            }),
+                            "Can Post"
+                        ),
+                        (0, _hyperapp.h)(
+                            "label",
+                            { "class": "radio-inline" },
+                            (0, _hyperapp.h)(_Radio.Radio, {
+                                "class": "radio",
+                                type: "radio",
+                                value: "can_read",
+                                name: "group_rights",
+                                checked: "false",
+                                onclick: function onclick(e) {
+                                    return onBlur(e, "group_rights");
+                                }
+                            }),
+                            "Can Read"
                         )
                     )
                 ),
@@ -20599,7 +20947,8 @@ var CreateGroup = function CreateGroup(props) {
                             type: "submit",
                             "data-action": "create",
                             id: "create-group",
-                            "class": "actionBtn btn btn-default btn-sm"
+                            "class": "actionBtn btn btn-default btn-sm",
+                            onclick: createGroup
                         },
                         "Create Group"
                     )
@@ -20694,7 +21043,6 @@ var Settings = function Settings(_ref) {
             // });
             break;
     }
-    console.log(data);
     return (0, _hyperapp.h)(_TabComponent.TabComponent, {
         classes: "secondary-nav",
         type: "nav-pills",
@@ -20886,6 +21234,11 @@ var Info = function Info(_ref2) {
         )
     );
 };
+var initialState = {
+    nickname: "",
+    password: "",
+    email: ""
+};
 var LoginRegistration = function LoginRegistration(_ref3) {
     var actions = _ref3.actions,
         state = _ref3.state,
@@ -20893,20 +21246,16 @@ var LoginRegistration = function LoginRegistration(_ref3) {
 
     if (loggedIn) return null;
 
-    var params = {
-        nickname: "",
-        password: "",
-        email: ""
-    };
     var onBlur = function onBlur(e, key) {
-        params[key] = e.target.value;
+        initialState[key] = e.target.value;
     };
     var handleLogin = function handleLogin() {
-        actions.doLogin(params);
+        actions.doLogin(initialState);
     };
     var handleRegistration = function handleRegistration(e, key) {
-        actions.doRegister(params);
+        actions.doRegister(initialState);
     };
+
     return (0, _hyperapp.h)(
         "div",
         { "class": "step form-horizontal" },
@@ -20962,6 +21311,16 @@ var LoginRegistration = function LoginRegistration(_ref3) {
             (0, _hyperapp.h)(
                 "div",
                 { "class": "col-sm-9 col-sm-offset-3" },
+                (0, _hyperapp.h)(
+                    "a",
+                    { href: "#", onclick: actions.forgotPassword },
+                    "Forgot Password"
+                )
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "col-sm-9 col-sm-offset-3" },
+                (0, _hyperapp.h)("br", null),
                 (0, _hyperapp.h)(
                     "button",
                     {
@@ -25507,6 +25866,113 @@ function log(prevState, action, nextState) {
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 170 */,
+/* 171 */,
+/* 172 */,
+/* 173 */,
+/* 174 */,
+/* 175 */,
+/* 176 */,
+/* 177 */,
+/* 178 */,
+/* 179 */,
+/* 180 */,
+/* 181 */,
+/* 182 */,
+/* 183 */,
+/* 184 */,
+/* 185 */,
+/* 186 */,
+/* 187 */,
+/* 188 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var _Links = __webpack_require__(3);
+
+var _Links2 = _interopRequireDefault(_Links);
+
+var _ModalHoc = __webpack_require__(8);
+
+var _ModalHoc2 = _interopRequireDefault(_ModalHoc);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var localState = {};
+var ForgotPasswordModal = function ForgotPasswordModal(_ref) {
+    var state = _ref.state,
+        actions = _ref.actions;
+
+    var onBlur = function onBlur(e, key) {
+        localState[key] = e.target.value.trim();
+    };
+    return (0, _hyperapp.h)(
+        "div",
+        { model: "modals.profile.links", "class": "row" },
+        (0, _hyperapp.h)(
+            "div",
+            { "class": " form-horizontal" },
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "col-xs-12" },
+                (0, _hyperapp.h)(
+                    "p",
+                    null,
+                    "Enter your email address to recover your password"
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "form-group" },
+                    (0, _hyperapp.h)(
+                        "label",
+                        { "class": "control-label col-sm-3", "for": "email" },
+                        "Email"
+                    ),
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "col-sm-9" },
+                        (0, _hyperapp.h)("input", {
+                            "class": "form-control",
+                            onblur: function onblur(e) {
+                                return onBlur(e, "email");
+                            },
+                            type: "text",
+                            placeholder: "Enter your email.."
+                        })
+                    ),
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "col-sm-9 col-sm-offset-3" },
+                        (0, _hyperapp.h)("br", null),
+                        (0, _hyperapp.h)(
+                            "button",
+                            {
+                                type: "submit",
+                                "class": "login-btn btn btn-default btn-xs",
+                                onclick: function onclick() {
+                                    return actions.sendRecoveryEmail(localState);
+                                }
+                            },
+                            "Reset Password"
+                        )
+                    )
+                )
+            )
+        )
+    );
+};
+
+exports.default = (0, _ModalHoc2.default)(ForgotPasswordModal);
 
 /***/ })
 /******/ ]);

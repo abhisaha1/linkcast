@@ -1,5 +1,29 @@
 import { h } from "hyperapp";
+import { Radio } from "../Common/Radio";
+
+let password = null;
 const CreateGroup = props => {
+    let localState = { mode: "create" };
+    const onBlur = (e, key) => {
+        localState[key] = e.target.value;
+        if (key == "is_public") {
+            password.closest("#group-private").classList.remove("hide");
+            if (e.target.value == "1") {
+                password.closest("#group-private").classList.add("hide");
+            }
+        }
+    };
+    const createGroup = () => {
+        let data = localState;
+        if (
+            data.is_public == "0" &&
+            (!data.group_password || data.group_password.length == 0)
+        ) {
+            alert("Password is mandatory");
+            return;
+        }
+        saveEditedGroup(data);
+    };
     return (
         <div>
             <p>
@@ -18,9 +42,11 @@ const CreateGroup = props => {
                         </label>
                         <div class="col-sm-9">
                             <input
+                                size="30"
                                 class="form-control"
                                 id="inputGroupCreate"
                                 type="text"
+                                placeholder="Enter a group name"
                             />
                         </div>
                     </div>
@@ -37,6 +63,7 @@ const CreateGroup = props => {
                                 class="form-control"
                                 id="inputGrpDesc"
                                 type="text"
+                                placeholder="Enter a group description"
                             />
                         </div>
                     </div>
@@ -50,20 +77,22 @@ const CreateGroup = props => {
                         </label>
                         <div class="col-sm-9">
                             <label class="radio-inline">
-                                <input
+                                <Radio
                                     class="radio"
-                                    checked
                                     type="radio"
                                     value="1"
                                     name="group-visibility"
+                                    checked="true"
+                                    onclick={e => onBlur(e, "is_public")}
                                 />Public
                             </label>
                             <label class="radio-inline">
-                                <input
+                                <Radio
                                     class="radio"
                                     type="radio"
                                     value="0"
                                     name="group-visibility"
+                                    onclick={e => onBlur(e, "is_public")}
                                 />Private
                             </label>
                         </div>
@@ -81,6 +110,10 @@ const CreateGroup = props => {
                                     type="password"
                                     id="group-password"
                                     class="form-control group-private"
+                                    onblur={e => onBlur(e, "group_password")}
+                                    oncreate={e => {
+                                        password = e;
+                                    }}
                                 />
                             </div>
                         </div>
@@ -90,24 +123,26 @@ const CreateGroup = props => {
                             Permissions:
                         </label>
                         <div class="col-sm-9">
-                            <div class="btn-group" data-toggle="buttons">
-                                <label class="btn btn-default btn-sm active">
-                                    <input
-                                        class="radio"
-                                        type="radio"
-                                        value="can_post"
-                                        name="optradio"
-                                    />Can Post
-                                </label>
-                                <label class="btn btn-default btn-sm">
-                                    <input
-                                        class="radio"
-                                        type="radio"
-                                        value="can_read"
-                                        name="optradio"
-                                    />Can Read
-                                </label>
-                            </div>
+                            <label class={"radio-inline"}>
+                                <Radio
+                                    class="radio"
+                                    type="radio"
+                                    value="can_post"
+                                    name="group_rights"
+                                    checked="true"
+                                    onclick={e => onBlur(e, "group_rights")}
+                                />Can Post
+                            </label>
+                            <label class={"radio-inline"}>
+                                <Radio
+                                    class="radio"
+                                    type="radio"
+                                    value="can_read"
+                                    name="group_rights"
+                                    checked="false"
+                                    onclick={e => onBlur(e, "group_rights")}
+                                />Can Read
+                            </label>
                         </div>
                     </div>
 
@@ -118,6 +153,7 @@ const CreateGroup = props => {
                             data-action="create"
                             id="create-group"
                             class="actionBtn btn btn-default btn-sm"
+                            onclick={createGroup}
                         >
                             Create Group
                         </button>

@@ -222,6 +222,56 @@ export const GroupInvite = data => (
     </div>
 );
 
+export const PrivateGroupRequest = data => (
+    <div>
+        <div class="group_row" data-aid="{ID}" data-group_id="{group_id}">
+            <span class="strong">{data.actors}</span>
+            <span class="activity">
+                {" "}
+                wants to join{" "}
+                <span style="font-weight: bold"> {data.group_name}.</span>
+                <a
+                    href="#"
+                    class="group-accept green"
+                    onclick={e =>
+                        data.approveGroupRequest({
+                            e,
+                            index: data.key,
+                            activity: {
+                                group_id: data.group_id,
+                                activity_id: data.id
+                            }
+                        })}
+                >
+                    {" "}
+                    Approve
+                </a>{" "}
+                |
+                <a
+                    href="#"
+                    class="group-reject red"
+                    onclick={e =>
+                        data.rejectGroupRequest({
+                            e,
+                            index: data.key,
+                            activity: {
+                                group_id: data.group_id,
+                                activity_id: data.id
+                            }
+                        })}
+                >
+                    {" "}
+                    Reject
+                </a>
+            </span>
+        </div>
+        <div class="item-meta">
+            <i class="fa fa-users" aria-hidden="true" />
+            <span class="comment-date grey">{getTimeAgo(data.created_at)}</span>
+        </div>
+    </div>
+);
+
 export const Linkcast = data => (
     <div class="announcement">
         <div class="linkcast-msg" style="color:{LCOLOR}">

@@ -153,6 +153,44 @@ export const rejectGroupInvite = (state, actions, { e, index, activity }) => {
         });
     };
 };
+export const approveGroupRequest = (state, actions, { e, index, activity }) => {
+    return update => {
+        let params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.chrome_id,
+                action: "approveGroupRequest",
+                group_id: activity.group_id,
+                activity_id: activity.activity_id
+            }
+        };
+        request(params).then(result => {
+            if (result.flag == 1) {
+                delete state.notificationTabs.tabs.notGroups.data.rows[index];
+                update(state);
+            }
+        });
+    };
+};
+export const rejectGroupRequest = (state, actions, { e, index, activity }) => {
+    return update => {
+        let params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.chrome_id,
+                action: "rejectGroupRequest",
+                group_id: activity.group_id,
+                activity_id: activity.activity_id
+            }
+        };
+        request(params).then(result => {
+            if (result.flag == 1) {
+                delete state.notificationTabs.tabs.notGroups.data.rows[index];
+                update(state);
+            }
+        });
+    };
+};
 
 export const saveEditedGroup = (state, actions, data) => {
     return update => {
@@ -173,6 +211,51 @@ export const saveEditedGroup = (state, actions, data) => {
 
         request(params).then(result => {
             if (result.flag == 1) {
+                state.message = result.msg;
+                update(state);
+            }
+        });
+    };
+};
+export const changePublicRights = (state, actions, data) => {
+    return update => {
+        let params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.chrome_id,
+                action: "changePublicRights",
+                user_id: data.user_id,
+                group_id: data.group_id,
+                group_rights: data.group_rights
+            }
+        };
+
+        request(params).then(result => {
+            if (result.flag == 1) {
+                state.groupUsers.data[data.index].group_rights =
+                    data.group_rights;
+                state.message = result.msg;
+                update(state);
+            }
+        });
+    };
+};
+export const removeUserFromGroup = (state, actions, data) => {
+    return update => {
+        let user = state.groupUsers.data[data.index];
+        let params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.chrome_id,
+                action: "removeUserFromGroup",
+                user_id: user.id,
+                group_id: data.group_id
+            }
+        };
+
+        request(params).then(result => {
+            if (result.flag == 1) {
+                delete state.groupUsers.data[data.index];
                 state.message = result.msg;
                 update(state);
             }
