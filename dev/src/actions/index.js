@@ -40,7 +40,11 @@ import {
     handleCommentInput,
     itemClicked,
     lazyLoad,
-    loadMore
+    loadMore,
+    editComment,
+    cancelCommentEdit,
+    deleteComment,
+    saveEditedComment
 } from "./items";
 import {
     initialize,
@@ -113,5 +117,9 @@ export default {
     sendRecoveryEmail,
     forgotPassword,
     approveGroupRequest,
-    rejectGroupRequest
+    rejectGroupRequest,
+    editComment,
+    cancelCommentEdit,
+    deleteComment,
+    saveEditedComment
 };

@@ -58,6 +58,7 @@ const Notifications = props => {
                             return (
                                 <div model="modals.notification">
                                     <LinkItem
+                                        state={props.state}
                                         key="0"
                                         actions={props.actions}
                                         user_id={props.state.user.data.id}

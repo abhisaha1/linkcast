@@ -4537,7 +4537,8 @@ var Links = function Links(props) {
             key: i,
             actions: props.actions,
             user_id: props.state.user.data.id,
-            item: item
+            item: item,
+            state: props.state
         });
     });
     return (0, _hyperapp.h)(
@@ -4681,7 +4682,14 @@ var LinkItem = function LinkItem(_ref) {
     var item = _ref.item,
         user_id = _ref.user_id,
         actions = _ref.actions,
-        key = _ref.key;
+        key = _ref.key,
+        state = _ref.state;
+
+    var editCommentText = state.editComment.data.comment || "";
+
+    var save = function save(comment) {
+        actions.saveEditedComment(document.querySelector("#comment").value.trim());
+    };
     return (0, _hyperapp.h)(
         "div",
         { "class": "left clearfix item" },
@@ -4854,14 +4862,45 @@ var LinkItem = function LinkItem(_ref) {
                             placeholder: "Comment here..",
                             "class": "form-control comment-input",
                             maxlength: "140",
+                            value: editCommentText,
                             type: "text",
+                            id: "comment",
                             onkeypress: function onkeypress(e) {
                                 return actions.handleCommentInput({ e: e, key: key });
                             }
-                        })
+                        }),
+                        state.editComment.open && (0, _hyperapp.h)(
+                            "div",
+                            { "class": "text-right" },
+                            (0, _hyperapp.h)(
+                                "span",
+                                {
+                                    "class": "comment-edit",
+                                    onclick: save
+                                },
+                                (0, _hyperapp.h)("i", { "class": "green fa fa-check" })
+                            ),
+                            (0, _hyperapp.h)(
+                                "span",
+                                {
+                                    "class": "comment-edit",
+                                    onclick: actions.deleteComment
+                                },
+                                (0, _hyperapp.h)("i", { "class": "red fa fa-trash" })
+                            ),
+                            (0, _hyperapp.h)(
+                                "span",
+                                {
+                                    "class": "comment-edit",
+                                    onclick: actions.cancelCommentEdit
+                                },
+                                (0, _hyperapp.h)("i", { "class": "fa fa-times" })
+                            )
+                        )
                     ),
                     (0, _hyperapp.h)(_Comments2.default, {
                         actions: actions,
+                        user_id: user_id,
                         key: key,
                         data: item.commentList
                     })
@@ -17208,7 +17247,11 @@ exports.default = {
     sendRecoveryEmail: _user.sendRecoveryEmail,
     forgotPassword: _user.forgotPassword,
     approveGroupRequest: _group.approveGroupRequest,
-    rejectGroupRequest: _group.rejectGroupRequest
+    rejectGroupRequest: _group.rejectGroupRequest,
+    editComment: _items.editComment,
+    cancelCommentEdit: _items.cancelCommentEdit,
+    deleteComment: _items.deleteComment,
+    saveEditedComment: _items.saveEditedComment
 };
 
 /***/ }),
@@ -17669,7 +17712,7 @@ var onTabChange = exports.onTabChange = function onTabChange(state, actions, _re
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.lazyLoad = exports.itemClicked = exports.handleCommentInput = exports.handleDelete = exports.handleShare = exports.showComments = exports.handleLike = exports.handleFavourite = exports.fetchComments = exports.loadMore = exports.fetchItems = undefined;
+exports.cancelCommentEdit = exports.deleteComment = exports.saveEditedComment = exports.editComment = exports.lazyLoad = exports.itemClicked = exports.handleCommentInput = exports.handleDelete = exports.handleShare = exports.showComments = exports.handleLike = exports.handleFavourite = exports.fetchComments = exports.loadMore = exports.fetchItems = undefined;
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -17921,8 +17964,13 @@ var handleCommentInput = exports.handleCommentInput = function handleCommentInpu
         key = _ref8.key;
 
     if (e.keyCode != 13) return;
-    var model = e.target.parentElement.closest("[model]").model;
     var comment = e.target.value;
+    // if edit comment then cancel this process
+    if (state.editComment.open) {
+        actions.saveEditedComment(comment);
+        return state;
+    }
+    var model = e.target.parentElement.closest("[model]").model;
     var item = (0, _common.deepFind)(state, model).data.rows[key];
 
     var _model$split11 = model.split("."),
@@ -18007,6 +18055,115 @@ var lazyLoad = exports.lazyLoad = function lazyLoad(state, actions, _ref10) {
     ele.onload = function () {
         e.src = image;
     };
+};
+
+var editComment = exports.editComment = function editComment(state, actions, _ref11) {
+    var model = _ref11.model,
+        itemKey = _ref11.itemKey,
+        commentKey = _ref11.commentKey;
+
+    state.editComment.open = true;
+    state.editComment.cursor = { model: model, itemKey: itemKey, commentKey: commentKey };
+    var item = (0, _common.deepFind)(state, model).data.rows[itemKey];
+
+    var _model$split15 = model.split("."),
+        _model$split16 = _slicedToArray(_model$split15, 1),
+        root = _model$split16[0];
+
+    var comment = void 0;
+    if (root == "modals") {
+        comment = state[root].notification.data.rows[itemKey].commentList[commentKey];
+    } else {
+        comment = state[root].tabs[state[root].active].data.rows[itemKey].commentList[commentKey];
+    }
+    state.editComment.data = comment;
+    return state;
+};
+
+var saveEditedComment = exports.saveEditedComment = function saveEditedComment(state, actions, comment) {
+    var _state$editComment$cu = state.editComment.cursor,
+        model = _state$editComment$cu.model,
+        itemKey = _state$editComment$cu.itemKey,
+        commentKey = _state$editComment$cu.commentKey;
+
+    var item = (0, _common.deepFind)(state, model).data.rows[itemKey];
+
+    var _model$split17 = model.split("."),
+        _model$split18 = _slicedToArray(_model$split17, 1),
+        root = _model$split18[0];
+
+    var commentObj = null;
+    if (root == "modals") {
+        commentObj = state[root].notification.data.rows[itemKey].commentList[commentKey];
+    } else {
+        commentObj = state[root].tabs[state[root].active].data.rows[itemKey].commentList[commentKey];
+    }
+    commentObj.comment = comment;
+    var commentId = commentObj.id;
+
+    var params = {
+        method: "POST",
+        queryParams: {
+            chrome_id: state.chrome_id,
+            comment_id: commentId,
+            comment: comment,
+            action: "updateComment"
+        }
+    };
+    return function (update) {
+        actions.cancelCommentEdit();
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag) {
+                update(state);
+            }
+        });
+    };
+};
+
+var deleteComment = exports.deleteComment = function deleteComment(state, actions) {
+    var _state$editComment$cu2 = state.editComment.cursor,
+        model = _state$editComment$cu2.model,
+        itemKey = _state$editComment$cu2.itemKey,
+        commentKey = _state$editComment$cu2.commentKey;
+
+    var item = (0, _common.deepFind)(state, model).data.rows[itemKey];
+
+    var _model$split19 = model.split("."),
+        _model$split20 = _slicedToArray(_model$split19, 1),
+        root = _model$split20[0];
+
+    var commentId = null;
+    if (root == "modals") {
+        commentId = state[root].notification.data.rows[itemKey].commentList[commentKey].id;
+        delete state[root].notification.data.rows[itemKey].commentList[commentKey];
+    } else {
+        commentId = state[root].tabs[state[root].active].data.rows[itemKey].commentList[commentKey].id;
+        delete state[root].tabs[state[root].active].data.rows[itemKey].commentList[commentKey];
+    }
+
+    var params = {
+        method: "POST",
+        queryParams: {
+            chrome_id: state.chrome_id,
+            comment_id: commentId,
+            action: "deleteComment"
+        }
+    };
+    return function (update) {
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag) {
+                actions.cancelCommentEdit();
+                update(state);
+            }
+        });
+    };
+};
+
+var cancelCommentEdit = exports.cancelCommentEdit = function cancelCommentEdit(state, actions) {
+    state.editComment.open = false;
+    state.editComment.data = {};
+    state.editComment.cursor = {};
+    return state;
 };
 
 /***/ }),
@@ -18719,6 +18876,11 @@ exports.default = {
             }
         }
     },
+    editComment: {
+        open: false,
+        data: {},
+        cursor: {}
+    },
     allGroups: {
         data: [],
         isFetching: false
@@ -18840,6 +19002,10 @@ var _InviteModal2 = _interopRequireDefault(_InviteModal);
 var _ForgotPasswordModal = __webpack_require__(188);
 
 var _ForgotPasswordModal2 = _interopRequireDefault(_ForgotPasswordModal);
+
+var _EditCommentModal = __webpack_require__(189);
+
+var _EditCommentModal2 = _interopRequireDefault(_EditCommentModal);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -19030,6 +19196,7 @@ var Notifications = function Notifications(props) {
                         "div",
                         { model: "modals.notification" },
                         (0, _hyperapp.h)(_LinkItem2.default, {
+                            state: props.state,
                             key: "0",
                             actions: props.actions,
                             user_id: props.state.user.data.id,
@@ -19646,7 +19813,7 @@ var _hyperapp = __webpack_require__(1);
 var Comments = function Comments(props) {
     var comments = typeof props.data == "undefined" ? [] : props.data;
 
-    var markup = comments.map(function (item) {
+    var markup = comments.map(function (item, index) {
         return (0, _hyperapp.h)(
             "div",
             { "class": "left clearfix" },
@@ -19668,8 +19835,23 @@ var Comments = function Comments(props) {
                 (0, _hyperapp.h)(
                     "span",
                     { "class": "comment-date grey" },
-                    " ",
-                    "-",
+                    props.user_id == item.user_id && (0, _hyperapp.h)(
+                        "span",
+                        {
+                            "class": "comment-edit",
+                            onclick: function onclick(e) {
+                                var model = e.target.closest("[model]").model;
+                                var itemKey = props.key;
+                                var commentKey = index;
+                                props.actions.editComment({
+                                    model: model,
+                                    itemKey: itemKey,
+                                    commentKey: commentKey
+                                });
+                            }
+                        },
+                        (0, _hyperapp.h)("i", { "class": "red fa fa-pencil" })
+                    ),
                     function () {
                         var d = "now";
                         if (item.created_at != "now") {
@@ -25964,6 +26146,87 @@ var ForgotPasswordModal = function ForgotPasswordModal(_ref) {
                                 }
                             },
                             "Reset Password"
+                        )
+                    )
+                )
+            )
+        )
+    );
+};
+
+exports.default = (0, _ModalHoc2.default)(ForgotPasswordModal);
+
+/***/ }),
+/* 189 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var _Links = __webpack_require__(3);
+
+var _Links2 = _interopRequireDefault(_Links);
+
+var _ModalHoc = __webpack_require__(8);
+
+var _ModalHoc2 = _interopRequireDefault(_ModalHoc);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var localState = {};
+var ForgotPasswordModal = function ForgotPasswordModal(_ref) {
+    var state = _ref.state,
+        actions = _ref.actions;
+
+    var onBlur = function onBlur(e, key) {
+        localState[key] = e.target.value.trim();
+    };
+    return (0, _hyperapp.h)(
+        "div",
+        { model: "modals.profile.links", "class": "row" },
+        (0, _hyperapp.h)(
+            "div",
+            { "class": " form-horizontal" },
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "col-xs-12" },
+                (0, _hyperapp.h)(
+                    "p",
+                    null,
+                    "Edit your comment"
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "form-group" },
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "col-sm-12" },
+                        (0, _hyperapp.h)("input", {
+                            "class": "form-control",
+                            type: "text",
+                            value: state.modals.comment.data.comment
+                        })
+                    ),
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "col-sm-9 col-sm-offset-3" },
+                        (0, _hyperapp.h)("br", null),
+                        (0, _hyperapp.h)(
+                            "button",
+                            {
+                                type: "submit",
+                                "class": "login-btn btn btn-default btn-xs",
+                                onclick: function onclick() {
+                                    return actions.saveEditedComment(localState);
+                                }
+                            },
+                            "Save"
                         )
                     )
                 )

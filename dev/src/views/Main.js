@@ -11,6 +11,7 @@ import request from "../actions/request";
 import ProfileModal from "./Modals/ProfileModal";
 import InviteModal from "./Modals/InviteModal";
 import ForgotPasswordModal from "./Modals/ForgotPasswordModal";
+import EditCommentModal from "./Modals/EditCommentModal";
 
 window.moment = require("moment");
 require("../lib/jquery");

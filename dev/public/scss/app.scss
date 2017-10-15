@@ -325,6 +325,7 @@ header #img-logo {
 .comments {
     max-height: 200px;
     overflow: auto;
+    display: inline-block;
 }
 
 .comment-input {
@@ -335,6 +336,9 @@ header #img-logo {
 
 .comments-section {
     padding: 4px 10px;
+}
+.comments-section .comment-edit {
+    margin: 0 10px;
 }
 
 /* Table */

@@ -232,6 +232,11 @@ export default {
             }
         }
     },
+    editComment: {
+        open: false,
+        data: {},
+        cursor: {}
+    },
     allGroups: {
         data: [],
         isFetching: false

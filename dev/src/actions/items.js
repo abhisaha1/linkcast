@@ -200,8 +200,13 @@ export const handleDelete = (state, actions, { e, key }) => {
 
 export const handleCommentInput = (state, actions, { e, key }) => {
     if (e.keyCode != 13) return;
-    let model = e.target.parentElement.closest("[model]").model;
     let comment = e.target.value;
+    // if edit comment then cancel this process
+    if (state.editComment.open) {
+        actions.saveEditedComment(comment);
+        return state;
+    }
+    let model = e.target.parentElement.closest("[model]").model;
     let item = deepFind(state, model).data.rows[key];
     let [root] = model.split(".");
 
@@ -279,4 +284,105 @@ export const lazyLoad = (state, actions, { e, image }) => {
     ele.onload = () => {
         e.src = image;
     };
+};
+
+export const editComment = (state, actions, { model, itemKey, commentKey }) => {
+    state.editComment.open = true;
+    state.editComment.cursor = { model, itemKey, commentKey };
+    let item = deepFind(state, model).data.rows[itemKey];
+    let [root] = model.split(".");
+    let comment;
+    if (root == "modals") {
+        comment =
+            state[root].notification.data.rows[itemKey].commentList[commentKey];
+    } else {
+        comment =
+            state[root].tabs[state[root].active].data.rows[itemKey].commentList[
+                commentKey
+            ];
+    }
+    state.editComment.data = comment;
+    return state;
+};
+
+export const saveEditedComment = (state, actions, comment) => {
+    const { model, itemKey, commentKey } = state.editComment.cursor;
+    let item = deepFind(state, model).data.rows[itemKey];
+    let [root] = model.split(".");
+    let commentObj = null;
+    if (root == "modals") {
+        commentObj =
+            state[root].notification.data.rows[itemKey].commentList[commentKey];
+    } else {
+        commentObj =
+            state[root].tabs[state[root].active].data.rows[itemKey].commentList[
+                commentKey
+            ];
+    }
+    commentObj.comment = comment;
+    let commentId = commentObj.id;
+
+    let params = {
+        method: "POST",
+        queryParams: {
+            chrome_id: state.chrome_id,
+            comment_id: commentId,
+            comment: comment,
+            action: "updateComment"
+        }
+    };
+    return update => {
+        actions.cancelCommentEdit();
+        request(params).then(result => {
+            if (result.flag) {
+                update(state);
+            }
+        });
+    };
+};
+
+export const deleteComment = (state, actions) => {
+    const { model, itemKey, commentKey } = state.editComment.cursor;
+    let item = deepFind(state, model).data.rows[itemKey];
+    let [root] = model.split(".");
+    let commentId = null;
+    if (root == "modals") {
+        commentId =
+            state[root].notification.data.rows[itemKey].commentList[commentKey]
+                .id;
+        delete state[root].notification.data.rows[itemKey].commentList[
+            commentKey
+        ];
+    } else {
+        commentId =
+            state[root].tabs[state[root].active].data.rows[itemKey].commentList[
+                commentKey
+            ].id;
+        delete state[root].tabs[state[root].active].data.rows[itemKey]
+            .commentList[commentKey];
+    }
+
+    let params = {
+        method: "POST",
+        queryParams: {
+            chrome_id: state.chrome_id,
+            comment_id: commentId,
+            action: "deleteComment"
+        }
+    };
+    return update => {
+        request(params).then(result => {
+            if (result.flag) {
+                actions.cancelCommentEdit();
+                update(state);
+            }
+        });
+    };
+};
+
+export const cancelCommentEdit = (state, actions) => {
+    state.editComment.open = false;
+    state.editComment.data = {};
+    state.editComment.cursor = {};
+    return state;
 };

@@ -9,6 +9,7 @@ const Links = props => {
                 actions={props.actions}
                 user_id={props.state.user.data.id}
                 item={item}
+                state={props.state}
             />
         );
     });
