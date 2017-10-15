@@ -84,7 +84,6 @@ const ManageGroups = ({ state, actions }) => {
         </div>
     );
 };
-let password = null;
 const GroupEditForm = ({ state, saveEditedGroup }) => {
     let selectedGroup = {};
     state.allGroups.data.map((group, i) => {
@@ -97,22 +96,9 @@ const GroupEditForm = ({ state, saveEditedGroup }) => {
 
     const onBlur = (e, key) => {
         localState[key] = e.target.value;
-        if (key == "is_public") {
-            password.closest("#group-private").classList.remove("hide");
-            if (e.target.value == "1") {
-                password.closest("#group-private").classList.add("hide");
-            }
-        }
     };
     const saveGroup = () => {
         let data = Object.assign(selectedGroup, localState);
-        if (
-            data.is_public == "0" &&
-            (!data.group_password || data.group_password.length == 0)
-        ) {
-            alert("Password is mandatory");
-            return;
-        }
         saveEditedGroup(data);
     };
 
@@ -179,27 +165,7 @@ const GroupEditForm = ({ state, saveEditedGroup }) => {
                     </label>
                 </div>
             </div>
-            <div
-                id="group-private"
-                class={selectedGroup.is_public == "1" ? "hide" : ""}
-            >
-                <div class="form-group">
-                    <label class="control-label col-sm-3" for="group-password">
-                        Password:
-                    </label>
-                    <div class="col-sm-9">
-                        <input
-                            type="password"
-                            id="group-password"
-                            class="form-control group-private"
-                            onblur={e => onBlur(e, "group_password")}
-                            oncreate={e => {
-                                password = e;
-                            }}
-                        />
-                    </div>
-                </div>
-            </div>
+
             <div class="form-group" id="group-rights">
                 <label class="control-label col-sm-3">Permissions:</label>
                 <div class="col-sm-9">

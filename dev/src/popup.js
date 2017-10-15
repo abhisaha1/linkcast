@@ -17251,7 +17251,8 @@ exports.default = {
     editComment: _items.editComment,
     cancelCommentEdit: _items.cancelCommentEdit,
     deleteComment: _items.deleteComment,
-    saveEditedComment: _items.saveEditedComment
+    saveEditedComment: _items.saveEditedComment,
+    createNewGroup: _group.createNewGroup
 };
 
 /***/ }),
@@ -17345,7 +17346,7 @@ var notificationJoinedGroup = exports.notificationJoinedGroup = function notific
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.removeUserFromGroup = exports.changePublicRights = exports.saveEditedGroup = exports.rejectGroupRequest = exports.approveGroupRequest = exports.rejectGroupInvite = exports.acceptGroupInvite = exports.joinGroup = exports.leaveGroup = exports.setDefaultGroup = exports.setGroups = exports.fetchGroupUsers = exports.fetchAllGroups = exports.fetchGroups = undefined;
+exports.createNewGroup = exports.removeUserFromGroup = exports.changePublicRights = exports.saveEditedGroup = exports.rejectGroupRequest = exports.approveGroupRequest = exports.rejectGroupInvite = exports.acceptGroupInvite = exports.joinGroup = exports.leaveGroup = exports.setDefaultGroup = exports.setGroups = exports.fetchGroupUsers = exports.fetchAllGroups = exports.fetchGroups = undefined;
 
 var _request = __webpack_require__(2);
 
@@ -17573,16 +17574,13 @@ var saveEditedGroup = exports.saveEditedGroup = function saveEditedGroup(state, 
                 mode: data.mode,
                 name: data.name,
                 group_id: data.id,
-                group_rights: data.group_rights,
-                group_password: data.group_password
+                group_rights: data.group_rights
             }
         };
 
         (0, _request.request)(params).then(function (result) {
-            if (result.flag == 1) {
-                state.message = result.msg;
-                update(state);
-            }
+            state.message = result.msg;
+            update(state);
         });
     };
 };
@@ -17627,6 +17625,33 @@ var removeUserFromGroup = exports.removeUserFromGroup = function removeUserFromG
                 state.message = result.msg;
                 update(state);
             }
+        });
+    };
+};
+
+var createNewGroup = exports.createNewGroup = function createNewGroup(state, actions, data) {
+    if (data.name.length == 0 || data.desc.length == 0) {
+        state.message = "All fields are mandatory";
+        return state;
+    }
+    return function (update) {
+        var user = state.groupUsers.data[data.index];
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.chrome_id,
+                is_public: data.is_public,
+                action: "createEditGroup",
+                desc: data.desc,
+                mode: data.mode,
+                name: data.name,
+                group_rights: data.group_rights
+            }
+        };
+
+        (0, _request.request)(params).then(function (result) {
+            state.message = result.msg;
+            update(state);
         });
     };
 };
@@ -20581,7 +20606,6 @@ var ManageGroups = function ManageGroups(_ref) {
         )
     );
 };
-var password = null;
 var GroupEditForm = function GroupEditForm(_ref2) {
     var state = _ref2.state,
         saveEditedGroup = _ref2.saveEditedGroup;
@@ -20597,19 +20621,9 @@ var GroupEditForm = function GroupEditForm(_ref2) {
 
     var onBlur = function onBlur(e, key) {
         localState[key] = e.target.value;
-        if (key == "is_public") {
-            password.closest("#group-private").classList.remove("hide");
-            if (e.target.value == "1") {
-                password.closest("#group-private").classList.add("hide");
-            }
-        }
     };
     var saveGroup = function saveGroup() {
         var data = Object.assign(selectedGroup, localState);
-        if (data.is_public == "0" && (!data.group_password || data.group_password.length == 0)) {
-            alert("Password is mandatory");
-            return;
-        }
         saveEditedGroup(data);
     };
 
@@ -20705,37 +20719,6 @@ var GroupEditForm = function GroupEditForm(_ref2) {
                         }
                     }),
                     "Private"
-                )
-            )
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            {
-                id: "group-private",
-                "class": selectedGroup.is_public == "1" ? "hide" : ""
-            },
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "form-group" },
-                (0, _hyperapp.h)(
-                    "label",
-                    { "class": "control-label col-sm-3", "for": "group-password" },
-                    "Password:"
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "col-sm-9" },
-                    (0, _hyperapp.h)("input", {
-                        type: "password",
-                        id: "group-password",
-                        "class": "form-control group-private",
-                        onblur: function onblur(e) {
-                            return onBlur(e, "group_password");
-                        },
-                        oncreate: function oncreate(e) {
-                            password = e;
-                        }
-                    })
                 )
             )
         ),
@@ -20920,25 +20903,19 @@ var _hyperapp = __webpack_require__(1);
 
 var _Radio = __webpack_require__(9);
 
-var password = null;
+var localState = {
+    name: "",
+    desc: "",
+    mode: "create",
+    group_rights: "can_post",
+    is_public: 1
+};
 var CreateGroup = function CreateGroup(props) {
-    var localState = { mode: "create" };
     var onBlur = function onBlur(e, key) {
         localState[key] = e.target.value;
-        if (key == "is_public") {
-            password.closest("#group-private").classList.remove("hide");
-            if (e.target.value == "1") {
-                password.closest("#group-private").classList.add("hide");
-            }
-        }
     };
     var createGroup = function createGroup() {
-        var data = localState;
-        if (data.is_public == "0" && (!data.group_password || data.group_password.length == 0)) {
-            alert("Password is mandatory");
-            return;
-        }
-        saveEditedGroup(data);
+        props.actions.createNewGroup(localState);
     };
     return (0, _hyperapp.h)(
         "div",
@@ -20973,6 +20950,9 @@ var CreateGroup = function CreateGroup(props) {
                             "class": "form-control",
                             id: "inputGroupCreate",
                             type: "text",
+                            onblur: function onblur(e) {
+                                return onBlur(e, "name");
+                            },
                             placeholder: "Enter a group name"
                         })
                     )
@@ -20996,6 +20976,9 @@ var CreateGroup = function CreateGroup(props) {
                             "class": "form-control",
                             id: "inputGrpDesc",
                             type: "text",
+                            onblur: function onblur(e) {
+                                return onBlur(e, "desc");
+                            },
                             placeholder: "Enter a group description"
                         })
                     )
@@ -21042,37 +21025,6 @@ var CreateGroup = function CreateGroup(props) {
                                 }
                             }),
                             "Private"
-                        )
-                    )
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { id: "group-private", "class": "hide" },
-                    (0, _hyperapp.h)(
-                        "div",
-                        { "class": "form-group" },
-                        (0, _hyperapp.h)(
-                            "label",
-                            {
-                                "class": "control-label col-sm-3",
-                                "for": "group-password"
-                            },
-                            "Password:"
-                        ),
-                        (0, _hyperapp.h)(
-                            "div",
-                            { "class": "col-sm-9" },
-                            (0, _hyperapp.h)("input", {
-                                type: "password",
-                                id: "group-password",
-                                "class": "form-control group-private",
-                                onblur: function onblur(e) {
-                                    return onBlur(e, "group_password");
-                                },
-                                oncreate: function oncreate(e) {
-                                    password = e;
-                                }
-                            })
                         )
                     )
                 ),

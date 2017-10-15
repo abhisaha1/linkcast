@@ -26,7 +26,8 @@ import {
     changePublicRights,
     removeUserFromGroup,
     approveGroupRequest,
-    rejectGroupRequest
+    rejectGroupRequest,
+    createNewGroup
 } from "./group";
 import { onTabChange } from "./tab";
 import {
@@ -121,5 +122,6 @@ export default {
     editComment,
     cancelCommentEdit,
     deleteComment,
-    saveEditedComment
+    saveEditedComment,
+    createNewGroup
 };

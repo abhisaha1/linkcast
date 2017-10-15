@@ -1,28 +1,19 @@
 import { h } from "hyperapp";
 import { Radio } from "../Common/Radio";
 
-let password = null;
+let localState = {
+    name: "",
+    desc: "",
+    mode: "create",
+    group_rights: "can_post",
+    is_public: 1
+};
 const CreateGroup = props => {
-    let localState = { mode: "create" };
     const onBlur = (e, key) => {
         localState[key] = e.target.value;
-        if (key == "is_public") {
-            password.closest("#group-private").classList.remove("hide");
-            if (e.target.value == "1") {
-                password.closest("#group-private").classList.add("hide");
-            }
-        }
     };
     const createGroup = () => {
-        let data = localState;
-        if (
-            data.is_public == "0" &&
-            (!data.group_password || data.group_password.length == 0)
-        ) {
-            alert("Password is mandatory");
-            return;
-        }
-        saveEditedGroup(data);
+        props.actions.createNewGroup(localState);
     };
     return (
         <div>
@@ -46,6 +37,7 @@ const CreateGroup = props => {
                                 class="form-control"
                                 id="inputGroupCreate"
                                 type="text"
+                                onblur={e => onBlur(e, "name")}
                                 placeholder="Enter a group name"
                             />
                         </div>
@@ -63,6 +55,7 @@ const CreateGroup = props => {
                                 class="form-control"
                                 id="inputGrpDesc"
                                 type="text"
+                                onblur={e => onBlur(e, "desc")}
                                 placeholder="Enter a group description"
                             />
                         </div>
@@ -95,27 +88,6 @@ const CreateGroup = props => {
                                     onclick={e => onBlur(e, "is_public")}
                                 />Private
                             </label>
-                        </div>
-                    </div>
-                    <div id="group-private" class="hide">
-                        <div class="form-group">
-                            <label
-                                class="control-label col-sm-3"
-                                for="group-password"
-                            >
-                                Password:
-                            </label>
-                            <div class="col-sm-9">
-                                <input
-                                    type="password"
-                                    id="group-password"
-                                    class="form-control group-private"
-                                    onblur={e => onBlur(e, "group_password")}
-                                    oncreate={e => {
-                                        password = e;
-                                    }}
-                                />
-                            </div>
                         </div>
                     </div>
                     <div class="form-group" id="group-rights">

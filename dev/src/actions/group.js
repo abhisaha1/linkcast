@@ -204,16 +204,13 @@ export const saveEditedGroup = (state, actions, data) => {
                 mode: data.mode,
                 name: data.name,
                 group_id: data.id,
-                group_rights: data.group_rights,
-                group_password: data.group_password
+                group_rights: data.group_rights
             }
         };
 
         request(params).then(result => {
-            if (result.flag == 1) {
-                state.message = result.msg;
-                update(state);
-            }
+            state.message = result.msg;
+            update(state);
         });
     };
 };
@@ -259,6 +256,33 @@ export const removeUserFromGroup = (state, actions, data) => {
                 state.message = result.msg;
                 update(state);
             }
+        });
+    };
+};
+
+export const createNewGroup = (state, actions, data) => {
+    if (data.name.length == 0 || data.desc.length == 0) {
+        state.message = "All fields are mandatory";
+        return state;
+    }
+    return update => {
+        let user = state.groupUsers.data[data.index];
+        let params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.chrome_id,
+                is_public: data.is_public,
+                action: "createEditGroup",
+                desc: data.desc,
+                mode: data.mode,
+                name: data.name,
+                group_rights: data.group_rights
+            }
+        };
+
+        request(params).then(result => {
+            state.message = result.msg;
+            update(state);
         });
     };
 };
