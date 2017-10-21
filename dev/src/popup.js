@@ -19860,6 +19860,7 @@ var Comments = function Comments(props) {
                 (0, _hyperapp.h)(
                     "span",
                     { "class": "comment-date grey" },
+                    "  ",
                     props.user_id == item.user_id && (0, _hyperapp.h)(
                         "span",
                         {

@@ -10,6 +10,7 @@ const Comments = props => {
             - <span class="user-comment">{item.comment}</span>
             <span class="comment-meta">
                 <span class="comment-date grey">
+                    {"  "}
                     {props.user_id == item.user_id && (
                         <span
                             class="comment-edit"
