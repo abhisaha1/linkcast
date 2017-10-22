@@ -44,7 +44,7 @@ const LinkItem = ({ item, user_id, actions, key, state }) => {
                     </a>
                     <span class="label label-default">{item.group_name}</span>
                     <small class="pull-right text-muted">
-                        <i class="fa fa-clock-o" />
+                        <i class="fa fa-clock-o" />{" "}
                         {moment(item.created_at)
                             .add(moment().utcOffset(), "minutes")
                             .fromNow()}

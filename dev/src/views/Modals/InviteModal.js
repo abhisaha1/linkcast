@@ -17,7 +17,11 @@ const InviteModal = ({ state, actions, onScroll, loadMore }) => {
             </div>
             <div class="col-xs-6">
                 <h6># Edit Pending Invites</h6>
-                <div id="sent-invites" class="scroll">
+                <div
+                    id="sent-invites"
+                    class="scroll"
+                    style={{ height: "280px" }}
+                >
                     {state.modals.invite.data.invites.map((user, index) => {
                         return (
                             <div class="invite">
@@ -51,13 +55,6 @@ const InviteModal = ({ state, actions, onScroll, loadMore }) => {
                         class="btn btn-default btn-xs"
                     >
                         Send Invites
-                    </button>
-                    <button
-                        type="button"
-                        class="btn btn-default btn-xs"
-                        data-dismiss="modal"
-                    >
-                        Cancel
                     </button>
                 </div>
             </div>

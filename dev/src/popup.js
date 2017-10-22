@@ -4820,6 +4820,7 @@ var LinkItem = function LinkItem(_ref) {
                     "small",
                     { "class": "pull-right text-muted" },
                     (0, _hyperapp.h)("i", { "class": "fa fa-clock-o" }),
+                    " ",
                     moment(item.created_at).add(moment().utcOffset(), "minutes").fromNow()
                 )
             ),
@@ -18672,6 +18673,11 @@ var withdrawInvite = exports.withdrawInvite = function withdrawInvite(state, act
 };
 
 var sendInvites = exports.sendInvites = function sendInvites(state, actions) {
+    if (invites.length == 0) {
+        state.message = "No users to invite";
+        return state;
+    }
+
     var data = invites.map(function (user) {
         return user.id;
     });
@@ -22129,7 +22135,11 @@ var InviteModal = function InviteModal(_ref) {
             ),
             (0, _hyperapp.h)(
                 "div",
-                { id: "sent-invites", "class": "scroll" },
+                {
+                    id: "sent-invites",
+                    "class": "scroll",
+                    style: { height: "280px" }
+                },
                 state.modals.invite.data.invites.map(function (user, index) {
                     return (0, _hyperapp.h)(
                         "div",
@@ -22176,15 +22186,6 @@ var InviteModal = function InviteModal(_ref) {
                         "class": "btn btn-default btn-xs"
                     },
                     "Send Invites"
-                ),
-                (0, _hyperapp.h)(
-                    "button",
-                    {
-                        type: "button",
-                        "class": "btn btn-default btn-xs",
-                        "data-dismiss": "modal"
-                    },
-                    "Cancel"
                 )
             )
         )

@@ -11253,6 +11253,7 @@ header #img-logo {
     margin-left: -200px;
     padding: 6px;
     text-align: center;
+    z-index: 1100;
 }
 
 #msg .alert {
