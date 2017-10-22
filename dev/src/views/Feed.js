@@ -8,6 +8,23 @@ const Feed = props => {
     const onGroupChange = e => {
         props.actions.setDefaultGroup(e.target.options.selectedIndex);
     };
+    const invite = e => {
+        let selectedGroup = props.state.groups.data.filter(
+            group => group.group_id == props.state.groups.defaultGroup
+        )[0];
+        if (
+            selectedGroup.is_public == "0" &&
+            selectedGroup.admin !== props.state.user.data.id
+        ) {
+            return props.actions.setMessage(
+                "Only admin can invite in Private groups"
+            );
+        }
+        props.actions.showInviteModal({
+            e,
+            group_id: props.state.groups.defaultGroup
+        });
+    };
     return (
         <div>
             <div class="footer">
@@ -20,6 +37,11 @@ const Feed = props => {
                         data={props.state.groups.data}
                         onChange={onGroupChange}
                     />
+                </div>
+                <div class="pull-right">
+                    <a href="#" onclick={invite}>
+                        Invite
+                    </a>
                 </div>
                 <span class="clearfix" />
             </div>

@@ -4,7 +4,8 @@ import {
     onScroll,
     closeModal,
     setVersion,
-    resetMessage
+    resetMessage,
+    setMessage
 } from "./common";
 import {
     fetchNotifications,
@@ -113,6 +114,7 @@ export default {
     rejectGroupInvite,
     saveEditedGroup,
     resetMessage,
+    setMessage,
     changePublicRights,
     removeUserFromGroup,
     sendRecoveryEmail,

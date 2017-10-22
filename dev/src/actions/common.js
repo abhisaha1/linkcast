@@ -36,6 +36,11 @@ export const resetMessage = (state, actions) => {
     };
 };
 
+export const setMessage = (state, actions, message) => {
+    state.message = message;
+    return state;
+};
+
 export const setVersion = (state, actions, version) => {
     state.version = version;
     return state;

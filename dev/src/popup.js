@@ -5079,7 +5079,7 @@ var Radio = exports.Radio = function Radio(_ref) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.validateEmail = exports.getRandomToken = exports.unescape = exports.escape = exports.deepFind = exports.setVersion = exports.resetMessage = exports.closeModal = exports.onScroll = exports.navClicked = undefined;
+exports.validateEmail = exports.getRandomToken = exports.unescape = exports.escape = exports.deepFind = exports.setVersion = exports.setMessage = exports.resetMessage = exports.closeModal = exports.onScroll = exports.navClicked = undefined;
 
 var _request = __webpack_require__(2);
 
@@ -5120,6 +5120,11 @@ var resetMessage = exports.resetMessage = function resetMessage(state, actions) 
             }
         }, 3000);
     };
+};
+
+var setMessage = exports.setMessage = function setMessage(state, actions, message) {
+    state.message = message;
+    return state;
 };
 
 var setVersion = exports.setVersion = function setVersion(state, actions, version) {
@@ -17260,6 +17265,7 @@ exports.default = {
     rejectGroupInvite: _group.rejectGroupInvite,
     saveEditedGroup: _group.saveEditedGroup,
     resetMessage: _common.resetMessage,
+    setMessage: _common.setMessage,
     changePublicRights: _group.changePublicRights,
     removeUserFromGroup: _group.removeUserFromGroup,
     sendRecoveryEmail: _user.sendRecoveryEmail,
@@ -19967,6 +19973,18 @@ var Feed = function Feed(props) {
     var onGroupChange = function onGroupChange(e) {
         props.actions.setDefaultGroup(e.target.options.selectedIndex);
     };
+    var invite = function invite(e) {
+        var selectedGroup = props.state.groups.data.filter(function (group) {
+            return group.group_id == props.state.groups.defaultGroup;
+        })[0];
+        if (selectedGroup.is_public == "0" && selectedGroup.admin !== props.state.user.data.id) {
+            return props.actions.setMessage("Only admin can invite in Private groups");
+        }
+        props.actions.showInviteModal({
+            e: e,
+            group_id: props.state.groups.defaultGroup
+        });
+    };
     return (0, _hyperapp.h)(
         "div",
         null,
@@ -19988,6 +20006,15 @@ var Feed = function Feed(props) {
                     data: props.state.groups.data,
                     onChange: onGroupChange
                 })
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "pull-right" },
+                (0, _hyperapp.h)(
+                    "a",
+                    { href: "#", onclick: invite },
+                    "Invite"
+                )
             ),
             (0, _hyperapp.h)("span", { "class": "clearfix" })
         ),
