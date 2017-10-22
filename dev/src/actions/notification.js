@@ -42,6 +42,7 @@ export const notificationClicked = (state, actions, { active, index }) => {
         };
         request(params).then(result => {
             state.modals.notification.open = true;
+            state.modals.notification.title = result.rows[0].title;
             state.modals.notification.data = result;
             update(state);
         });

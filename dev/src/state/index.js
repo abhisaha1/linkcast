@@ -203,7 +203,8 @@ export default {
     modals: {
         notification: {
             open: false,
-            data: []
+            data: [],
+            title: ""
         },
         forgotPassword: {
             open: false
@@ -214,7 +215,8 @@ export default {
             data: {
                 users: [],
                 invites: []
-            }
+            },
+            title: "Invite Users"
         },
         profile: {
             open: false,

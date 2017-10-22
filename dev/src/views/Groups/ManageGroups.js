@@ -26,6 +26,10 @@ const ManageGroups = ({ state, actions }) => {
     let selected = groups[0] ? groups[0].id : 0;
 
     if (groups.length == 0) return <p>You are not an admin of any group.</p>;
+
+    const getSelectedGroup = () =>
+        document.querySelector(".manage-gdd option:checked").innerHTML;
+
     return (
         <div class="tab-pane" id="tab-manage-groups">
             <p>
@@ -35,7 +39,8 @@ const ManageGroups = ({ state, actions }) => {
                     onclick={e =>
                         actions.showInviteModal({
                             e,
-                            group_id: state.groupUsers.group_id
+                            group_id: state.groupUsers.group_id,
+                            title: `Invite users in ${getSelectedGroup()}`
                         })}
                 >
                     Invite

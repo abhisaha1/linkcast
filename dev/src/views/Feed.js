@@ -12,6 +12,9 @@ const Feed = props => {
         let selectedGroup = props.state.groups.data.filter(
             group => group.group_id == props.state.groups.defaultGroup
         )[0];
+        if (selectedGroup.group_id == 0) {
+            return props.actions.setMessage("Change the group to invite");
+        }
         if (
             selectedGroup.is_public == "0" &&
             selectedGroup.admin !== props.state.user.data.id
@@ -22,9 +25,11 @@ const Feed = props => {
         }
         props.actions.showInviteModal({
             e,
-            group_id: props.state.groups.defaultGroup
+            group_id: props.state.groups.defaultGroup,
+            title: `Invite users in ${selectedGroup.name}`
         });
     };
+
     return (
         <div>
             <div class="footer">
@@ -39,7 +44,7 @@ const Feed = props => {
                     />
                 </div>
                 <div class="pull-right">
-                    <a href="#" onclick={invite}>
+                    <a class="invite-link" href="#" onclick={invite}>
                         Invite
                     </a>
                 </div>

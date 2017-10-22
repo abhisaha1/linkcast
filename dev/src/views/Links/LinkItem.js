@@ -42,7 +42,7 @@ const LinkItem = ({ item, user_id, actions, key, state }) => {
                             {item.nickname}
                         </strong>
                     </a>
-                    <span class="label label-default">{item.group_name}</span>
+                    <span class="label label-default">{item.gname}</span>
                     <small class="pull-right text-muted">
                         <i class="fa fa-clock-o" />{" "}
                         {moment(item.created_at)

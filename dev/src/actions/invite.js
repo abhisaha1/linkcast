@@ -2,7 +2,7 @@ import { request } from "./request";
 
 let invites = [];
 
-export const showInviteModal = (state, actions, { e, group_id }) => {
+export const showInviteModal = (state, actions, { e, group_id, title }) => {
     e.preventDefault();
     return update => {
         state.modals.invite.open = true;
@@ -17,6 +17,7 @@ export const showInviteModal = (state, actions, { e, group_id }) => {
         };
         request(params).then(result => {
             state.modals.invite.data = result;
+            state.modals.invite.title = title;
             update(state);
             actions.setInviteList({
                 data: state.modals.invite.data.users,

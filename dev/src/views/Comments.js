@@ -28,15 +28,17 @@ const Comments = props => {
                             <i class="red fa fa-pencil" />
                         </span>
                     )}
-                    {(() => {
-                        let d = "now";
-                        if (item.created_at != "now") {
-                            d = moment(item.created_at)
-                                .add(moment().utcOffset(), "minutes")
-                                .fromNow();
-                        }
-                        return d;
-                    })()}
+                    <span class="date">
+                        {(() => {
+                            let d = "now";
+                            if (item.created_at != "now") {
+                                d = moment(item.created_at)
+                                    .add(moment().utcOffset(), "minutes")
+                                    .fromNow();
+                            }
+                            return d;
+                        })()}
+                    </span>
                 </span>
             </span>
         </div>

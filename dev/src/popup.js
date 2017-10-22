@@ -4718,7 +4718,11 @@ var ModalHoc = function ModalHoc(Component) {
                                     "\xD7"
                                 )
                             ),
-                            (0, _hyperapp.h)("h4", { "class": "modal-title" })
+                            (0, _hyperapp.h)(
+                                "h4",
+                                { "class": "modal-title" },
+                                props.state.modals[props.name].title
+                            )
                         ),
                         (0, _hyperapp.h)(
                             "div",
@@ -4814,7 +4818,7 @@ var LinkItem = function LinkItem(_ref) {
                 (0, _hyperapp.h)(
                     "span",
                     { "class": "label label-default" },
-                    item.group_name
+                    item.gname
                 ),
                 (0, _hyperapp.h)(
                     "small",
@@ -17344,6 +17348,7 @@ var notificationClicked = exports.notificationClicked = function notificationCli
         };
         (0, _request.request)(params).then(function (result) {
             state.modals.notification.open = true;
+            state.modals.notification.title = result.rows[0].title;
             state.modals.notification.data = result;
             update(state);
         });
@@ -17438,6 +17443,10 @@ var fetchGroupUsers = exports.fetchGroupUsers = function fetchGroupUsers(state, 
 
 var setGroups = exports.setGroups = function setGroups(state, actions, data) {
     state.groups.isFetching = false;
+    data.payload.unshift({
+        group_id: 0,
+        name: "All"
+    });
     state.groups.data = data.payload;
     state.groups.selected = data.payload[0] ? data.payload[0].id : null;
     return state;
@@ -18567,7 +18576,8 @@ var invites = [];
 
 var showInviteModal = exports.showInviteModal = function showInviteModal(state, actions, _ref) {
     var e = _ref.e,
-        group_id = _ref.group_id;
+        group_id = _ref.group_id,
+        title = _ref.title;
 
     e.preventDefault();
     return function (update) {
@@ -18583,6 +18593,7 @@ var showInviteModal = exports.showInviteModal = function showInviteModal(state, 
         };
         (0, _request.request)(params).then(function (result) {
             state.modals.invite.data = result;
+            state.modals.invite.title = title;
             update(state);
             actions.setInviteList({
                 data: state.modals.invite.data.users,
@@ -18919,7 +18930,8 @@ exports.default = {
     modals: {
         notification: {
             open: false,
-            data: []
+            data: [],
+            title: ""
         },
         forgotPassword: {
             open: false
@@ -18930,7 +18942,8 @@ exports.default = {
             data: {
                 users: [],
                 invites: []
-            }
+            },
+            title: "Invite Users"
         },
         profile: {
             open: false,
@@ -19918,13 +19931,17 @@ var Comments = function Comments(props) {
                         },
                         (0, _hyperapp.h)("i", { "class": "red fa fa-pencil" })
                     ),
-                    function () {
-                        var d = "now";
-                        if (item.created_at != "now") {
-                            d = moment(item.created_at).add(moment().utcOffset(), "minutes").fromNow();
-                        }
-                        return d;
-                    }()
+                    (0, _hyperapp.h)(
+                        "span",
+                        { "class": "date" },
+                        function () {
+                            var d = "now";
+                            if (item.created_at != "now") {
+                                d = moment(item.created_at).add(moment().utcOffset(), "minutes").fromNow();
+                            }
+                            return d;
+                        }()
+                    )
                 )
             )
         );
@@ -19977,14 +19994,19 @@ var Feed = function Feed(props) {
         var selectedGroup = props.state.groups.data.filter(function (group) {
             return group.group_id == props.state.groups.defaultGroup;
         })[0];
+        if (selectedGroup.group_id == 0) {
+            return props.actions.setMessage("Change the group to invite");
+        }
         if (selectedGroup.is_public == "0" && selectedGroup.admin !== props.state.user.data.id) {
             return props.actions.setMessage("Only admin can invite in Private groups");
         }
         props.actions.showInviteModal({
             e: e,
-            group_id: props.state.groups.defaultGroup
+            group_id: props.state.groups.defaultGroup,
+            title: "Invite users in " + selectedGroup.name
         });
     };
+
     return (0, _hyperapp.h)(
         "div",
         null,
@@ -20012,7 +20034,7 @@ var Feed = function Feed(props) {
                 { "class": "pull-right" },
                 (0, _hyperapp.h)(
                     "a",
-                    { href: "#", onclick: invite },
+                    { "class": "invite-link", href: "#", onclick: invite },
                     "Invite"
                 )
             ),
@@ -20587,6 +20609,11 @@ var ManageGroups = function ManageGroups(_ref) {
         null,
         "You are not an admin of any group."
     );
+
+    var getSelectedGroup = function getSelectedGroup() {
+        return document.querySelector(".manage-gdd option:checked").innerHTML;
+    };
+
     return (0, _hyperapp.h)(
         "div",
         { "class": "tab-pane", id: "tab-manage-groups" },
@@ -20601,7 +20628,8 @@ var ManageGroups = function ManageGroups(_ref) {
                     onclick: function onclick(e) {
                         return actions.showInviteModal({
                             e: e,
-                            group_id: state.groupUsers.group_id
+                            group_id: state.groupUsers.group_id,
+                            title: "Invite users in " + getSelectedGroup()
                         });
                     }
                 },

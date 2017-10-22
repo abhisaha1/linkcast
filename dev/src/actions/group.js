@@ -64,6 +64,10 @@ export const fetchGroupUsers = (state, actions, e) => {
 
 export const setGroups = (state, actions, data) => {
     state.groups.isFetching = false;
+    data.payload.unshift({
+        group_id: 0,
+        name: "All"
+    });
     state.groups.data = data.payload;
     state.groups.selected = data.payload[0] ? data.payload[0].id : null;
     return state;

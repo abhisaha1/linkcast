@@ -25,7 +25,9 @@ const ModalHoc = Component => props => {
                             >
                                 <span aria-hidden="true">&times;</span>
                             </button>
-                            <h4 class="modal-title" />
+                            <h4 class="modal-title">
+                                {props.state.modals[props.name].title}
+                            </h4>
                         </div>
                         <div class="modal-body">
                             <p>

@@ -11420,9 +11420,16 @@ header #img-logo {
     padding: 4px 10px;
 }
 .comments-section .comment-edit {
-    margin: 0 10px;
+    margin-right: 8px;
 }
-
+.comment-date {
+    margin-left: 8px;
+}
+.date {
+    font-size: 10px;
+    font-style: italic;
+    margin: 0px 4px 0 0;
+}
 /* Table */
 
 table.table > tbody > tr > td,
@@ -11556,6 +11563,9 @@ select:focus {
 }
 
 /* Invite */
+.invite-link {
+    color: #fff;
+}
 
 #invite-modal .wrapper {
     display: flex;
