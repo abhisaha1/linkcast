@@ -1,5 +1,8 @@
 import { request } from "./request";
-export const fetchGroups = (state, actions, tab_id) => {
+import { trigger } from "../lib/utils";
+
+// fetch all groups of logged in user
+export const fetchGroups = (state, actions, callback) => {
     let params = {
         queryParams: {
             chrome_id: state.chrome_id,
@@ -16,10 +19,14 @@ export const fetchGroups = (state, actions, tab_id) => {
             action: "",
             payload: groupsData
         });
+        if (typeof callback == "function") {
+            callback();
+        }
     });
 };
 
-export const fetchAllGroups = (state, actions, tab_id) => {
+// fetch all linkcast groups for a user to join.
+export const fetchAllGroups = (state, actions) => {
     return update => {
         let params = {
             queryParams: {
@@ -58,6 +65,7 @@ export const fetchGroupUsers = (state, actions, e) => {
 export const setGroups = (state, actions, data) => {
     state.groups.isFetching = false;
     state.groups.data = data.payload;
+    state.groups.selected = data.payload[0] ? data.payload[0].id : null;
     return state;
 };
 
@@ -282,6 +290,17 @@ export const createNewGroup = (state, actions, data) => {
 
         request(params).then(result => {
             state.message = result.msg;
+            if (result.flag == 1) {
+                state.groupTabs.active = "manage";
+                actions.fetchAllGroups();
+                actions.fetchGroups(() => {
+                    update(state);
+                    document.querySelector(".manage-gdd").value =
+                        result.group_id;
+                    trigger(".manage-gdd", "change");
+                });
+                return false;
+            }
             update(state);
         });
     };

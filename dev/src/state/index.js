@@ -239,7 +239,8 @@ export default {
     },
     allGroups: {
         data: [],
-        isFetching: false
+        isFetching: false,
+        selected: null
     },
     groupUsers: {
         isFetching: false,
@@ -250,19 +251,8 @@ export default {
     groups: {
         loadMore: false,
         defaultGroup: 0,
-        data: [
-            {
-                uid: "1",
-                admin: "1",
-                group_id: "20",
-                nickname: "Redsnow",
-                gname: "Algorithms",
-                desc:
-                    "Share interesting algorithms, logics, gists. Any language.",
-                is_public: "1",
-                group_rights: "can_post"
-            }
-        ]
+        data: [],
+        selected: null
     },
     chrome_id: null,
     user: {

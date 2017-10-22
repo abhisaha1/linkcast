@@ -2,6 +2,8 @@ import { h } from "hyperapp";
 import Users from "./Users";
 import DropDown from "../Common/DropDown";
 import { Radio } from "../Common/Radio";
+import { trigger } from "../../lib/utils";
+
 const ManageGroups = ({ state, actions }) => {
     const GroupUsers = state.groupUsers.data.map((item, index) => {
         return (
@@ -15,7 +17,7 @@ const ManageGroups = ({ state, actions }) => {
         );
     });
     let groups = [];
-
+    let selectedIndex = 0;
     state.allGroups.data.map(item => {
         if (item.admin == state.user.data.id) {
             groups.push(item);
@@ -44,12 +46,7 @@ const ManageGroups = ({ state, actions }) => {
                 <div class="col-sm-6 form-horizontal">
                     <div
                         class="form-group"
-                        oncreate={() => {
-                            var evObj = document.createEvent("HTMLEvents");
-                            evObj.initEvent("change", true, true);
-                            var elem = document.querySelector(".manage-gdd");
-                            elem.dispatchEvent(evObj);
-                        }}
+                        oncreate={() => trigger(".manage-gdd", "change")}
                     >
                         <label class="control-label col-sm-3">Groups:</label>
                         <div class="col-sm-9">
