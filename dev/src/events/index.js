@@ -25,6 +25,18 @@ export default {
                     actions.detectSite();
                 }
             });
+            if (new Date().getDate() == 31) {
+                if (
+                    !localStorage.counter ||
+                    parseInt(localStorage.counter) <= 4
+                ) {
+                    document.querySelector("body").classList.add("halloween");
+                    if (!localStorage.counter) {
+                        localStorage.counter = 0;
+                    }
+                    localStorage.counter = parseInt(localStorage.counter) + 1;
+                }
+            }
         } else {
             state.mainNav.active = "settings";
             state.settingsTabs.active = "profile";

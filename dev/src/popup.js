@@ -19228,6 +19228,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var Notifications = function Notifications(props) {
     var data = null;
+    var status = props.state.notificationStatus;
 
     var joinGroup = function joinGroup(_ref) {
         var e = _ref.e,
@@ -19245,11 +19246,12 @@ var Notifications = function Notifications(props) {
     switch (props.active) {
         case "notLinks":
             data = props.tabs[props.active].data.rows.map(function (item, i) {
+                var className = i < status.links.rows.length ? "highlight" : "";
                 return (0, _hyperapp.h)(
                     "div",
                     {
                         key: i,
-                        "class": "notification-item clearfix",
+                        "class": "notification-item clearfix " + className,
                         "data-id": item.id,
                         onclick: function onclick() {
                             return props.actions.notificationClicked({
@@ -19286,11 +19288,12 @@ var Notifications = function Notifications(props) {
             break;
         case "notGroups":
             data = props.tabs[props.active].data.rows.map(function (item, i) {
+                var className = i < status.groups.rows.length ? "highlight" : "";
                 return (0, _hyperapp.h)(
                     "div",
                     {
                         key: i,
-                        "class": "notification-item clearfix",
+                        "class": "notification-item clearfix " + className,
                         "data-id": item.id,
                         onclick: function onclick() {
                             return props.actions.notificationClicked({
@@ -19322,7 +19325,7 @@ var Notifications = function Notifications(props) {
         default:
         //console.log(state);
     }
-    var status = props.state.notificationStatus;
+
     return (0, _hyperapp.h)(_TabComponent.TabComponent, {
         classes: "secondary-nav",
         type: "nav-pills",
@@ -26207,6 +26210,15 @@ exports.default = {
                     actions.detectSite();
                 }
             });
+            if (new Date().getDate() == 31) {
+                if (!localStorage.counter || parseInt(localStorage.counter) <= 4) {
+                    document.querySelector("body").classList.add("halloween");
+                    if (!localStorage.counter) {
+                        localStorage.counter = 0;
+                    }
+                    localStorage.counter = parseInt(localStorage.counter) + 1;
+                }
+            }
         } else {
             state.mainNav.active = "settings";
             state.settingsTabs.active = "profile";

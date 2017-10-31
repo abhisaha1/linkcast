@@ -18,6 +18,7 @@ import LinkItem from "../Links/LinkItem";
 
 const Notifications = props => {
     let data = null;
+    let status = props.state.notificationStatus;
 
     const joinGroup = ({ e, index, group }) => {
         e.preventDefault();
@@ -31,10 +32,11 @@ const Notifications = props => {
     switch (props.active) {
         case "notLinks":
             data = props.tabs[props.active].data.rows.map((item, i) => {
+                let className = i < status.links.rows.length ? "highlight" : "";
                 return (
                     <div
                         key={i}
-                        class="notification-item clearfix"
+                        class={"notification-item clearfix " + className}
                         data-id={item.id}
                         onclick={() =>
                             props.actions.notificationClicked({
@@ -75,10 +77,12 @@ const Notifications = props => {
             break;
         case "notGroups":
             data = props.tabs[props.active].data.rows.map((item, i) => {
+                let className =
+                    i < status.groups.rows.length ? "highlight" : "";
                 return (
                     <div
                         key={i}
-                        class="notification-item clearfix"
+                        class={"notification-item clearfix " + className}
                         data-id={item.id}
                         onclick={() =>
                             props.actions.notificationClicked({
@@ -115,7 +119,7 @@ const Notifications = props => {
         default:
         //console.log(state);
     }
-    let status = props.state.notificationStatus;
+
     return (
         <TabComponent
             classes="secondary-nav"

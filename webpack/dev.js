@@ -72,7 +72,7 @@ module.exports = function webpackStuff(env) {
                     })
                 },
                 {
-                    test: /\.(jpg|jpe|jpeg|svg)(\?.*$|$)/,
+                    test: /\.(jpg|jpe|jpeg|svg|webp|gif)(\?.*$|$)/,
                     use: [
                         {
                             loader:

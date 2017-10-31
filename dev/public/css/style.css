@@ -11187,7 +11187,9 @@ header #img-logo {
 }
 
 /*------------------------------modal full-------------------------------------*/
-
+.modal-title {
+    font-size: 12px;
+}
 .modal-open .modal-full {
     overflow: hidden;
 }
@@ -11321,7 +11323,7 @@ header #img-logo {
 /* notification */
 
 .notification-item {
-    padding: 8px 0px;
+    padding: 8px 24px;
     display: flex;
     cursor: pointer;
 }
@@ -11422,7 +11424,7 @@ header #img-logo {
 .comments-section .comment-edit {
     margin-right: 8px;
 }
-.comment-date {
+.comments-section .comment-date {
     margin-left: 8px;
 }
 .date {
@@ -11479,7 +11481,14 @@ h3 {
 .notLinks .scroll {
     height: 292px;
 }
-
+.main-nav .notLinks .tab-pane,
+.main-nav .notGroups .tab-pane {
+    padding: 0px !important;
+}
+.highlight {
+    background: rgba(174, 173, 173, 0.17);
+    border-bottom: 1px solid #434343;
+}
 .tab-content > .active {
     /* display: flex; */
 }
@@ -11627,6 +11636,37 @@ input.search-box {
 body {
     .tab-content {
         background: red !important;
+    }
+}
+
+/*Halloween*/
+.halloween .notification {
+    background: url(src../../../images/halloween.webp);
+    background-repeat: no-repeat;
+    background-size: 200px;
+    background-position: 600px 290px;
+    animation: swingImage 20s infinite;
+}
+.halloween .container {
+    background: #000;
+}
+
+@keyframes swingImage {
+    0% {
+        opacity: 0.8;
+    }
+    25% {
+        background-position: 600px 200px;
+    }
+    50% {
+        background-position: 600px 150px;
+    }
+    75% {
+        background-position: 600px 60px;
+    }
+    90% {
+        background-position: 600px 280px;
+        opacity: 1;
     }
 }
 ul.token-input-list-facebook {
