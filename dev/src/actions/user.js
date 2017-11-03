@@ -136,7 +136,8 @@ export const doLogin = (state, actions, data) => {
                     state.user.data = result.data;
                     state.user.loggedIn = true;
                     actions.fetchGroups();
-
+                    actions.fetchAllGroups();
+                    actions.fetchNotifications("notLinks");
                     if (chrome.storage) {
                         chrome.storage.sync.set({
                             userid: result.data.chrome_id

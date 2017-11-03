@@ -102,6 +102,8 @@ export const leaveGroup = (state, actions, { e, key }) => {
         request(params).then(result => {
             if (result.flag == 1) {
                 actions.fetchAllGroups();
+                actions.fetchGroups();
+                actions.fetchNotifications("notLinks");
             }
         });
     };
@@ -121,6 +123,8 @@ export const joinGroup = (state, actions, { group, callback }) => {
         request(params).then(result => {
             if (result.flag == 1) {
                 actions.fetchAllGroups();
+                actions.fetchGroups();
+                actions.fetchNotifications("notLinks");
                 if (typeof callback == "function") callback();
             }
         });
@@ -309,3 +313,7 @@ export const createNewGroup = (state, actions, data) => {
         });
     };
 };
+
+// export const refreshGroup = (state, actions) => {
+
+// }

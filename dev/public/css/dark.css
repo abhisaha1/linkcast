@@ -19,16 +19,18 @@
   --border: #222;
   --dark: #1c1e22;
   --ele-bg: rgba(30, 30, 30, 0.29);
-  --input-border: #333; }
+  --input-border: #333;
+  --scroller-handle: #d41f1f; }
 
 body {
   color: var(--primary_text);
   background-color: #444; }
 
 .container {
-  background: url(src../../../images/bg.jpg);
+  /*background: url("../../../images/bg.jpg");*/
   background-size: cover;
-  background-repeat: no-repeat; }
+  background-repeat: no-repeat;
+  z-index: 1; }
 
 #groups-dd option {
   background: #333; }
@@ -246,7 +248,7 @@ a:hover {
   background-color: var(--secondary_color); }
 
 ::-webkit-scrollbar-thumb {
-  background-color: var(--secondary_color); }
+  background-color: var(--scroller-handle); }
 
 .comments-section {
   background: var(--comments_background); }

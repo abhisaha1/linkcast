@@ -21,6 +21,7 @@
     --dark: #1c1e22;
     --ele-bg: rgba(30, 30, 30, 0.29);
     --input-border: #333;
+    --scroller-handle: #d41f1f;
 }
 
 body {
@@ -29,9 +30,10 @@ body {
 }
 
 .container {
-    background: url("../../../images/bg.jpg");
+    /*background: url("../../../images/bg.jpg");*/
     background-size: cover;
     background-repeat: no-repeat;
+    z-index: 1;
 }
 #groups-dd option {
     background: #333;
@@ -305,7 +307,7 @@ a:hover {
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: var(--secondary_color);
+    background-color: var(--scroller-handle);
 }
 
 .comments-section {

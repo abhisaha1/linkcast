@@ -11107,7 +11107,6 @@ button.close {
     flex-direction: column;
     padding: 0px;
     margin: 8px;
-    background: #272b30;
 }
 
 a:active,
@@ -11564,9 +11563,11 @@ select:focus {
 /*-------------------------- PRELOADER-------------------------*/
 
 .preloader {
-    padding: 20px;
+    padding: 4px;
 }
-
+.progress-bar {
+    background-color: brown;
+}
 .processor {
     height: 8px;
 }
@@ -11668,6 +11669,27 @@ body {
         background-position: 600px 280px;
         opacity: 1;
     }
+}
+
+.background {
+    position: absolute;
+    overflow: hidden;
+    top: 8px;
+    width: 784px;
+    height: 430px;
+}
+.bg-image {
+    background: url(src../../../images/bg.jpg);
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+.inner-image img {
+    opacity: 0.2;
+}
+
+.progress-bar {
+    height: 4px;
+    width: 100%;
 }
 ul.token-input-list-facebook {
     overflow: hidden;

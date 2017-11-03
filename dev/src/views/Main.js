@@ -130,6 +130,16 @@ const main = (state, actions) => {
                     {state.message}
                 </div>
             )}
+            <div class="preloader center processor hide">
+                <div
+                    class="progress-bar progress-bar-striped active"
+                    role="progressbar"
+                    aria-valuenow="70"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    style="width:100%"
+                />
+            </div>
         </div>
     );
 };

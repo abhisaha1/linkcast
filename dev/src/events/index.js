@@ -3,8 +3,24 @@
  * But this is an example of directory and file structure for events
  * Seperation of concerns are key in functional paradigms!
 */
+var ResizeObserver = require("resize-observer-polyfill").default;
+let $bgEle, $container;
+
+const changeSize = () => {
+    $bgEle.forEach(ele => {
+        ele.style.width = $container.offsetWidth + "px";
+        ele.style.height = $container.offsetHeight + "px";
+    });
+};
+const observeSizeChanges = () => {
+    $bgEle = document.querySelectorAll(".background");
+    $container = document.querySelector(".container");
+    changeSize();
+    new ResizeObserver(changeSize).observe($container);
+};
 export default {
     load: (state, actions, element) => {
+        setTimeout(observeSizeChanges, 100);
         if (localStorage.chrome_id) {
             actions.initialize({
                 chrome_id: localStorage.chrome_id,

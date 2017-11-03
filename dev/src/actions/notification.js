@@ -3,7 +3,10 @@ import { request } from "./request";
 export const fetchNotifications = (state, actions, tab_id) => {
     let tab = state.notificationTabs.tabs[tab_id];
 
-    if (tab.data.rows.length > 0) {
+    if (
+        tab.data.rows.length > 0 &&
+        state.mainNav.tabs.active == "notification"
+    ) {
         return;
     }
     return update => {

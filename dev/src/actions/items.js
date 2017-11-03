@@ -61,7 +61,9 @@ export const loadMore = (state, actions, e) => {
         if (tabName == "search") {
             params.queryParams.q = tab.q;
         }
+        document.querySelector(".preloader").classList.remove("hide");
         request(params).then(result => {
+            document.querySelector(".preloader").classList.add("hide");
             tab.data.page++;
             tab.data.rows = tab.data.rows.concat(result.rows);
             tab.loadMore = false;
