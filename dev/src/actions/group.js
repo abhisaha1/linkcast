@@ -76,6 +76,7 @@ export const setGroups = (state, actions, data) => {
 export const setDefaultGroup = (state, actions, index) => {
     state.groups.defaultGroup = parseInt(state.groups.data[index].group_id);
     localStorage.defaultGroup = state.groups.defaultGroup;
+    state.mainNav.tabs.feed.initialized = false;
     state.mainNav.tabs.feed.data = {
         rows: [],
         page: 1,

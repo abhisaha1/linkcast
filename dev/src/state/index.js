@@ -2,20 +2,13 @@ const mainNav = {
     tabs: {
         notification: {
             name: "Notifications",
-            isFetching: true,
-            loadMore: false,
-            data: {
-                rows: [],
-                page: 1,
-                pages: 0,
-                total: 0
-            },
             authorized: true
         },
         feed: {
             name: "Feed",
             isFetching: false,
             loadMore: false,
+            initialized: false,
             data: {
                 rows: [],
                 page: 1,
@@ -26,16 +19,10 @@ const mainNav = {
         },
         post: {
             name: "Post",
-            isFetching: false,
-            loadMore: false,
-            data: [],
             authorized: true
         },
         links: {
             name: "Links",
-            isFetching: false,
-            loadMore: false,
-            data: [],
             authorized: true
         },
         search: {
@@ -53,15 +40,11 @@ const mainNav = {
         },
         groups: {
             name: "Groups",
-            isFetching: false,
-            loadMore: false,
             data: [],
             authorized: true
         },
         settings: {
             name: "Settings",
-            isFetching: false,
-            loadMore: false,
             data: []
         }
     },
@@ -73,6 +56,7 @@ const notificationTabs = {
             name: "Links",
             isFetching: true,
             loadMore: false,
+            initialized: false,
             data: {
                 rows: [],
                 page: 1,
@@ -84,6 +68,7 @@ const notificationTabs = {
             name: "Groups",
             isFetching: false,
             loadMore: false,
+            initialized: false,
             data: {
                 rows: [],
                 page: 1,
@@ -126,14 +111,10 @@ const settingsTabs = {
     tabs: {
         profile: {
             name: "Profile",
-            isFetching: false,
-            loadMore: false,
             data: []
         },
         customize: {
             name: "Customize",
-            isFetching: true,
-            loadMore: false,
             data: []
         },
         about: {
@@ -149,9 +130,7 @@ const settingsTabs = {
 const groupTabs = {
     tabs: {
         public: {
-            name: "Public",
-            isFetching: true,
-            loadMore: false,
+            name: "Groups",
             data: {
                 rows: [],
                 page: 1,
@@ -161,8 +140,6 @@ const groupTabs = {
         },
         manage: {
             name: "Manage",
-            isFetching: true,
-            loadMore: false,
             data: {
                 rows: [],
                 page: 1,

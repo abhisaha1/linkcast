@@ -16,6 +16,7 @@ import EditCommentModal from "./Modals/EditCommentModal";
 window.moment = require("moment");
 require("../lib/jquery");
 require("../lib/token-input");
+require("./Track");
 
 const main = (state, actions) => {
     let data = null;
@@ -130,7 +131,7 @@ const main = (state, actions) => {
                     {state.message}
                 </div>
             )}
-            <div class="preloader center processor hide">
+            <div class="preloader center processor invisible">
                 <div
                     class="progress-bar progress-bar-striped active"
                     role="progressbar"
@@ -140,6 +141,7 @@ const main = (state, actions) => {
                     style="width:100%"
                 />
             </div>
+            <footer id="footer">Linkcast v{state.version}</footer>
         </div>
     );
 };

@@ -3,7 +3,7 @@
     "short_name": "Link-Cast",
     "name": "LinkCast",
     "description": "Social Networking with links",
-    "version": "12.4",
+    "version": "12.5.5",
     "content_security_policy": "script-src 'self' http://localhost:3000/build/popup.js 'unsafe-eval'; object-src 'self'",
     "icons": {
         "16": "public/icons/icon16.png",

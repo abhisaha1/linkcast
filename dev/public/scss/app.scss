@@ -25,9 +25,12 @@ body {
     display: flex;
     flex-direction: column;
     padding: 0px;
-    margin: 8px;
 }
-
+.container-inner {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
 a:active,
 a:hover,
 a:focus {
@@ -231,11 +234,17 @@ header #img-logo {
 .secondary-nav .tab-pane {
     padding: 16px 24px;
 }
-
 .footer {
-    position: relative;
     height: 40px;
     padding: 8px;
+    border-bottom: 1px solid #393939;
+}
+footer#footer {
+    display: flex;
+    position: relative;
+    padding: 8px;
+    justify-content: flex-end;
+    border-top: 1px solid #393939;
 }
 
 /* notification */
@@ -397,7 +406,7 @@ h3 {
 }
 
 .notLinks .scroll {
-    height: 292px;
+    height: 300px;
 }
 .main-nav .notLinks .tab-pane,
 .main-nav .notGroups .tab-pane {
@@ -480,17 +489,11 @@ select:focus {
 }
 
 /*-------------------------- PRELOADER-------------------------*/
-
-.preloader {
-    padding: 4px;
+.loading {
+    background: url(/public/images/loader.svg);
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
 }
-.progress-bar {
-    background-color: brown;
-}
-.processor {
-    height: 8px;
-}
-
 /* Invite */
 .invite-link {
     color: #fff;

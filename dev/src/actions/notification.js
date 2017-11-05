@@ -3,12 +3,6 @@ import { request } from "./request";
 export const fetchNotifications = (state, actions, tab_id) => {
     let tab = state.notificationTabs.tabs[tab_id];
 
-    if (
-        tab.data.rows.length > 0 &&
-        state.mainNav.tabs.active == "notification"
-    ) {
-        return;
-    }
     return update => {
         let params = {
             queryParams: {
@@ -20,9 +14,17 @@ export const fetchNotifications = (state, actions, tab_id) => {
                 count: null
             }
         };
+        if (tab.initialized) {
+            params.queryParams.lastId = tab.data.rows[0].id;
+        }
         request(params).then(result => {
-            result.page = tab.data.page;
-            tab.data = result;
+            if (tab.initialized) {
+                result.rows.length > 0 && tab.data.rows.unshift(result.rows);
+            } else {
+                result.page = tab.data.page;
+                tab.data = result;
+                tab.initialized = true;
+            }
             tab.isFetching = false;
             state.notificationTabs.tabs[tab_id] = tab;
             update(state);

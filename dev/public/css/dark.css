@@ -20,7 +20,7 @@
   --dark: #1c1e22;
   --ele-bg: rgba(30, 30, 30, 0.29);
   --input-border: #333;
-  --scroller-handle: #d41f1f; }
+  --scroller-handle: #9e9c9c; }
 
 body {
   color: var(--primary_text);
@@ -182,7 +182,7 @@ a:hover {
 
 /*------------------------MAIN CONTENT AREA-------------------------------------*/
 .footer {
-  border: 1px solid #2e3339; }
+  border-top: 1px solid #2e3339; }
 
 /**                                                 **
 * --------------------NAVTABS---------------------- *

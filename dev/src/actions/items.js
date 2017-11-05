@@ -6,9 +6,7 @@ export const fetchItems = (state, actions, { stateKey, tab_id, q }) => {
     if (tab_id == "search") {
         tab.data.rows = [];
     }
-    if (tab.data.rows.length > 0) {
-        return;
-    }
+
     return update => {
         let params = {
             queryParams: {
@@ -21,12 +19,22 @@ export const fetchItems = (state, actions, { stateKey, tab_id, q }) => {
             }
         };
         if (q) {
+            tab.initialized = false;
             params.queryParams.q = q;
             state[stateKey].tabs[tab_id].q = q;
+            _gaq.push(["_trackEvent", q, "searched"]);
+        }
+        if (tab.initialized && tab.data.rows.length > 0) {
+            params.queryParams.lastId = tab.data.rows[0].id;
         }
         request(params).then(result => {
-            result.page = tab.data.page;
-            tab.data = result;
+            if (tab.initialized) {
+                result.rows.length > 0 && tab.data.rows.unshift(result.rows);
+            } else {
+                result.page = tab.data.page;
+                tab.data = result;
+                tab.initialized = true;
+            }
             tab.isFetching = false;
             state[stateKey].tabs[tab_id] = tab;
             update(state);
@@ -61,9 +69,9 @@ export const loadMore = (state, actions, e) => {
         if (tabName == "search") {
             params.queryParams.q = tab.q;
         }
-        document.querySelector(".preloader").classList.remove("hide");
+        document.querySelector(".preloader").classList.remove("invisible");
         request(params).then(result => {
-            document.querySelector(".preloader").classList.add("hide");
+            document.querySelector(".preloader").classList.add("invisible");
             tab.data.page++;
             tab.data.rows = tab.data.rows.concat(result.rows);
             tab.loadMore = false;
@@ -83,6 +91,7 @@ export const fetchComments = (state, actions, { item, model, key }) => {
                 action: "commentsItem"
             }
         };
+        _gaq.push(["_trackEvent", "clicked", "comments"]);
         request(params).then(result => {
             let [root] = model.split(".");
             item.commentList = result.rows;
@@ -114,6 +123,7 @@ export const handleFavourite = (state, actions, { e, key }) => {
             action: favourite ? "removeFromFavourite" : "addToFavourite"
         }
     };
+    _gaq.push(["_trackEvent", "clicked", "favourite"]);
     return update => {
         request(params).then(result => {
             if (result.flag) {
@@ -140,6 +150,7 @@ export const handleLike = (state, actions, { e, key }) => {
             action: "likeClicked"
         }
     };
+    _gaq.push(["_trackEvent", "clicked", "like"]);
     return update => {
         request(params).then(result => {
             if (result.flag) {
@@ -171,6 +182,7 @@ export const handleShare = (state, actions, { e, key }) => {
     state.post.thumbnail = item.thumbnail;
     state.mainNav.active = "post";
     state.modals.notification.open = false;
+    _gaq.push(["_trackEvent", "clicked", "share"]);
     return state;
 };
 export const handleDelete = (state, actions, { e, key }) => {
@@ -191,6 +203,7 @@ export const handleDelete = (state, actions, { e, key }) => {
             action: "deleteItem"
         }
     };
+    _gaq.push(["_trackEvent", "clicked", "delete"]);
     return update => {
         request(params).then(result => {
             if (result.flag) {
@@ -225,6 +238,7 @@ export const handleCommentInput = (state, actions, { e, key }) => {
             action: "insertComment"
         }
     };
+    _gaq.push(["_trackEvent", "clicked", "newComment"]);
     return update => {
         request(params).then(result => {
             if (result.flag == 1) {
@@ -272,6 +286,7 @@ export const itemClicked = (state, actions, { e, key }) => {
         item_id: item.id,
         action: "itemClicked"
     };
+    _gaq.push(["_trackEvent", "clicked", "itemClicked"]);
     if (chrome.extension) {
         var bgPage = chrome.extension.getBackgroundPage();
         bgPage.sendClickedStat(params);
@@ -333,6 +348,7 @@ export const saveEditedComment = (state, actions, comment) => {
             action: "updateComment"
         }
     };
+    _gaq.push(["_trackEvent", "clicked", "saveEditedComment"]);
     return update => {
         actions.cancelCommentEdit();
         request(params).then(result => {
@@ -372,6 +388,7 @@ export const deleteComment = (state, actions) => {
             action: "deleteComment"
         }
     };
+    _gaq.push(["_trackEvent", "clicked", "deleteComment"]);
     return update => {
         request(params).then(result => {
             if (result.flag) {

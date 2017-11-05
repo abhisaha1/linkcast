@@ -1,8 +1,10 @@
 export const onTabChange = (state, actions, { stateKey, tab_id }) => {
-    state[stateKey].tabs[tab_id].isFetching = true;
+    if (state[stateKey].tabs[tab_id].isFetching) {
+        state[stateKey].tabs[tab_id].isFetching = true;
+    }
     state[stateKey].active = tab_id;
     let params = { stateKey, tab_id };
-
+    _gaq.push(["_trackPageview", "/" + state[stateKey].tabs[tab_id].name]);
     switch (tab_id) {
         case "notification":
             actions.onTabChange({

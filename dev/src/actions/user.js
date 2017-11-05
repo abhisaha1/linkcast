@@ -143,6 +143,12 @@ export const doLogin = (state, actions, data) => {
                             userid: result.data.chrome_id
                         });
                     }
+                    _gaq.push([
+                        "_setCustomVar",
+                        1,
+                        "chrome_id",
+                        localStorage.chrome_id
+                    ]);
                 } else {
                     state.message = result.msg;
                 }
@@ -185,8 +191,14 @@ export const doRegister = (state, actions, data) => {
                     state.user.data = result.data;
                     state.user.loggedIn = true;
                     state.chrome_id = chrome_id;
-
+                    _gaq.push([
+                        "_setCustomVar",
+                        1,
+                        "chrome_id",
+                        localStorage.chrome_id
+                    ]);
                     actions.fetchGroups();
+                    actions.fetchAllGroups();
                     if (chrome.storage) {
                         chrome.storage.sync.set({
                             userid: response.data.chrome_id

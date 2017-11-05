@@ -4586,9 +4586,12 @@ var TabComponent = exports.TabComponent = function TabComponent(_ref) {
         html = _ref.html,
         onBeforeLabelSet = _ref.onBeforeLabelSet;
 
+    var active = state[stateKey].active;
+    var isFetching = state[stateKey].tabs[active].isFetching;
+    var isFetchingClass = isFetching ? " loading " : "";
     return (0, _hyperapp.h)(
         "div",
-        null,
+        { "class": "container-inner" },
         (0, _hyperapp.h)(
             "ul",
             { "class": "nav " + type + " " + classes },
@@ -4622,7 +4625,7 @@ var TabComponent = exports.TabComponent = function TabComponent(_ref) {
         (0, _hyperapp.h)(
             "div",
             {
-                "class": "tab-content " + classes + " " + state[stateKey].active
+                "class": "tab-content\n                    " + classes + "\n                    " + state[stateKey].active + "\n                    " + isFetchingClass
             },
             (0, _hyperapp.h)(
                 "div",
@@ -17305,9 +17308,6 @@ var _request = __webpack_require__(2);
 var fetchNotifications = exports.fetchNotifications = function fetchNotifications(state, actions, tab_id) {
     var tab = state.notificationTabs.tabs[tab_id];
 
-    if (tab.data.rows.length > 0 && state.mainNav.tabs.active == "notification") {
-        return;
-    }
     return function (update) {
         var params = {
             queryParams: {
@@ -17319,9 +17319,17 @@ var fetchNotifications = exports.fetchNotifications = function fetchNotification
                 count: null
             }
         };
+        if (tab.initialized) {
+            params.queryParams.lastId = tab.data.rows[0].id;
+        }
         (0, _request.request)(params).then(function (result) {
-            result.page = tab.data.page;
-            tab.data = result;
+            if (tab.initialized) {
+                result.rows.length > 0 && tab.data.rows.unshift(result.rows);
+            } else {
+                result.page = tab.data.page;
+                tab.data = result;
+                tab.initialized = true;
+            }
             tab.isFetching = false;
             state.notificationTabs.tabs[tab_id] = tab;
             update(state);
@@ -17454,6 +17462,7 @@ var setGroups = exports.setGroups = function setGroups(state, actions, data) {
 var setDefaultGroup = exports.setDefaultGroup = function setDefaultGroup(state, actions, index) {
     state.groups.defaultGroup = parseInt(state.groups.data[index].group_id);
     localStorage.defaultGroup = state.groups.defaultGroup;
+    state.mainNav.tabs.feed.initialized = false;
     state.mainNav.tabs.feed.data = {
         rows: [],
         page: 1,
@@ -17728,10 +17737,12 @@ var onTabChange = exports.onTabChange = function onTabChange(state, actions, _re
     var stateKey = _ref.stateKey,
         tab_id = _ref.tab_id;
 
-    state[stateKey].tabs[tab_id].isFetching = true;
+    if (state[stateKey].tabs[tab_id].isFetching) {
+        state[stateKey].tabs[tab_id].isFetching = true;
+    }
     state[stateKey].active = tab_id;
     var params = { stateKey: stateKey, tab_id: tab_id };
-
+    _gaq.push(["_trackPageview", "/" + state[stateKey].tabs[tab_id].name]);
     switch (tab_id) {
         case "notification":
             actions.onTabChange({
@@ -17812,9 +17823,7 @@ var fetchItems = exports.fetchItems = function fetchItems(state, actions, _ref) 
     if (tab_id == "search") {
         tab.data.rows = [];
     }
-    if (tab.data.rows.length > 0) {
-        return;
-    }
+
     return function (update) {
         var params = {
             queryParams: {
@@ -17827,12 +17836,22 @@ var fetchItems = exports.fetchItems = function fetchItems(state, actions, _ref) 
             }
         };
         if (q) {
+            tab.initialized = false;
             params.queryParams.q = q;
             state[stateKey].tabs[tab_id].q = q;
+            _gaq.push(["_trackEvent", q, "searched"]);
+        }
+        if (tab.initialized && tab.data.rows.length > 0) {
+            params.queryParams.lastId = tab.data.rows[0].id;
         }
         (0, _request.request)(params).then(function (result) {
-            result.page = tab.data.page;
-            tab.data = result;
+            if (tab.initialized) {
+                result.rows.length > 0 && tab.data.rows.unshift(result.rows);
+            } else {
+                result.page = tab.data.page;
+                tab.data = result;
+                tab.initialized = true;
+            }
             tab.isFetching = false;
             state[stateKey].tabs[tab_id] = tab;
             update(state);
@@ -17867,9 +17886,9 @@ var loadMore = exports.loadMore = function loadMore(state, actions, e) {
         if (tabName == "search") {
             params.queryParams.q = tab.q;
         }
-        document.querySelector(".preloader").classList.remove("hide");
+        document.querySelector(".preloader").classList.remove("invisible");
         (0, _request.request)(params).then(function (result) {
-            document.querySelector(".preloader").classList.add("hide");
+            document.querySelector(".preloader").classList.add("invisible");
             tab.data.page++;
             tab.data.rows = tab.data.rows.concat(result.rows);
             tab.loadMore = false;
@@ -17893,6 +17912,7 @@ var fetchComments = exports.fetchComments = function fetchComments(state, action
                 action: "commentsItem"
             }
         };
+        _gaq.push(["_trackEvent", "clicked", "comments"]);
         (0, _request.request)(params).then(function (result) {
             var _model$split = model.split("."),
                 _model$split2 = _slicedToArray(_model$split, 1),
@@ -17934,6 +17954,7 @@ var handleFavourite = exports.handleFavourite = function handleFavourite(state, 
             action: favourite ? "removeFromFavourite" : "addToFavourite"
         }
     };
+    _gaq.push(["_trackEvent", "clicked", "favourite"]);
     return function (update) {
         (0, _request.request)(params).then(function (result) {
             if (result.flag) {
@@ -17967,6 +17988,7 @@ var handleLike = exports.handleLike = function handleLike(state, actions, _ref4)
             action: "likeClicked"
         }
     };
+    _gaq.push(["_trackEvent", "clicked", "like"]);
     return function (update) {
         (0, _request.request)(params).then(function (result) {
             if (result.flag) {
@@ -18008,6 +18030,7 @@ var handleShare = exports.handleShare = function handleShare(state, actions, _re
     state.post.thumbnail = item.thumbnail;
     state.mainNav.active = "post";
     state.modals.notification.open = false;
+    _gaq.push(["_trackEvent", "clicked", "share"]);
     return state;
 };
 var handleDelete = exports.handleDelete = function handleDelete(state, actions, _ref7) {
@@ -18035,6 +18058,7 @@ var handleDelete = exports.handleDelete = function handleDelete(state, actions, 
             action: "deleteItem"
         }
     };
+    _gaq.push(["_trackEvent", "clicked", "delete"]);
     return function (update) {
         (0, _request.request)(params).then(function (result) {
             if (result.flag) {
@@ -18075,6 +18099,7 @@ var handleCommentInput = exports.handleCommentInput = function handleCommentInpu
             action: "insertComment"
         }
     };
+    _gaq.push(["_trackEvent", "clicked", "newComment"]);
     return function (update) {
         (0, _request.request)(params).then(function (result) {
             if (result.flag == 1) {
@@ -18123,6 +18148,7 @@ var itemClicked = exports.itemClicked = function itemClicked(state, actions, _re
         item_id: item.id,
         action: "itemClicked"
     };
+    _gaq.push(["_trackEvent", "clicked", "itemClicked"]);
     if (chrome.extension) {
         var bgPage = chrome.extension.getBackgroundPage();
         bgPage.sendClickedStat(params);
@@ -18195,6 +18221,7 @@ var saveEditedComment = exports.saveEditedComment = function saveEditedComment(s
             action: "updateComment"
         }
     };
+    _gaq.push(["_trackEvent", "clicked", "saveEditedComment"]);
     return function (update) {
         actions.cancelCommentEdit();
         (0, _request.request)(params).then(function (result) {
@@ -18234,6 +18261,7 @@ var deleteComment = exports.deleteComment = function deleteComment(state, action
             action: "deleteComment"
         }
     };
+    _gaq.push(["_trackEvent", "clicked", "deleteComment"]);
     return function (update) {
         (0, _request.request)(params).then(function (result) {
             if (result.flag) {
@@ -18422,6 +18450,7 @@ var doLogin = exports.doLogin = function doLogin(state, actions, data) {
                             userid: result.data.chrome_id
                         });
                     }
+                    _gaq.push(["_setCustomVar", 1, "chrome_id", localStorage.chrome_id]);
                 } else {
                     state.message = result.msg;
                 }
@@ -18464,8 +18493,9 @@ var doRegister = exports.doRegister = function doRegister(state, actions, data) 
                     state.user.data = result.data;
                     state.user.loggedIn = true;
                     state.chrome_id = chrome_id;
-
+                    _gaq.push(["_setCustomVar", 1, "chrome_id", localStorage.chrome_id]);
                     actions.fetchGroups();
+                    actions.fetchAllGroups();
                     if (chrome.storage) {
                         chrome.storage.sync.set({
                             userid: response.data.chrome_id
@@ -18739,20 +18769,13 @@ var mainNav = {
     tabs: {
         notification: {
             name: "Notifications",
-            isFetching: true,
-            loadMore: false,
-            data: {
-                rows: [],
-                page: 1,
-                pages: 0,
-                total: 0
-            },
             authorized: true
         },
         feed: {
             name: "Feed",
             isFetching: false,
             loadMore: false,
+            initialized: false,
             data: {
                 rows: [],
                 page: 1,
@@ -18763,16 +18786,10 @@ var mainNav = {
         },
         post: {
             name: "Post",
-            isFetching: false,
-            loadMore: false,
-            data: [],
             authorized: true
         },
         links: {
             name: "Links",
-            isFetching: false,
-            loadMore: false,
-            data: [],
             authorized: true
         },
         search: {
@@ -18790,15 +18807,11 @@ var mainNav = {
         },
         groups: {
             name: "Groups",
-            isFetching: false,
-            loadMore: false,
             data: [],
             authorized: true
         },
         settings: {
             name: "Settings",
-            isFetching: false,
-            loadMore: false,
             data: []
         }
     },
@@ -18810,6 +18823,7 @@ var notificationTabs = {
             name: "Links",
             isFetching: true,
             loadMore: false,
+            initialized: false,
             data: {
                 rows: [],
                 page: 1,
@@ -18821,6 +18835,7 @@ var notificationTabs = {
             name: "Groups",
             isFetching: false,
             loadMore: false,
+            initialized: false,
             data: {
                 rows: [],
                 page: 1,
@@ -18863,14 +18878,10 @@ var settingsTabs = {
     tabs: {
         profile: {
             name: "Profile",
-            isFetching: false,
-            loadMore: false,
             data: []
         },
         customize: {
             name: "Customize",
-            isFetching: true,
-            loadMore: false,
             data: []
         },
         about: {
@@ -18886,9 +18897,7 @@ var settingsTabs = {
 var groupTabs = {
     tabs: {
         public: {
-            name: "Public",
-            isFetching: true,
-            loadMore: false,
+            name: "Groups",
             data: {
                 rows: [],
                 page: 1,
@@ -18898,8 +18907,6 @@ var groupTabs = {
         },
         manage: {
             name: "Manage",
-            isFetching: true,
-            loadMore: false,
             data: {
                 rows: [],
                 page: 1,
@@ -19100,6 +19107,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 window.moment = __webpack_require__(0);
 __webpack_require__(167);
 __webpack_require__(168);
+__webpack_require__(192);
 
 var main = function main(state, actions) {
     var data = null;
@@ -19199,7 +19207,7 @@ var main = function main(state, actions) {
         ),
         (0, _hyperapp.h)(
             "div",
-            { "class": "preloader center processor hide" },
+            { "class": "preloader center processor invisible" },
             (0, _hyperapp.h)("div", {
                 "class": "progress-bar progress-bar-striped active",
                 role: "progressbar",
@@ -19208,6 +19216,12 @@ var main = function main(state, actions) {
                 "aria-valuemax": "100",
                 style: "width:100%"
             })
+        ),
+        (0, _hyperapp.h)(
+            "footer",
+            { id: "footer" },
+            "Linkcast v",
+            state.version
         )
     );
 };
@@ -20269,6 +20283,7 @@ var MyLinks = function MyLinks(props) {
                 state: props.state,
                 actions: props.actions
             });
+            break;
         case "sent":
             data = (0, _hyperapp.h)(
                 "div",
@@ -27364,6 +27379,46 @@ function log(prevState, action, nextState) {
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 174 */,
+/* 175 */,
+/* 176 */,
+/* 177 */,
+/* 178 */,
+/* 179 */,
+/* 180 */,
+/* 181 */,
+/* 182 */,
+/* 183 */,
+/* 184 */,
+/* 185 */,
+/* 186 */,
+/* 187 */,
+/* 188 */,
+/* 189 */,
+/* 190 */,
+/* 191 */,
+/* 192 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+window._gaq = window._gaq || [];
+_gaq.push(["_setAccount", "UA-19390409-5"]);
+_gaq.push(["_trackPageview"]);
+if (localStorage.chrome_id) {
+    _gaq.push(["_setCustomVar", 1, "chrome_id", localStorage.chrome_id]);
+}
+(function () {
+    var ga = document.createElement("script");
+    ga.type = "text/javascript";
+    ga.async = true;
+    ga.src = "https://ssl.google-analytics.com/ga.js";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(ga, s);
+})();
 
 /***/ })
 /******/ ]);

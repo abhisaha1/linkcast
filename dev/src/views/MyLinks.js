@@ -19,6 +19,7 @@ const MyLinks = props => {
                     actions={props.actions}
                 />
             );
+            break;
         case "sent":
             data = (
                 <div>

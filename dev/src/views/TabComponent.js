@@ -9,8 +9,11 @@ export const TabComponent = ({
     html,
     onBeforeLabelSet
 }) => {
+    let active = state[stateKey].active;
+    let isFetching = state[stateKey].tabs[active].isFetching;
+    let isFetchingClass = isFetching ? " loading " : "";
     return (
-        <div>
+        <div class="container-inner">
             <ul class={`nav ${type} ${classes}`}>
                 {Object.keys(state[stateKey].tabs).map(tab_id => {
                     let tab = state[stateKey].tabs[tab_id];
@@ -37,7 +40,10 @@ export const TabComponent = ({
                 })}
             </ul>
             <div
-                class={"tab-content " + classes + " " + state[stateKey].active}
+                class={`tab-content
+                    ${classes}
+                    ${state[stateKey].active}
+                    ${isFetchingClass}`}
             >
                 <div class="tab-pane fade active in">{html}</div>
             </div>
