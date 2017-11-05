@@ -1,12 +1,12 @@
 import { request } from "./request";
 
-export const navClicked = (state, actions, data) => {
+export const navClicked = (state, actions) => data => {
     let id = data.currentTarget.dataset.id;
     state.nav.main.active = id;
-    return state;
+    actions.updateState(state);
 };
 
-export const onScroll = (state, actions, { e, callback }) => {
+export const onScroll = (state, actions) => ({ e, callback }) => {
     let ele = e.currentTarget;
     let height = ele.clientHeight;
     let scroll_top = ele.scrollTop;
@@ -20,30 +20,31 @@ export const onScroll = (state, actions, { e, callback }) => {
     return false;
 };
 
-export const closeModal = (state, actions, name) => {
+export const closeModal = (state, actions) => name => {
     state.modals[name].open = false;
-    return state;
+    actions.updateState(state);
 };
 
-export const resetMessage = (state, actions) => {
-    return update => {
-        setTimeout(() => {
-            if (state.message != "") {
-                state.message = "";
-                update(state);
-            }
-        }, 3000);
-    };
+export const updateState = (state, actions) => newState => {
+    return { newState };
+};
+export const resetMessage = (state, actions) => () => {
+    setTimeout(() => {
+        if (state.message != "") {
+            state.message = "";
+            actions.updateState(state);
+        }
+    }, 3000);
 };
 
-export const setMessage = (state, actions, message) => {
+export const setMessage = (state, actions) => message => {
     state.message = message;
-    return state;
+    actions.updateState(state);
 };
 
-export const setVersion = (state, actions, version) => {
+export const setVersion = (state, actions) => version => {
     state.version = version;
-    return state;
+    actions.updateState(state);
 };
 
 export const deepFind = function(obj, path) {

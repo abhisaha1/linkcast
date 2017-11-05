@@ -11246,8 +11246,6 @@ header #img-logo {
 /*------------------------------MESSAGE BOX-------------------------------------*/
 
 #msg {
-    bottom: 30px;
-    margin-bottom: 0px;
     position: absolute;
     width: 400px;
     z-index: 1;
@@ -11459,7 +11457,9 @@ h3 {
 .nav-tabs {
     border-bottom: none;
 }
-
+.nav-tabs > li {
+    margin-bottom: 0px;
+}
 .nav-tabs > li > a,
 .nav-pills > li > a {
     text-transform: uppercase;

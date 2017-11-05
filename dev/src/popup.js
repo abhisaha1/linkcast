@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "src";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 128);
+/******/ 	return __webpack_require__(__webpack_require__.s = 131);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -68,12 +68,12 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(module) {var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;
+/* WEBPACK VAR INJECTION */(function(module) {var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;var require;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 //! moment.js
-//! version : 2.18.1
+//! version : 2.19.1
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
 //! license : MIT
 //! momentjs.com
@@ -110,12 +110,17 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     }
 
     function isObjectEmpty(obj) {
-        var k;
-        for (k in obj) {
-            // even if its not own property I'd still call it non-empty
-            return false;
+        if (Object.getOwnPropertyNames) {
+            return Object.getOwnPropertyNames(obj).length === 0;
+        } else {
+            var k;
+            for (k in obj) {
+                if (obj.hasOwnProperty(k)) {
+                    return false;
+                }
+            }
+            return true;
         }
-        return true;
     }
 
     function isUndefined(input) {
@@ -210,15 +215,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         };
     }
 
-    var some$1 = some;
-
     function isValid(m) {
         if (m._isValid == null) {
             var flags = getParsingFlags(m);
-            var parsedParts = some$1.call(flags.parsedDateParts, function (i) {
+            var parsedParts = some.call(flags.parsedDateParts, function (i) {
                 return i != null;
             });
-            var isNowValid = !isNaN(m._d.getTime()) && flags.overflow < 0 && !flags.empty && !flags.invalidMonth && !flags.invalidWeekday && !flags.nullInput && !flags.invalidFormat && !flags.userInvalidated && (!flags.meridiem || flags.meridiem && parsedParts);
+            var isNowValid = !isNaN(m._d.getTime()) && flags.overflow < 0 && !flags.empty && !flags.invalidMonth && !flags.invalidWeekday && !flags.weekdayMismatch && !flags.nullInput && !flags.invalidFormat && !flags.userInvalidated && (!flags.meridiem || flags.meridiem && parsedParts);
 
             if (m._strict) {
                 isNowValid = isNowValid && flags.charsLeftOver === 0 && flags.unusedTokens.length === 0 && flags.bigHour === undefined;
@@ -471,8 +474,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         };
     }
 
-    var keys$1 = keys;
-
     var defaultCalendar = {
         sameDay: '[Today at] LT',
         nextDay: '[Tomorrow at] LT',
@@ -594,54 +595,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             return a.priority - b.priority;
         });
         return units;
-    }
-
-    function makeGetSet(unit, keepTime) {
-        return function (value) {
-            if (value != null) {
-                set$1(this, unit, value);
-                hooks.updateOffset(this, keepTime);
-                return this;
-            } else {
-                return get(this, unit);
-            }
-        };
-    }
-
-    function get(mom, unit) {
-        return mom.isValid() ? mom._d['get' + (mom._isUTC ? 'UTC' : '') + unit]() : NaN;
-    }
-
-    function set$1(mom, unit, value) {
-        if (mom.isValid()) {
-            mom._d['set' + (mom._isUTC ? 'UTC' : '') + unit](value);
-        }
-    }
-
-    // MOMENTS
-
-    function stringGet(units) {
-        units = normalizeUnits(units);
-        if (isFunction(this[units])) {
-            return this[units]();
-        }
-        return this;
-    }
-
-    function stringSet(units, value) {
-        if ((typeof units === 'undefined' ? 'undefined' : _typeof(units)) === 'object') {
-            units = normalizeObjectUnits(units);
-            var prioritized = getPrioritizedUnits(units);
-            for (var i = 0; i < prioritized.length; i++) {
-                this[prioritized[i].unit](units[prioritized[i].unit]);
-            }
-        } else {
-            units = normalizeUnits(units);
-            if (isFunction(this[units])) {
-                return this[units](value);
-            }
-        }
-        return this;
     }
 
     function zeroFill(number, targetLength, forceSign) {
@@ -836,6 +789,128 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     var WEEK = 7;
     var WEEKDAY = 8;
 
+    // FORMATTING
+
+    addFormatToken('Y', 0, 0, function () {
+        var y = this.year();
+        return y <= 9999 ? '' + y : '+' + y;
+    });
+
+    addFormatToken(0, ['YY', 2], 0, function () {
+        return this.year() % 100;
+    });
+
+    addFormatToken(0, ['YYYY', 4], 0, 'year');
+    addFormatToken(0, ['YYYYY', 5], 0, 'year');
+    addFormatToken(0, ['YYYYYY', 6, true], 0, 'year');
+
+    // ALIASES
+
+    addUnitAlias('year', 'y');
+
+    // PRIORITIES
+
+    addUnitPriority('year', 1);
+
+    // PARSING
+
+    addRegexToken('Y', matchSigned);
+    addRegexToken('YY', match1to2, match2);
+    addRegexToken('YYYY', match1to4, match4);
+    addRegexToken('YYYYY', match1to6, match6);
+    addRegexToken('YYYYYY', match1to6, match6);
+
+    addParseToken(['YYYYY', 'YYYYYY'], YEAR);
+    addParseToken('YYYY', function (input, array) {
+        array[YEAR] = input.length === 2 ? hooks.parseTwoDigitYear(input) : toInt(input);
+    });
+    addParseToken('YY', function (input, array) {
+        array[YEAR] = hooks.parseTwoDigitYear(input);
+    });
+    addParseToken('Y', function (input, array) {
+        array[YEAR] = parseInt(input, 10);
+    });
+
+    // HELPERS
+
+    function daysInYear(year) {
+        return isLeapYear(year) ? 366 : 365;
+    }
+
+    function isLeapYear(year) {
+        return year % 4 === 0 && year % 100 !== 0 || year % 400 === 0;
+    }
+
+    // HOOKS
+
+    hooks.parseTwoDigitYear = function (input) {
+        return toInt(input) + (toInt(input) > 68 ? 1900 : 2000);
+    };
+
+    // MOMENTS
+
+    var getSetYear = makeGetSet('FullYear', true);
+
+    function getIsLeapYear() {
+        return isLeapYear(this.year());
+    }
+
+    function makeGetSet(unit, keepTime) {
+        return function (value) {
+            if (value != null) {
+                set$1(this, unit, value);
+                hooks.updateOffset(this, keepTime);
+                return this;
+            } else {
+                return get(this, unit);
+            }
+        };
+    }
+
+    function get(mom, unit) {
+        return mom.isValid() ? mom._d['get' + (mom._isUTC ? 'UTC' : '') + unit]() : NaN;
+    }
+
+    function set$1(mom, unit, value) {
+        if (mom.isValid() && !isNaN(value)) {
+            if (unit === 'FullYear' && isLeapYear(mom.year())) {
+                mom._d['set' + (mom._isUTC ? 'UTC' : '') + unit](value, mom.month(), daysInMonth(value, mom.month()));
+            } else {
+                mom._d['set' + (mom._isUTC ? 'UTC' : '') + unit](value);
+            }
+        }
+    }
+
+    // MOMENTS
+
+    function stringGet(units) {
+        units = normalizeUnits(units);
+        if (isFunction(this[units])) {
+            return this[units]();
+        }
+        return this;
+    }
+
+    function stringSet(units, value) {
+        if ((typeof units === 'undefined' ? 'undefined' : _typeof(units)) === 'object') {
+            units = normalizeObjectUnits(units);
+            var prioritized = getPrioritizedUnits(units);
+            for (var i = 0; i < prioritized.length; i++) {
+                this[prioritized[i].unit](units[prioritized[i].unit]);
+            }
+        } else {
+            units = normalizeUnits(units);
+            if (isFunction(this[units])) {
+                return this[units](value);
+            }
+        }
+        return this;
+    }
+
+    function mod(n, x) {
+        return (n % x + x) % x;
+    }
+
     var indexOf;
 
     if (Array.prototype.indexOf) {
@@ -853,10 +928,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         };
     }
 
-    var indexOf$1 = indexOf;
-
     function daysInMonth(year, month) {
-        return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+        if (isNaN(year) || isNaN(month)) {
+            return NaN;
+        }
+        var modMonth = mod(month, 12);
+        year += (month - modMonth) / 12;
+        return modMonth === 1 ? isLeapYear(year) ? 29 : 28 : 31 - modMonth % 7 % 2;
     }
 
     // FORMATTING
@@ -944,26 +1022,26 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
         if (strict) {
             if (format === 'MMM') {
-                ii = indexOf$1.call(this._shortMonthsParse, llc);
+                ii = indexOf.call(this._shortMonthsParse, llc);
                 return ii !== -1 ? ii : null;
             } else {
-                ii = indexOf$1.call(this._longMonthsParse, llc);
+                ii = indexOf.call(this._longMonthsParse, llc);
                 return ii !== -1 ? ii : null;
             }
         } else {
             if (format === 'MMM') {
-                ii = indexOf$1.call(this._shortMonthsParse, llc);
+                ii = indexOf.call(this._shortMonthsParse, llc);
                 if (ii !== -1) {
                     return ii;
                 }
-                ii = indexOf$1.call(this._longMonthsParse, llc);
+                ii = indexOf.call(this._longMonthsParse, llc);
                 return ii !== -1 ? ii : null;
             } else {
-                ii = indexOf$1.call(this._longMonthsParse, llc);
+                ii = indexOf.call(this._longMonthsParse, llc);
                 if (ii !== -1) {
                     return ii;
                 }
-                ii = indexOf$1.call(this._shortMonthsParse, llc);
+                ii = indexOf.call(this._shortMonthsParse, llc);
                 return ii !== -1 ? ii : null;
             }
         }
@@ -1121,72 +1199,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         this._monthsShortRegex = this._monthsRegex;
         this._monthsStrictRegex = new RegExp('^(' + longPieces.join('|') + ')', 'i');
         this._monthsShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')', 'i');
-    }
-
-    // FORMATTING
-
-    addFormatToken('Y', 0, 0, function () {
-        var y = this.year();
-        return y <= 9999 ? '' + y : '+' + y;
-    });
-
-    addFormatToken(0, ['YY', 2], 0, function () {
-        return this.year() % 100;
-    });
-
-    addFormatToken(0, ['YYYY', 4], 0, 'year');
-    addFormatToken(0, ['YYYYY', 5], 0, 'year');
-    addFormatToken(0, ['YYYYYY', 6, true], 0, 'year');
-
-    // ALIASES
-
-    addUnitAlias('year', 'y');
-
-    // PRIORITIES
-
-    addUnitPriority('year', 1);
-
-    // PARSING
-
-    addRegexToken('Y', matchSigned);
-    addRegexToken('YY', match1to2, match2);
-    addRegexToken('YYYY', match1to4, match4);
-    addRegexToken('YYYYY', match1to6, match6);
-    addRegexToken('YYYYYY', match1to6, match6);
-
-    addParseToken(['YYYYY', 'YYYYYY'], YEAR);
-    addParseToken('YYYY', function (input, array) {
-        array[YEAR] = input.length === 2 ? hooks.parseTwoDigitYear(input) : toInt(input);
-    });
-    addParseToken('YY', function (input, array) {
-        array[YEAR] = hooks.parseTwoDigitYear(input);
-    });
-    addParseToken('Y', function (input, array) {
-        array[YEAR] = parseInt(input, 10);
-    });
-
-    // HELPERS
-
-    function daysInYear(year) {
-        return isLeapYear(year) ? 366 : 365;
-    }
-
-    function isLeapYear(year) {
-        return year % 4 === 0 && year % 100 !== 0 || year % 400 === 0;
-    }
-
-    // HOOKS
-
-    hooks.parseTwoDigitYear = function (input) {
-        return toInt(input) + (toInt(input) > 68 ? 1900 : 2000);
-    };
-
-    // MOMENTS
-
-    var getSetYear = makeGetSet('FullYear', true);
-
-    function getIsLeapYear() {
-        return isLeapYear(this.year());
     }
 
     function createDate(y, m, d, h, M, s, ms) {
@@ -1460,48 +1472,48 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
         if (strict) {
             if (format === 'dddd') {
-                ii = indexOf$1.call(this._weekdaysParse, llc);
+                ii = indexOf.call(this._weekdaysParse, llc);
                 return ii !== -1 ? ii : null;
             } else if (format === 'ddd') {
-                ii = indexOf$1.call(this._shortWeekdaysParse, llc);
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
                 return ii !== -1 ? ii : null;
             } else {
-                ii = indexOf$1.call(this._minWeekdaysParse, llc);
+                ii = indexOf.call(this._minWeekdaysParse, llc);
                 return ii !== -1 ? ii : null;
             }
         } else {
             if (format === 'dddd') {
-                ii = indexOf$1.call(this._weekdaysParse, llc);
+                ii = indexOf.call(this._weekdaysParse, llc);
                 if (ii !== -1) {
                     return ii;
                 }
-                ii = indexOf$1.call(this._shortWeekdaysParse, llc);
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
                 if (ii !== -1) {
                     return ii;
                 }
-                ii = indexOf$1.call(this._minWeekdaysParse, llc);
+                ii = indexOf.call(this._minWeekdaysParse, llc);
                 return ii !== -1 ? ii : null;
             } else if (format === 'ddd') {
-                ii = indexOf$1.call(this._shortWeekdaysParse, llc);
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
                 if (ii !== -1) {
                     return ii;
                 }
-                ii = indexOf$1.call(this._weekdaysParse, llc);
+                ii = indexOf.call(this._weekdaysParse, llc);
                 if (ii !== -1) {
                     return ii;
                 }
-                ii = indexOf$1.call(this._minWeekdaysParse, llc);
+                ii = indexOf.call(this._minWeekdaysParse, llc);
                 return ii !== -1 ? ii : null;
             } else {
-                ii = indexOf$1.call(this._minWeekdaysParse, llc);
+                ii = indexOf.call(this._minWeekdaysParse, llc);
                 if (ii !== -1) {
                     return ii;
                 }
-                ii = indexOf$1.call(this._weekdaysParse, llc);
+                ii = indexOf.call(this._weekdaysParse, llc);
                 if (ii !== -1) {
                     return ii;
                 }
-                ii = indexOf$1.call(this._shortWeekdaysParse, llc);
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
                 return ii !== -1 ? ii : null;
             }
         }
@@ -1893,9 +1905,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         if (!locales[name] && typeof module !== 'undefined' && module && module.exports) {
             try {
                 oldLocale = globalLocale._abbr;
-                __webpack_require__(166)("./" + name);
-                // because defineLocale currently also sets the global locale, we
-                // want to undo that for lazy loaded locales
+                var aliasedRequire = require;
+                __webpack_require__(169)("./" + name);
                 getSetGlobalLocale(oldLocale);
             } catch (e) {}
         }
@@ -2018,7 +2029,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     }
 
     function listLocales() {
-        return keys$1(locales);
+        return keys(locales);
     }
 
     function checkOverflow(m) {
@@ -2043,182 +2054,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
         return m;
     }
-
-    // iso 8601 regex
-    // 0000-00-00 0000-W00 or 0000-W00-0 + T + 00 or 00:00 or 00:00:00 or 00:00:00.000 + +00:00 or +0000 or +00)
-    var extendedIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?$/;
-    var basicIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?$/;
-
-    var tzRegex = /Z|[+-]\d\d(?::?\d\d)?/;
-
-    var isoDates = [['YYYYYY-MM-DD', /[+-]\d{6}-\d\d-\d\d/], ['YYYY-MM-DD', /\d{4}-\d\d-\d\d/], ['GGGG-[W]WW-E', /\d{4}-W\d\d-\d/], ['GGGG-[W]WW', /\d{4}-W\d\d/, false], ['YYYY-DDD', /\d{4}-\d{3}/], ['YYYY-MM', /\d{4}-\d\d/, false], ['YYYYYYMMDD', /[+-]\d{10}/], ['YYYYMMDD', /\d{8}/],
-    // YYYYMM is NOT allowed by the standard
-    ['GGGG[W]WWE', /\d{4}W\d{3}/], ['GGGG[W]WW', /\d{4}W\d{2}/, false], ['YYYYDDD', /\d{7}/]];
-
-    // iso time formats and regexes
-    var isoTimes = [['HH:mm:ss.SSSS', /\d\d:\d\d:\d\d\.\d+/], ['HH:mm:ss,SSSS', /\d\d:\d\d:\d\d,\d+/], ['HH:mm:ss', /\d\d:\d\d:\d\d/], ['HH:mm', /\d\d:\d\d/], ['HHmmss.SSSS', /\d\d\d\d\d\d\.\d+/], ['HHmmss,SSSS', /\d\d\d\d\d\d,\d+/], ['HHmmss', /\d\d\d\d\d\d/], ['HHmm', /\d\d\d\d/], ['HH', /\d\d/]];
-
-    var aspNetJsonRegex = /^\/?Date\((\-?\d+)/i;
-
-    // date from iso format
-    function configFromISO(config) {
-        var i,
-            l,
-            string = config._i,
-            match = extendedIsoRegex.exec(string) || basicIsoRegex.exec(string),
-            allowTime,
-            dateFormat,
-            timeFormat,
-            tzFormat;
-
-        if (match) {
-            getParsingFlags(config).iso = true;
-
-            for (i = 0, l = isoDates.length; i < l; i++) {
-                if (isoDates[i][1].exec(match[1])) {
-                    dateFormat = isoDates[i][0];
-                    allowTime = isoDates[i][2] !== false;
-                    break;
-                }
-            }
-            if (dateFormat == null) {
-                config._isValid = false;
-                return;
-            }
-            if (match[3]) {
-                for (i = 0, l = isoTimes.length; i < l; i++) {
-                    if (isoTimes[i][1].exec(match[3])) {
-                        // match[2] should be 'T' or space
-                        timeFormat = (match[2] || ' ') + isoTimes[i][0];
-                        break;
-                    }
-                }
-                if (timeFormat == null) {
-                    config._isValid = false;
-                    return;
-                }
-            }
-            if (!allowTime && timeFormat != null) {
-                config._isValid = false;
-                return;
-            }
-            if (match[4]) {
-                if (tzRegex.exec(match[4])) {
-                    tzFormat = 'Z';
-                } else {
-                    config._isValid = false;
-                    return;
-                }
-            }
-            config._f = dateFormat + (timeFormat || '') + (tzFormat || '');
-            configFromStringAndFormat(config);
-        } else {
-            config._isValid = false;
-        }
-    }
-
-    // RFC 2822 regex: For details see https://tools.ietf.org/html/rfc2822#section-3.3
-    var basicRfcRegex = /^((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s)?(\d?\d\s(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s(?:\d\d)?\d\d\s)(\d\d:\d\d)(\:\d\d)?(\s(?:UT|GMT|[ECMP][SD]T|[A-IK-Za-ik-z]|[+-]\d{4}))$/;
-
-    // date and time from ref 2822 format
-    function configFromRFC2822(config) {
-        var string, match, dayFormat, dateFormat, timeFormat, tzFormat;
-        var timezones = {
-            ' GMT': ' +0000',
-            ' EDT': ' -0400',
-            ' EST': ' -0500',
-            ' CDT': ' -0500',
-            ' CST': ' -0600',
-            ' MDT': ' -0600',
-            ' MST': ' -0700',
-            ' PDT': ' -0700',
-            ' PST': ' -0800'
-        };
-        var military = 'YXWVUTSRQPONZABCDEFGHIKLM';
-        var timezone, timezoneIndex;
-
-        string = config._i.replace(/\([^\)]*\)|[\n\t]/g, ' ') // Remove comments and folding whitespace
-        .replace(/(\s\s+)/g, ' ') // Replace multiple-spaces with a single space
-        .replace(/^\s|\s$/g, ''); // Remove leading and trailing spaces
-        match = basicRfcRegex.exec(string);
-
-        if (match) {
-            dayFormat = match[1] ? 'ddd' + (match[1].length === 5 ? ', ' : ' ') : '';
-            dateFormat = 'D MMM ' + (match[2].length > 10 ? 'YYYY ' : 'YY ');
-            timeFormat = 'HH:mm' + (match[4] ? ':ss' : '');
-
-            // TODO: Replace the vanilla JS Date object with an indepentent day-of-week check.
-            if (match[1]) {
-                // day of week given
-                var momentDate = new Date(match[2]);
-                var momentDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][momentDate.getDay()];
-
-                if (match[1].substr(0, 3) !== momentDay) {
-                    getParsingFlags(config).weekdayMismatch = true;
-                    config._isValid = false;
-                    return;
-                }
-            }
-
-            switch (match[5].length) {
-                case 2:
-                    // military
-                    if (timezoneIndex === 0) {
-                        timezone = ' +0000';
-                    } else {
-                        timezoneIndex = military.indexOf(match[5][1].toUpperCase()) - 12;
-                        timezone = (timezoneIndex < 0 ? ' -' : ' +') + ('' + timezoneIndex).replace(/^-?/, '0').match(/..$/)[0] + '00';
-                    }
-                    break;
-                case 4:
-                    // Zone
-                    timezone = timezones[match[5]];
-                    break;
-                default:
-                    // UT or +/-9999
-                    timezone = timezones[' GMT'];
-            }
-            match[5] = timezone;
-            config._i = match.splice(1).join('');
-            tzFormat = ' ZZ';
-            config._f = dayFormat + dateFormat + timeFormat + tzFormat;
-            configFromStringAndFormat(config);
-            getParsingFlags(config).rfc2822 = true;
-        } else {
-            config._isValid = false;
-        }
-    }
-
-    // date from iso format or fallback
-    function configFromString(config) {
-        var matched = aspNetJsonRegex.exec(config._i);
-
-        if (matched !== null) {
-            config._d = new Date(+matched[1]);
-            return;
-        }
-
-        configFromISO(config);
-        if (config._isValid === false) {
-            delete config._isValid;
-        } else {
-            return;
-        }
-
-        configFromRFC2822(config);
-        if (config._isValid === false) {
-            delete config._isValid;
-        } else {
-            return;
-        }
-
-        // Final attempt, use Input Fallback
-        hooks.createFromInputFallback(config);
-    }
-
-    hooks.createFromInputFallback = deprecate('value provided is not in a recognized RFC2822 or ISO format. moment construction falls back to js Date(), ' + 'which is not reliable across all browsers and versions. Non RFC2822/ISO date formats are ' + 'discouraged and will be removed in an upcoming major release. Please refer to ' + 'http://momentjs.com/guides/#/warnings/js-date/ for more info.', function (config) {
-        config._d = new Date(config._i + (config._useUTC ? ' UTC' : ''));
-    });
 
     // Pick the first defined of two or three arguments.
     function defaults(a, b, c) {
@@ -2305,6 +2140,11 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         if (config._nextDay) {
             config._a[HOUR] = 24;
         }
+
+        // check for mismatching day of week
+        if (config._w && typeof config._w.d !== 'undefined' && config._w.d !== config._d.getDay()) {
+            getParsingFlags(config).weekdayMismatch = true;
+        }
     }
 
     function dayOfYearFromWeekInfo(config) {
@@ -2363,6 +2203,200 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             config._dayOfYear = temp.dayOfYear;
         }
     }
+
+    // iso 8601 regex
+    // 0000-00-00 0000-W00 or 0000-W00-0 + T + 00 or 00:00 or 00:00:00 or 00:00:00.000 + +00:00 or +0000 or +00)
+    var extendedIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?$/;
+    var basicIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?$/;
+
+    var tzRegex = /Z|[+-]\d\d(?::?\d\d)?/;
+
+    var isoDates = [['YYYYYY-MM-DD', /[+-]\d{6}-\d\d-\d\d/], ['YYYY-MM-DD', /\d{4}-\d\d-\d\d/], ['GGGG-[W]WW-E', /\d{4}-W\d\d-\d/], ['GGGG-[W]WW', /\d{4}-W\d\d/, false], ['YYYY-DDD', /\d{4}-\d{3}/], ['YYYY-MM', /\d{4}-\d\d/, false], ['YYYYYYMMDD', /[+-]\d{10}/], ['YYYYMMDD', /\d{8}/],
+    // YYYYMM is NOT allowed by the standard
+    ['GGGG[W]WWE', /\d{4}W\d{3}/], ['GGGG[W]WW', /\d{4}W\d{2}/, false], ['YYYYDDD', /\d{7}/]];
+
+    // iso time formats and regexes
+    var isoTimes = [['HH:mm:ss.SSSS', /\d\d:\d\d:\d\d\.\d+/], ['HH:mm:ss,SSSS', /\d\d:\d\d:\d\d,\d+/], ['HH:mm:ss', /\d\d:\d\d:\d\d/], ['HH:mm', /\d\d:\d\d/], ['HHmmss.SSSS', /\d\d\d\d\d\d\.\d+/], ['HHmmss,SSSS', /\d\d\d\d\d\d,\d+/], ['HHmmss', /\d\d\d\d\d\d/], ['HHmm', /\d\d\d\d/], ['HH', /\d\d/]];
+
+    var aspNetJsonRegex = /^\/?Date\((\-?\d+)/i;
+
+    // date from iso format
+    function configFromISO(config) {
+        var i,
+            l,
+            string = config._i,
+            match = extendedIsoRegex.exec(string) || basicIsoRegex.exec(string),
+            allowTime,
+            dateFormat,
+            timeFormat,
+            tzFormat;
+
+        if (match) {
+            getParsingFlags(config).iso = true;
+
+            for (i = 0, l = isoDates.length; i < l; i++) {
+                if (isoDates[i][1].exec(match[1])) {
+                    dateFormat = isoDates[i][0];
+                    allowTime = isoDates[i][2] !== false;
+                    break;
+                }
+            }
+            if (dateFormat == null) {
+                config._isValid = false;
+                return;
+            }
+            if (match[3]) {
+                for (i = 0, l = isoTimes.length; i < l; i++) {
+                    if (isoTimes[i][1].exec(match[3])) {
+                        // match[2] should be 'T' or space
+                        timeFormat = (match[2] || ' ') + isoTimes[i][0];
+                        break;
+                    }
+                }
+                if (timeFormat == null) {
+                    config._isValid = false;
+                    return;
+                }
+            }
+            if (!allowTime && timeFormat != null) {
+                config._isValid = false;
+                return;
+            }
+            if (match[4]) {
+                if (tzRegex.exec(match[4])) {
+                    tzFormat = 'Z';
+                } else {
+                    config._isValid = false;
+                    return;
+                }
+            }
+            config._f = dateFormat + (timeFormat || '') + (tzFormat || '');
+            configFromStringAndFormat(config);
+        } else {
+            config._isValid = false;
+        }
+    }
+
+    // RFC 2822 regex: For details see https://tools.ietf.org/html/rfc2822#section-3.3
+    var rfc2822 = /^(?:(Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s)?(\d{1,2})\s(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s(\d{2,4})\s(\d\d):(\d\d)(?::(\d\d))?\s(?:(UT|GMT|[ECMP][SD]T)|([Zz])|([+-]\d{4}))$/;
+
+    function extractFromRFC2822Strings(yearStr, monthStr, dayStr, hourStr, minuteStr, secondStr) {
+        var result = [untruncateYear(yearStr), defaultLocaleMonthsShort.indexOf(monthStr), parseInt(dayStr, 10), parseInt(hourStr, 10), parseInt(minuteStr, 10)];
+
+        if (secondStr) {
+            result.push(parseInt(secondStr, 10));
+        }
+
+        return result;
+    }
+
+    function untruncateYear(yearStr) {
+        var year = parseInt(yearStr, 10);
+        if (year <= 49) {
+            return 2000 + year;
+        } else if (year <= 999) {
+            return 1900 + year;
+        }
+        return year;
+    }
+
+    function preprocessRFC2822(s) {
+        // Remove comments and folding whitespace and replace multiple-spaces with a single space
+        return s.replace(/\([^)]*\)|[\n\t]/g, ' ').replace(/(\s\s+)/g, ' ').trim();
+    }
+
+    function checkWeekday(weekdayStr, parsedInput, config) {
+        if (weekdayStr) {
+            // TODO: Replace the vanilla JS Date object with an indepentent day-of-week check.
+            var weekdayProvided = defaultLocaleWeekdaysShort.indexOf(weekdayStr),
+                weekdayActual = new Date(parsedInput[0], parsedInput[1], parsedInput[2]).getDay();
+            if (weekdayProvided !== weekdayActual) {
+                getParsingFlags(config).weekdayMismatch = true;
+                config._isValid = false;
+                return false;
+            }
+        }
+        return true;
+    }
+
+    var obsOffsets = {
+        UT: 0,
+        GMT: 0,
+        EDT: -4 * 60,
+        EST: -5 * 60,
+        CDT: -5 * 60,
+        CST: -6 * 60,
+        MDT: -6 * 60,
+        MST: -7 * 60,
+        PDT: -7 * 60,
+        PST: -8 * 60
+    };
+
+    function calculateOffset(obsOffset, militaryOffset, numOffset) {
+        if (obsOffset) {
+            return obsOffsets[obsOffset];
+        } else if (militaryOffset) {
+            // the only allowed military tz is Z
+            return 0;
+        } else {
+            var hm = parseInt(numOffset, 10);
+            var m = hm % 100,
+                h = (hm - m) / 100;
+            return h * 60 + m;
+        }
+    }
+
+    // date and time from ref 2822 format
+    function configFromRFC2822(config) {
+        var match = rfc2822.exec(preprocessRFC2822(config._i));
+        if (match) {
+            var parsedArray = extractFromRFC2822Strings(match[4], match[3], match[2], match[5], match[6], match[7]);
+            if (!checkWeekday(match[1], parsedArray, config)) {
+                return;
+            }
+
+            config._a = parsedArray;
+            config._tzm = calculateOffset(match[8], match[9], match[10]);
+
+            config._d = createUTCDate.apply(null, config._a);
+            config._d.setUTCMinutes(config._d.getUTCMinutes() - config._tzm);
+
+            getParsingFlags(config).rfc2822 = true;
+        } else {
+            config._isValid = false;
+        }
+    }
+
+    // date from iso format or fallback
+    function configFromString(config) {
+        var matched = aspNetJsonRegex.exec(config._i);
+
+        if (matched !== null) {
+            config._d = new Date(+matched[1]);
+            return;
+        }
+
+        configFromISO(config);
+        if (config._isValid === false) {
+            delete config._isValid;
+        } else {
+            return;
+        }
+
+        configFromRFC2822(config);
+        if (config._isValid === false) {
+            delete config._isValid;
+        } else {
+            return;
+        }
+
+        // Final attempt, use Input Fallback
+        hooks.createFromInputFallback(config);
+    }
+
+    hooks.createFromInputFallback = deprecate('value provided is not in a recognized RFC2822 or ISO format. moment construction falls back to js Date(), ' + 'which is not reliable across all browsers and versions. Non RFC2822/ISO date formats are ' + 'discouraged and will be removed in an upcoming major release. Please refer to ' + 'http://momentjs.com/guides/#/warnings/js-date/ for more info.', function (config) {
+        config._d = new Date(config._i + (config._useUTC ? ' UTC' : ''));
+    });
 
     // constant that refers to the ISO standard
     hooks.ISO_8601 = function () {};
@@ -2675,7 +2709,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
     function isDurationValid(m) {
         for (var key in m) {
-            if (!(ordering.indexOf(key) !== -1 && (m[key] == null || !isNaN(m[key])))) {
+            if (!(indexOf.call(ordering, key) !== -1 && (m[key] == null || !isNaN(m[key])))) {
                 return false;
             }
         }
@@ -2724,7 +2758,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         // Because of dateAddRemove treats 24 hours as different from a
         // day when working around DST, we need to store them separately
         this._days = +days + weeks * 7;
-        // It is impossible translate months into days without knowing
+        // It is impossible to translate months into days without knowing
         // which months you are are talking about, so we have to store
         // it separately.
         this._months = +months + quarters * 3 + years * 12;
@@ -2962,12 +2996,12 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     }
 
     // ASP.NET json date format regex
-    var aspNetRegex = /^(\-)?(?:(\d*)[. ])?(\d+)\:(\d+)(?:\:(\d+)(\.\d*)?)?$/;
+    var aspNetRegex = /^(\-|\+)?(?:(\d*)[. ])?(\d+)\:(\d+)(?:\:(\d+)(\.\d*)?)?$/;
 
     // from http://docs.closure-library.googlecode.com/git/closure_goog_date_date.js.source.html
     // somewhat more in line with 4.4.3.2 2004 spec, but allows decimal anywhere
     // and further modified to allow for strings containing both week and day
-    var isoRegex = /^(-)?P(?:(-?[0-9,.]*)Y)?(?:(-?[0-9,.]*)M)?(?:(-?[0-9,.]*)W)?(?:(-?[0-9,.]*)D)?(?:T(?:(-?[0-9,.]*)H)?(?:(-?[0-9,.]*)M)?(?:(-?[0-9,.]*)S)?)?$/;
+    var isoRegex = /^(-|\+)?P(?:([-+]?[0-9,.]*)Y)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)W)?(?:([-+]?[0-9,.]*)D)?(?:T(?:([-+]?[0-9,.]*)H)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)S)?)?$/;
 
     function createDuration(input, key) {
         var duration = input,
@@ -3002,7 +3036,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
                 ms: toInt(absRound(match[MILLISECOND] * 1000)) * sign // the millisecond decimal point is included in the match
             };
         } else if (!!(match = isoRegex.exec(input))) {
-            sign = match[1] === '-' ? -1 : 1;
+            sign = match[1] === '-' ? -1 : match[1] === '+' ? 1 : 1;
             duration = {
                 y: parseIso(match[2], sign),
                 M: parseIso(match[3], sign),
@@ -3104,14 +3138,14 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
         updateOffset = updateOffset == null ? true : updateOffset;
 
-        if (milliseconds) {
-            mom._d.setTime(mom._d.valueOf() + milliseconds * isAdding);
+        if (months) {
+            setMonth(mom, get(mom, 'Month') + months * isAdding);
         }
         if (days) {
             set$1(mom, 'Date', get(mom, 'Date') + days * isAdding);
         }
-        if (months) {
-            setMonth(mom, get(mom, 'Month') + months * isAdding);
+        if (milliseconds) {
+            mom._d.setTime(mom._d.valueOf() + milliseconds * isAdding);
         }
         if (updateOffset) {
             hooks.updateOffset(mom, days || months);
@@ -3213,22 +3247,27 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
         units = normalizeUnits(units);
 
-        if (units === 'year' || units === 'month' || units === 'quarter') {
-            output = monthDiff(this, that);
-            if (units === 'quarter') {
-                output = output / 3;
-            } else if (units === 'year') {
-                output = output / 12;
-            }
-        } else {
-            delta = this - that;
-            output = units === 'second' ? delta / 1e3 : // 1000
-            units === 'minute' ? delta / 6e4 : // 1000 * 60
-            units === 'hour' ? delta / 36e5 : // 1000 * 60 * 60
-            units === 'day' ? (delta - zoneDelta) / 864e5 : // 1000 * 60 * 60 * 24, negate dst
-            units === 'week' ? (delta - zoneDelta) / 6048e5 : // 1000 * 60 * 60 * 24 * 7, negate dst
-            delta;
+        switch (units) {
+            case 'year':
+                output = monthDiff(this, that) / 12;break;
+            case 'month':
+                output = monthDiff(this, that);break;
+            case 'quarter':
+                output = monthDiff(this, that) / 3;break;
+            case 'second':
+                output = (this - that) / 1e3;break; // 1000
+            case 'minute':
+                output = (this - that) / 6e4;break; // 1000 * 60
+            case 'hour':
+                output = (this - that) / 36e5;break; // 1000 * 60 * 60
+            case 'day':
+                output = (this - that - zoneDelta) / 864e5;break; // 1000 * 60 * 60 * 24, negate dst
+            case 'week':
+                output = (this - that - zoneDelta) / 6048e5;break; // 1000 * 60 * 60 * 24 * 7, negate dst
+            default:
+                output = this - that;
         }
+
         return asFloat ? output : absFloor(output);
     }
 
@@ -4189,6 +4228,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     var asMonths = makeAs('M');
     var asYears = makeAs('y');
 
+    function clone$1() {
+        return createDuration(this);
+    }
+
     function get$2(units) {
         units = normalizeUnits(units);
         return this.isValid() ? this[units + 's']() : NaN;
@@ -4288,6 +4331,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
     var abs$1 = Math.abs;
 
+    function sign(x) {
+        return (x > 0) - (x < 0) || +x;
+    }
+
     function toISOString$1() {
         // for ISO strings we do not use the normal bubbling rules:
         //  * milliseconds bubble up until they become hours
@@ -4321,7 +4368,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         var D = days;
         var h = hours;
         var m = minutes;
-        var s = seconds;
+        var s = seconds ? seconds.toFixed(3).replace(/\.?0+$/, '') : '';
         var total = this.asSeconds();
 
         if (!total) {
@@ -4330,7 +4377,12 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             return 'P0D';
         }
 
-        return (total < 0 ? '-' : '') + 'P' + (Y ? Y + 'Y' : '') + (M ? M + 'M' : '') + (D ? D + 'D' : '') + (h || m || s ? 'T' : '') + (h ? h + 'H' : '') + (m ? m + 'M' : '') + (s ? s + 'S' : '');
+        var totalSign = total < 0 ? '-' : '';
+        var ymSign = sign(this._months) !== sign(total) ? '-' : '';
+        var daysSign = sign(this._days) !== sign(total) ? '-' : '';
+        var hmsSign = sign(this._milliseconds) !== sign(total) ? '-' : '';
+
+        return totalSign + 'P' + (Y ? ymSign + Y + 'Y' : '') + (M ? ymSign + M + 'M' : '') + (D ? daysSign + D + 'D' : '') + (h || m || s ? 'T' : '') + (h ? hmsSign + h + 'H' : '') + (m ? hmsSign + m + 'M' : '') + (s ? hmsSign + s + 'S' : '');
     }
 
     var proto$2 = Duration.prototype;
@@ -4350,6 +4402,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     proto$2.asYears = asYears;
     proto$2.valueOf = valueOf$1;
     proto$2._bubble = bubble;
+    proto$2.clone = clone$1;
     proto$2.get = get$2;
     proto$2.milliseconds = milliseconds;
     proto$2.seconds = seconds;
@@ -4391,7 +4444,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     // Side effect imports
 
 
-    hooks.version = '2.18.1';
+    hooks.version = '2.19.1';
 
     setHookCallback(createLocal);
 
@@ -4425,7 +4478,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
     return hooks;
 });
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(165)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(168)(module)))
 
 /***/ }),
 /* 1 */
@@ -4437,24 +4490,295 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.h = h;
+exports.app = app;
 
-var _h = __webpack_require__(131);
 
-Object.defineProperty(exports, "h", {
-  enumerable: true,
-  get: function get() {
-    return _h.h;
+function app(props, container) {
+  var root = (container = container || document.body).children[0];
+  var node = vnode(root, [].map);
+  var appState = {};
+  var appActions = {};
+  var lifecycle = [];
+  var patchLock;
+
+  repaint(init(appState, appActions, props, []));
+
+  return appActions;
+
+  function vnode(element, map) {
+    return element && h(element.tagName.toLowerCase(), {}, map.call(element.childNodes, function (element) {
+      return element.nodeType === 3 ? element.nodeValue : vnode(element, map);
+    }));
   }
-});
 
-var _app = __webpack_require__(132);
-
-Object.defineProperty(exports, "app", {
-  enumerable: true,
-  get: function get() {
-    return _app.app;
+  function repaint() {
+    if (props.view && !patchLock) {
+      setTimeout(render, patchLock = !patchLock);
+    }
   }
-});
+
+  function render(next) {
+    patchLock = !patchLock;
+    if ((next = props.view(appState, appActions)) && !patchLock) {
+      root = patch(container, root, node, node = next);
+    }
+    while (next = lifecycle.pop()) {
+      next();
+    }
+  }
+
+  function init(state, actions, from, path) {
+    var modules = from.modules;
+
+    initDeep(state, actions, from.actions, path);
+    set(state, from.state);
+
+    for (var i in modules) {
+      init(state[i] = {}, actions[i] = {}, modules[i], path.concat(i));
+    }
+  }
+
+  function initDeep(state, actions, from, path) {
+    Object.keys(from || {}).map(function (key) {
+      if (typeof from[key] === "function") {
+        actions[key] = function (data) {
+          var result = from[key](state = get(path, appState), actions);
+
+          if (typeof result === "function") {
+            result = result(data);
+          }
+
+          if (result && result !== state && !result.then) {
+            repaint(appState = setDeep(path, merge(state, result), appState));
+          }
+
+          return result;
+        };
+      } else {
+        initDeep(state[key] || (state[key] = {}), actions[key] = {}, from[key], path.concat(key));
+      }
+    });
+  }
+
+  function merge(to, from) {
+    return set(set({}, to), from);
+  }
+
+  function set(to, from) {
+    for (var i in from) {
+      to[i] = from[i];
+    }
+    return to;
+  }
+
+  function setDeep(path, value, from) {
+    var to = {};
+    return path.length === 0 ? value : (to[path[0]] = 1 < path.length ? setDeep(path.slice(1), value, from[path[0]]) : value, merge(from, to));
+  }
+
+  function get(path, from) {
+    for (var i = 0; i < path.length; i++) {
+      from = from[path[i]];
+    }
+    return from;
+  }
+
+  function createElement(node, isSVG) {
+    if (typeof node === "string") {
+      var element = document.createTextNode(node);
+    } else {
+      var element = (isSVG = isSVG || node.type === "svg") ? document.createElementNS("http://www.w3.org/2000/svg", node.type) : document.createElement(node.type);
+
+      if (node.props.oncreate) {
+        lifecycle.push(function () {
+          node.props.oncreate(element);
+        });
+      }
+
+      for (var i = 0; i < node.children.length; i++) {
+        element.appendChild(createElement(node.children[i], isSVG));
+      }
+
+      for (var i in node.props) {
+        setElementProp(element, i, node.props[i]);
+      }
+    }
+    return element;
+  }
+
+  function setElementProp(element, name, value, oldValue) {
+    if (name === "key") {} else if (name === "style") {
+      for (var name in merge(oldValue, value = value || {})) {
+        element.style[name] = value[name] || "";
+      }
+    } else {
+      try {
+        element[name] = null == value ? "" : value;
+      } catch (_) {}
+
+      if (typeof value !== "function") {
+        if (null == value || false === value) {
+          element.removeAttribute(name);
+        } else {
+          element.setAttribute(name, value);
+        }
+      }
+    }
+  }
+
+  function updateElement(element, oldProps, props) {
+    for (var i in merge(oldProps, props)) {
+      var value = props[i];
+      var oldValue = i === "value" || i === "checked" ? element[i] : oldProps[i];
+
+      if (value !== oldValue) {
+        setElementProp(element, i, value, oldValue);
+      }
+    }
+
+    if (props.onupdate) {
+      lifecycle.push(function () {
+        props.onupdate(element, oldProps);
+      });
+    }
+  }
+
+  function removeElement(parent, element, props) {
+    if (props && props.onremove) {
+      props.onremove(element, done);
+    } else {
+      done();
+    }
+
+    function done() {
+      parent.removeChild(element);
+    }
+  }
+
+  function getKey(node) {
+    if (node && node.props) {
+      return node.props.key;
+    }
+  }
+
+  function patch(parent, element, oldNode, node, isSVG, nextSibling) {
+    if (oldNode === node) {} else if (oldNode == null) {
+      element = parent.insertBefore(createElement(node, isSVG), element);
+    } else if (node.type != null && node.type === oldNode.type) {
+      updateElement(element, oldNode.props, node.props);
+
+      isSVG = isSVG || node.type === "svg";
+
+      var len = node.children.length;
+      var oldLen = oldNode.children.length;
+      var oldKeyed = {};
+      var oldElements = [];
+      var keyed = {};
+
+      for (var i = 0; i < oldLen; i++) {
+        var oldElement = oldElements[i] = element.childNodes[i];
+        var oldChild = oldNode.children[i];
+        var oldKey = getKey(oldChild);
+
+        if (null != oldKey) {
+          oldKeyed[oldKey] = [oldElement, oldChild];
+        }
+      }
+
+      var i = 0;
+      var j = 0;
+
+      while (j < len) {
+        var oldElement = oldElements[i];
+        var oldChild = oldNode.children[i];
+        var newChild = node.children[j];
+
+        var oldKey = getKey(oldChild);
+        if (keyed[oldKey]) {
+          i++;
+          continue;
+        }
+
+        var newKey = getKey(newChild);
+        var keyedNode = oldKeyed[newKey] || [];
+
+        if (null == newKey) {
+          if (null == oldKey) {
+            patch(element, oldElement, oldChild, newChild, isSVG);
+            j++;
+          }
+          i++;
+        } else {
+          if (oldKey === newKey) {
+            patch(element, keyedNode[0], keyedNode[1], newChild, isSVG);
+            i++;
+          } else if (keyedNode[0]) {
+            element.insertBefore(keyedNode[0], oldElement);
+            patch(element, keyedNode[0], keyedNode[1], newChild, isSVG);
+          } else {
+            patch(element, oldElement, null, newChild, isSVG);
+          }
+
+          j++;
+          keyed[newKey] = newChild;
+        }
+      }
+
+      while (i < oldLen) {
+        var oldChild = oldNode.children[i];
+        var oldKey = getKey(oldChild);
+        if (null == oldKey) {
+          removeElement(element, oldElements[i], oldChild.props);
+        }
+        i++;
+      }
+
+      for (var i in oldKeyed) {
+        var keyedNode = oldKeyed[i];
+        var reusableNode = keyedNode[1];
+        if (!keyed[reusableNode.props.key]) {
+          removeElement(element, keyedNode[0], reusableNode.props);
+        }
+      }
+    } else if (element && node !== element.nodeValue) {
+      if (typeof node === "string" && typeof oldNode === "string") {
+        element.nodeValue = node;
+      } else {
+        element = parent.insertBefore(createElement(node, isSVG), nextSibling = element);
+        removeElement(parent, nextSibling, oldNode.props);
+      }
+    }
+
+    return element;
+  }
+}
+
+function h(type, props) {
+  var node;
+  var stack = [];
+  var children = [];
+
+  for (var i = arguments.length; i-- > 2;) {
+    stack.push(arguments[i]);
+  }
+
+  while (stack.length) {
+    if (Array.isArray(node = stack.pop())) {
+      for (i = node.length; i--;) {
+        stack.push(node[i]);
+      }
+    } else if (node != null && node !== true && node !== false) {
+      children.push(typeof node === "number" ? node = node + "" : node);
+    }
+  }
+
+  return typeof type === "string" ? {
+    type: type,
+    props: props || {},
+    children: children
+  } : type(props || {}, children);
+}
 
 /***/ }),
 /* 2 */
@@ -4468,7 +4792,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.request = undefined;
 
-var _config = __webpack_require__(134);
+var _config = __webpack_require__(135);
 
 var _config2 = _interopRequireDefault(_config);
 
@@ -4755,7 +5079,7 @@ exports.default = ModalHoc;
 
 var _hyperapp = __webpack_require__(1);
 
-var _Comments = __webpack_require__(146);
+var _Comments = __webpack_require__(147);
 
 var _Comments2 = _interopRequireDefault(_Comments);
 
@@ -5086,57 +5410,72 @@ var Radio = exports.Radio = function Radio(_ref) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.validateEmail = exports.getRandomToken = exports.unescape = exports.escape = exports.deepFind = exports.setVersion = exports.setMessage = exports.resetMessage = exports.closeModal = exports.onScroll = exports.navClicked = undefined;
+exports.validateEmail = exports.getRandomToken = exports.unescape = exports.escape = exports.deepFind = exports.setVersion = exports.setMessage = exports.resetMessage = exports.updateState = exports.closeModal = exports.onScroll = exports.navClicked = undefined;
 
 var _request = __webpack_require__(2);
 
-var navClicked = exports.navClicked = function navClicked(state, actions, data) {
-    var id = data.currentTarget.dataset.id;
-    state.nav.main.active = id;
-    return state;
+var navClicked = exports.navClicked = function navClicked(state, actions) {
+    return function (data) {
+        var id = data.currentTarget.dataset.id;
+        state.nav.main.active = id;
+        actions.updateState(state);
+    };
 };
 
-var onScroll = exports.onScroll = function onScroll(state, actions, _ref) {
-    var e = _ref.e,
-        callback = _ref.callback;
+var onScroll = exports.onScroll = function onScroll(state, actions) {
+    return function (_ref) {
+        var e = _ref.e,
+            callback = _ref.callback;
 
-    var ele = e.currentTarget;
-    var height = ele.clientHeight;
-    var scroll_top = ele.scrollTop;
-    var scrollHeight = ele.scrollHeight;
+        var ele = e.currentTarget;
+        var height = ele.clientHeight;
+        var scroll_top = ele.scrollTop;
+        var scrollHeight = ele.scrollHeight;
 
-    if (scroll_top + height >= scrollHeight) {
-        if (typeof callback == "function") callback(e);
-    }
-    e.stopPropagation();
-    e.preventDefault();
-    return false;
+        if (scroll_top + height >= scrollHeight) {
+            if (typeof callback == "function") callback(e);
+        }
+        e.stopPropagation();
+        e.preventDefault();
+        return false;
+    };
 };
 
-var closeModal = exports.closeModal = function closeModal(state, actions, name) {
-    state.modals[name].open = false;
-    return state;
+var closeModal = exports.closeModal = function closeModal(state, actions) {
+    return function (name) {
+        state.modals[name].open = false;
+        actions.updateState(state);
+    };
 };
 
+var updateState = exports.updateState = function updateState(state, actions) {
+    return function (newState) {
+        return { newState: newState };
+    };
+};
 var resetMessage = exports.resetMessage = function resetMessage(state, actions) {
-    return function (update) {
+    return function () {
         setTimeout(function () {
             if (state.message != "") {
                 state.message = "";
-                update(state);
+                actions.updateState(state);
             }
         }, 3000);
     };
 };
 
-var setMessage = exports.setMessage = function setMessage(state, actions, message) {
-    state.message = message;
-    return state;
+var setMessage = exports.setMessage = function setMessage(state, actions) {
+    return function (message) {
+        state.message = message;
+        actions.updateState(state);
+    };
 };
 
-var setVersion = exports.setVersion = function setVersion(state, actions, version) {
-    state.version = version;
-    return state;
+var setVersion = exports.setVersion = function setVersion(state, actions) {
+    return function (version) {
+        state.version = version;
+        actions.updateState(state);
+    };
 };
 
 var deepFind = exports.deepFind = function deepFind(obj, path) {
@@ -5418,7 +5757,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             yy: pluralize('y')
         },
         preparse: function preparse(string) {
-            return string.replace(/\u200f/g, '').replace(/[١٢٣٤٥٦٧٨٩٠]/g, function (match) {
+            return string.replace(/[١٢٣٤٥٦٧٨٩٠]/g, function (match) {
                 return numberMap[match];
             }).replace(/،/g, ',');
         },
@@ -5678,7 +6017,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             yy: pluralize('y')
         },
         preparse: function preparse(string) {
-            return string.replace(/\u200f/g, '').replace(/،/g, ',');
+            return string.replace(/،/g, ',');
         },
         postformat: function postformat(string) {
             return string.replace(/\d/g, function (match) {
@@ -6312,6 +6651,75 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 //! moment.js locale configuration
+//! locale : Bambara [bm]
+//! author : Estelle Comment : https://github.com/estellecomment
+
+;(function (global, factory) {
+    ( false ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' && "function" === 'function' ? factory(__webpack_require__(0)) :  true ? !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(0)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__)) : factory(global.moment);
+})(undefined, function (moment) {
+    'use strict';
+
+    // Language contact person : Abdoufata Kane : https://github.com/abdoufata
+
+    var bm = moment.defineLocale('bm', {
+        months: 'Zanwuyekalo_Fewuruyekalo_Marisikalo_Awirilikalo_Mɛkalo_Zuwɛnkalo_Zuluyekalo_Utikalo_Sɛtanburukalo_ɔkutɔburukalo_Nowanburukalo_Desanburukalo'.split('_'),
+        monthsShort: 'Zan_Few_Mar_Awi_Mɛ_Zuw_Zul_Uti_Sɛt_ɔku_Now_Des'.split('_'),
+        weekdays: 'Kari_Ntɛnɛn_Tarata_Araba_Alamisa_Juma_Sibiri'.split('_'),
+        weekdaysShort: 'Kar_Ntɛ_Tar_Ara_Ala_Jum_Sib'.split('_'),
+        weekdaysMin: 'Ka_Nt_Ta_Ar_Al_Ju_Si'.split('_'),
+        longDateFormat: {
+            LT: 'HH:mm',
+            LTS: 'HH:mm:ss',
+            L: 'DD/MM/YYYY',
+            LL: 'MMMM [tile] D [san] YYYY',
+            LLL: 'MMMM [tile] D [san] YYYY [lɛrɛ] HH:mm',
+            LLLL: 'dddd MMMM [tile] D [san] YYYY [lɛrɛ] HH:mm'
+        },
+        calendar: {
+            sameDay: '[Bi lɛrɛ] LT',
+            nextDay: '[Sini lɛrɛ] LT',
+            nextWeek: 'dddd [don lɛrɛ] LT',
+            lastDay: '[Kunu lɛrɛ] LT',
+            lastWeek: 'dddd [tɛmɛnen lɛrɛ] LT',
+            sameElse: 'L'
+        },
+        relativeTime: {
+            future: '%s kɔnɔ',
+            past: 'a bɛ %s bɔ',
+            s: 'sanga dama dama',
+            m: 'miniti kelen',
+            mm: 'miniti %d',
+            h: 'lɛrɛ kelen',
+            hh: 'lɛrɛ %d',
+            d: 'tile kelen',
+            dd: 'tile %d',
+            M: 'kalo kelen',
+            MM: 'kalo %d',
+            y: 'san kelen',
+            yy: 'san %d'
+        },
+        week: {
+            dow: 1, // Monday is the first day of the week.
+            doy: 4 // The week that contains Jan 4th is the first week of the year.
+        }
+    });
+
+    return bm;
+});
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+//! moment.js locale configuration
 //! locale : Bengali [bn]
 //! author : Kaushik Gandhi : https://github.com/kaushikgandhi
 
@@ -6429,7 +6837,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6555,7 +6963,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6672,7 +7080,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6824,7 +7232,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6854,17 +7262,17 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         monthsParseExact: true,
         weekdays: 'diumenge_dilluns_dimarts_dimecres_dijous_divendres_dissabte'.split('_'),
         weekdaysShort: 'dg._dl._dt._dc._dj._dv._ds.'.split('_'),
-        weekdaysMin: 'Dg_Dl_Dt_Dc_Dj_Dv_Ds'.split('_'),
+        weekdaysMin: 'dg_dl_dt_dc_dj_dv_ds'.split('_'),
         weekdaysParseExact: true,
         longDateFormat: {
             LT: 'H:mm',
             LTS: 'H:mm:ss',
             L: 'DD/MM/YYYY',
-            LL: '[el] D MMMM [de] YYYY',
+            LL: 'D MMMM [de] YYYY',
             ll: 'D MMM YYYY',
-            LLL: '[el] D MMMM [de] YYYY [a les] H:mm',
+            LLL: 'D MMMM [de] YYYY [a les] H:mm',
             lll: 'D MMM YYYY, H:mm',
-            LLLL: '[el] dddd D MMMM [de] YYYY [a les] H:mm',
+            LLLL: 'dddd D MMMM [de] YYYY [a les] H:mm',
             llll: 'ddd D MMM YYYY, H:mm'
         },
         calendar: {
@@ -6918,7 +7326,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7113,7 +7521,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7185,7 +7593,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7274,7 +7682,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7303,7 +7711,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         longDateFormat: {
             LT: 'HH:mm',
             LTS: 'HH:mm:ss',
-            L: 'DD/MM/YYYY',
+            L: 'DD.MM.YYYY',
             LL: 'D. MMMM YYYY',
             LLL: 'D. MMMM YYYY HH:mm',
             LLLL: 'dddd [d.] D. MMMM YYYY [kl.] HH:mm'
@@ -7343,7 +7751,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7381,7 +7789,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
     var de = moment.defineLocale('de', {
         months: 'Januar_Februar_März_April_Mai_Juni_Juli_August_September_Oktober_November_Dezember'.split('_'),
-        monthsShort: 'Jan._Febr._Mrz._Apr._Mai_Jun._Jul._Aug._Sept._Okt._Nov._Dez.'.split('_'),
+        monthsShort: 'Jan._Feb._März_Apr._Mai_Juni_Juli_Aug._Sep._Okt._Nov._Dez.'.split('_'),
         monthsParseExact: true,
         weekdays: 'Sonntag_Montag_Dienstag_Mittwoch_Donnerstag_Freitag_Samstag'.split('_'),
         weekdaysShort: 'So._Mo._Di._Mi._Do._Fr._Sa.'.split('_'),
@@ -7430,7 +7838,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7469,7 +7877,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
     var deAt = moment.defineLocale('de-at', {
         months: 'Jänner_Februar_März_April_Mai_Juni_Juli_August_September_Oktober_November_Dezember'.split('_'),
-        monthsShort: 'Jän._Febr._Mrz._Apr._Mai_Jun._Jul._Aug._Sept._Okt._Nov._Dez.'.split('_'),
+        monthsShort: 'Jän._Feb._März_Apr._Mai_Juni_Juli_Aug._Sep._Okt._Nov._Dez.'.split('_'),
         monthsParseExact: true,
         weekdays: 'Sonntag_Montag_Dienstag_Mittwoch_Donnerstag_Freitag_Samstag'.split('_'),
         weekdaysShort: 'So._Mo._Di._Mi._Do._Fr._Sa.'.split('_'),
@@ -7518,7 +7926,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7556,7 +7964,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
     var deCh = moment.defineLocale('de-ch', {
         months: 'Januar_Februar_März_April_Mai_Juni_Juli_August_September_Oktober_November_Dezember'.split('_'),
-        monthsShort: 'Jan._Febr._März_April_Mai_Juni_Juli_Aug._Sept._Okt._Nov._Dez.'.split('_'),
+        monthsShort: 'Jan._Feb._März_Apr._Mai_Juni_Juli_Aug._Sep._Okt._Nov._Dez.'.split('_'),
         monthsParseExact: true,
         weekdays: 'Sonntag_Montag_Dienstag_Mittwoch_Donnerstag_Freitag_Samstag'.split('_'),
         weekdaysShort: 'So_Mo_Di_Mi_Do_Fr_Sa'.split('_'),
@@ -7605,7 +8013,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7693,7 +8101,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7723,7 +8131,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         months: function months(momentToFormat, format) {
             if (!momentToFormat) {
                 return this._monthsNominativeEl;
-            } else if (/D/.test(format.substring(0, format.indexOf('MMMM')))) {
+            } else if (typeof format === 'string' && /D/.test(format.substring(0, format.indexOf('MMMM')))) {
                 // if there is a day number before 'MMMM'
                 return this._monthsGenitiveEl[momentToFormat.month()];
             } else {
@@ -7803,7 +8211,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7876,7 +8284,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7945,7 +8353,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8018,7 +8426,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 40 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8091,7 +8499,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 41 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8164,7 +8572,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 42 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8246,7 +8654,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 43 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8269,6 +8677,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     var monthsShortDot = 'ene._feb._mar._abr._may._jun._jul._ago._sep._oct._nov._dic.'.split('_');
     var _monthsShort = 'ene_feb_mar_abr_may_jun_jul_ago_sep_oct_nov_dic'.split('_');
 
+    var monthsParse = [/^ene/i, /^feb/i, /^mar/i, /^abr/i, /^may/i, /^jun/i, /^jul/i, /^ago/i, /^sep/i, /^oct/i, /^nov/i, /^dic/i];
+    var monthsRegex = /^(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|ene\.?|feb\.?|mar\.?|abr\.?|may\.?|jun\.?|jul\.?|ago\.?|sep\.?|oct\.?|nov\.?|dic\.?)/i;
+
     var es = moment.defineLocale('es', {
         months: 'enero_febrero_marzo_abril_mayo_junio_julio_agosto_septiembre_octubre_noviembre_diciembre'.split('_'),
         monthsShort: function monthsShort(m, format) {
@@ -8280,7 +8691,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
                 return monthsShortDot[m.month()];
             }
         },
-        monthsParseExact: true,
+        monthsRegex: monthsRegex,
+        monthsShortRegex: monthsRegex,
+        monthsStrictRegex: /^(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)/i,
+        monthsShortStrictRegex: /^(ene\.?|feb\.?|mar\.?|abr\.?|may\.?|jun\.?|jul\.?|ago\.?|sep\.?|oct\.?|nov\.?|dic\.?)/i,
+        monthsParse: monthsParse,
+        longMonthsParse: monthsParse,
+        shortMonthsParse: monthsParse,
         weekdays: 'domingo_lunes_martes_miércoles_jueves_viernes_sábado'.split('_'),
         weekdaysShort: 'dom._lun._mar._mié._jue._vie._sáb.'.split('_'),
         weekdaysMin: 'do_lu_ma_mi_ju_vi_sá'.split('_'),
@@ -8338,7 +8755,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 44 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8360,6 +8777,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     var monthsShortDot = 'ene._feb._mar._abr._may._jun._jul._ago._sep._oct._nov._dic.'.split('_');
     var _monthsShort = 'ene_feb_mar_abr_may_jun_jul_ago_sep_oct_nov_dic'.split('_');
 
+    var monthsParse = [/^ene/i, /^feb/i, /^mar/i, /^abr/i, /^may/i, /^jun/i, /^jul/i, /^ago/i, /^sep/i, /^oct/i, /^nov/i, /^dic/i];
+    var monthsRegex = /^(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|ene\.?|feb\.?|mar\.?|abr\.?|may\.?|jun\.?|jul\.?|ago\.?|sep\.?|oct\.?|nov\.?|dic\.?)/i;
+
     var esDo = moment.defineLocale('es-do', {
         months: 'enero_febrero_marzo_abril_mayo_junio_julio_agosto_septiembre_octubre_noviembre_diciembre'.split('_'),
         monthsShort: function monthsShort(m, format) {
@@ -8371,7 +8791,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
                 return monthsShortDot[m.month()];
             }
         },
-        monthsParseExact: true,
+        monthsRegex: monthsRegex,
+        monthsShortRegex: monthsRegex,
+        monthsStrictRegex: /^(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)/i,
+        monthsShortStrictRegex: /^(ene\.?|feb\.?|mar\.?|abr\.?|may\.?|jun\.?|jul\.?|ago\.?|sep\.?|oct\.?|nov\.?|dic\.?)/i,
+        monthsParse: monthsParse,
+        longMonthsParse: monthsParse,
+        shortMonthsParse: monthsParse,
         weekdays: 'domingo_lunes_martes_miércoles_jueves_viernes_sábado'.split('_'),
         weekdaysShort: 'dom._lun._mar._mié._jue._vie._sáb.'.split('_'),
         weekdaysMin: 'do_lu_ma_mi_ju_vi_sá'.split('_'),
@@ -8429,7 +8855,99 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 45 */
+/* 46 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+//! moment.js locale configuration
+//! locale : Spanish(United State) [es-us]
+//! author : bustta : https://github.com/bustta
+
+;(function (global, factory) {
+    ( false ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' && "function" === 'function' ? factory(__webpack_require__(0)) :  true ? !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(0)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__)) : factory(global.moment);
+})(undefined, function (moment) {
+    'use strict';
+
+    var monthsShortDot = 'ene._feb._mar._abr._may._jun._jul._ago._sep._oct._nov._dic.'.split('_');
+    var _monthsShort = 'ene_feb_mar_abr_may_jun_jul_ago_sep_oct_nov_dic'.split('_');
+
+    var esUs = moment.defineLocale('es-us', {
+        months: 'enero_febrero_marzo_abril_mayo_junio_julio_agosto_septiembre_octubre_noviembre_diciembre'.split('_'),
+        monthsShort: function monthsShort(m, format) {
+            if (!m) {
+                return monthsShortDot;
+            } else if (/-MMM-/.test(format)) {
+                return _monthsShort[m.month()];
+            } else {
+                return monthsShortDot[m.month()];
+            }
+        },
+        monthsParseExact: true,
+        weekdays: 'domingo_lunes_martes_miércoles_jueves_viernes_sábado'.split('_'),
+        weekdaysShort: 'dom._lun._mar._mié._jue._vie._sáb.'.split('_'),
+        weekdaysMin: 'do_lu_ma_mi_ju_vi_sá'.split('_'),
+        weekdaysParseExact: true,
+        longDateFormat: {
+            LT: 'H:mm',
+            LTS: 'H:mm:ss',
+            L: 'MM/DD/YYYY',
+            LL: 'MMMM [de] D [de] YYYY',
+            LLL: 'MMMM [de] D [de] YYYY H:mm',
+            LLLL: 'dddd, MMMM [de] D [de] YYYY H:mm'
+        },
+        calendar: {
+            sameDay: function sameDay() {
+                return '[hoy a la' + (this.hours() !== 1 ? 's' : '') + '] LT';
+            },
+            nextDay: function nextDay() {
+                return '[mañana a la' + (this.hours() !== 1 ? 's' : '') + '] LT';
+            },
+            nextWeek: function nextWeek() {
+                return 'dddd [a la' + (this.hours() !== 1 ? 's' : '') + '] LT';
+            },
+            lastDay: function lastDay() {
+                return '[ayer a la' + (this.hours() !== 1 ? 's' : '') + '] LT';
+            },
+            lastWeek: function lastWeek() {
+                return '[el] dddd [pasado a la' + (this.hours() !== 1 ? 's' : '') + '] LT';
+            },
+            sameElse: 'L'
+        },
+        relativeTime: {
+            future: 'en %s',
+            past: 'hace %s',
+            s: 'unos segundos',
+            m: 'un minuto',
+            mm: '%d minutos',
+            h: 'una hora',
+            hh: '%d horas',
+            d: 'un día',
+            dd: '%d días',
+            M: 'un mes',
+            MM: '%d meses',
+            y: 'un año',
+            yy: '%d años'
+        },
+        dayOfMonthOrdinalParse: /\d{1,2}º/,
+        ordinal: '%dº',
+        week: {
+            dow: 0, // Sunday is the first day of the week.
+            doy: 6 // The week that contains Jan 1st is the first week of the year.
+        }
+    });
+
+    return esUs;
+});
+
+/***/ }),
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8518,7 +9036,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 46 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8593,7 +9111,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 47 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8710,7 +9228,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 48 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8823,7 +9341,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 49 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8892,7 +9410,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 50 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8984,7 +9502,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 51 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9067,7 +9585,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 52 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9154,7 +9672,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 53 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9238,7 +9756,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 54 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9321,7 +9839,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 55 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9407,7 +9925,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 56 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9538,7 +10056,140 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 57 */
+/* 59 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+//! moment.js locale configuration
+//! locale : Gujarati [gu]
+//! author : Kaushik Thanki : https://github.com/Kaushik1987
+
+;(function (global, factory) {
+    ( false ? 'undefined' : _typeof(exports)) === 'object' && typeof module !== 'undefined' && "function" === 'function' ? factory(__webpack_require__(0)) :  true ? !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(0)], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
+				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
+				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__)) : factory(global.moment);
+})(undefined, function (moment) {
+    'use strict';
+
+    var symbolMap = {
+        '1': '૧',
+        '2': '૨',
+        '3': '૩',
+        '4': '૪',
+        '5': '૫',
+        '6': '૬',
+        '7': '૭',
+        '8': '૮',
+        '9': '૯',
+        '0': '૦'
+    };
+    var numberMap = {
+        '૧': '1',
+        '૨': '2',
+        '૩': '3',
+        '૪': '4',
+        '૫': '5',
+        '૬': '6',
+        '૭': '7',
+        '૮': '8',
+        '૯': '9',
+        '૦': '0'
+    };
+
+    var gu = moment.defineLocale('gu', {
+        months: 'જાન્યુઆરી_ફેબ્રુઆરી_માર્ચ_એપ્રિલ_મે_જૂન_જુલાઈ_ઑગસ્ટ_સપ્ટેમ્બર_ઑક્ટ્બર_નવેમ્બર_ડિસેમ્બર'.split('_'),
+        monthsShort: 'જાન્યુ._ફેબ્રુ._માર્ચ_એપ્રિ._મે_જૂન_જુલા._ઑગ._સપ્ટે._ઑક્ટ્._નવે._ડિસે.'.split('_'),
+        monthsParseExact: true,
+        weekdays: 'રવિવાર_સોમવાર_મંગળવાર_બુધ્વાર_ગુરુવાર_શુક્રવાર_શનિવાર'.split('_'),
+        weekdaysShort: 'રવિ_સોમ_મંગળ_બુધ્_ગુરુ_શુક્ર_શનિ'.split('_'),
+        weekdaysMin: 'ર_સો_મં_બુ_ગુ_શુ_શ'.split('_'),
+        longDateFormat: {
+            LT: 'A h:mm વાગ્યે',
+            LTS: 'A h:mm:ss વાગ્યે',
+            L: 'DD/MM/YYYY',
+            LL: 'D MMMM YYYY',
+            LLL: 'D MMMM YYYY, A h:mm વાગ્યે',
+            LLLL: 'dddd, D MMMM YYYY, A h:mm વાગ્યે'
+        },
+        calendar: {
+            sameDay: '[આજ] LT',
+            nextDay: '[કાલે] LT',
+            nextWeek: 'dddd, LT',
+            lastDay: '[ગઇકાલે] LT',
+            lastWeek: '[પાછલા] dddd, LT',
+            sameElse: 'L'
+        },
+        relativeTime: {
+            future: '%s મા',
+            past: '%s પેહલા',
+            s: 'અમુક પળો',
+            m: 'એક મિનિટ',
+            mm: '%d મિનિટ',
+            h: 'એક કલાક',
+            hh: '%d કલાક',
+            d: 'એક દિવસ',
+            dd: '%d દિવસ',
+            M: 'એક મહિનો',
+            MM: '%d મહિનો',
+            y: 'એક વર્ષ',
+            yy: '%d વર્ષ'
+        },
+        preparse: function preparse(string) {
+            return string.replace(/[૧૨૩૪૫૬૭૮૯૦]/g, function (match) {
+                return numberMap[match];
+            });
+        },
+        postformat: function postformat(string) {
+            return string.replace(/\d/g, function (match) {
+                return symbolMap[match];
+            });
+        },
+        // Gujarati notation for meridiems are quite fuzzy in practice. While there exists
+        // a rigid notion of a 'Pahar' it is not used as rigidly in modern Gujarati.
+        meridiemParse: /રાત|બપોર|સવાર|સાંજ/,
+        meridiemHour: function meridiemHour(hour, meridiem) {
+            if (hour === 12) {
+                hour = 0;
+            }
+            if (meridiem === 'રાત') {
+                return hour < 4 ? hour : hour + 12;
+            } else if (meridiem === 'સવાર') {
+                return hour;
+            } else if (meridiem === 'બપોર') {
+                return hour >= 10 ? hour : hour + 12;
+            } else if (meridiem === 'સાંજ') {
+                return hour + 12;
+            }
+        },
+        meridiem: function meridiem(hour, minute, isLower) {
+            if (hour < 4) {
+                return 'રાત';
+            } else if (hour < 10) {
+                return 'સવાર';
+            } else if (hour < 17) {
+                return 'બપોર';
+            } else if (hour < 20) {
+                return 'સાંજ';
+            } else {
+                return 'રાત';
+            }
+        },
+        week: {
+            dow: 0, // Sunday is the first day of the week.
+            doy: 6 // The week that contains Jan 1st is the first week of the year.
+        }
+    });
+
+    return gu;
+});
+
+/***/ }),
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9647,7 +10298,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 58 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9780,7 +10431,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 59 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9934,7 +10585,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 60 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10052,7 +10703,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 61 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10157,7 +10808,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 62 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10249,7 +10900,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 63 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10385,7 +11036,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 64 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10464,7 +11115,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 65 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10553,7 +11204,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 66 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10645,7 +11296,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 67 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10742,7 +11393,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 68 */
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10838,7 +11489,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 69 */
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10905,7 +11556,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 70 */
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11040,7 +11691,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 71 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11103,8 +11754,22 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             y: '일 년',
             yy: '%d년'
         },
-        dayOfMonthOrdinalParse: /\d{1,2}일/,
-        ordinal: '%d일',
+        dayOfMonthOrdinalParse: /\d{1,2}(일|월|주)/,
+        ordinal: function ordinal(number, period) {
+            switch (period) {
+                case 'd':
+                case 'D':
+                case 'DDD':
+                    return number + '일';
+                case 'M':
+                    return number + '월';
+                case 'w':
+                case 'W':
+                    return number + '주';
+                default:
+                    return number;
+            }
+        },
         meridiemParse: /오전|오후/,
         isPM: function isPM(token) {
             return token === '오후';
@@ -11118,7 +11783,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 72 */
+/* 75 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11214,7 +11879,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 73 */
+/* 76 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11361,7 +12026,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 74 */
+/* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11440,7 +12105,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 75 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11566,7 +12231,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 76 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11672,7 +12337,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 77 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11784,7 +12449,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 78 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11857,7 +12522,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 79 */
+/* 82 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11956,7 +12621,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 80 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12044,7 +12709,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 81 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12232,7 +12897,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 82 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12323,7 +12988,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 83 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12415,7 +13080,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 84 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12520,7 +13185,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 85 */
+/* 88 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12592,7 +13257,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 86 */
+/* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12724,7 +13389,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 87 */
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12774,7 +13439,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
         weekdays: 'zondag_maandag_dinsdag_woensdag_donderdag_vrijdag_zaterdag'.split('_'),
         weekdaysShort: 'zo._ma._di._wo._do._vr._za.'.split('_'),
-        weekdaysMin: 'Zo_Ma_Di_Wo_Do_Vr_Za'.split('_'),
+        weekdaysMin: 'zo_ma_di_wo_do_vr_za'.split('_'),
         weekdaysParseExact: true,
         longDateFormat: {
             LT: 'HH:mm',
@@ -12821,7 +13486,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 88 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12871,7 +13536,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
         weekdays: 'zondag_maandag_dinsdag_woensdag_donderdag_vrijdag_zaterdag'.split('_'),
         weekdaysShort: 'zo._ma._di._wo._do._vr._za.'.split('_'),
-        weekdaysMin: 'Zo_Ma_Di_Wo_Do_Vr_Za'.split('_'),
+        weekdaysMin: 'zo_ma_di_wo_do_vr_za'.split('_'),
         weekdaysParseExact: true,
         longDateFormat: {
             LT: 'HH:mm',
@@ -12918,7 +13583,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 89 */
+/* 92 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12987,7 +13652,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 90 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13120,7 +13785,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 91 */
+/* 94 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13193,7 +13858,24 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         calendar: {
             sameDay: '[Dziś o] LT',
             nextDay: '[Jutro o] LT',
-            nextWeek: '[W] dddd [o] LT',
+            nextWeek: function nextWeek() {
+                switch (this.day()) {
+                    case 0:
+                        return '[W niedzielę o] LT';
+
+                    case 2:
+                        return '[We wtorek o] LT';
+
+                    case 3:
+                        return '[W środę o] LT';
+
+                    case 6:
+                        return '[W sobotę o] LT';
+
+                    default:
+                        return '[W] dddd [o] LT';
+                }
+            },
             lastDay: '[Wczoraj o] LT',
             lastWeek: function lastWeek() {
                 switch (this.day()) {
@@ -13236,7 +13918,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 92 */
+/* 95 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13257,9 +13939,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     'use strict';
 
     var pt = moment.defineLocale('pt', {
-        months: 'Janeiro_Fevereiro_Março_Abril_Maio_Junho_Julho_Agosto_Setembro_Outubro_Novembro_Dezembro'.split('_'),
-        monthsShort: 'Jan_Fev_Mar_Abr_Mai_Jun_Jul_Ago_Set_Out_Nov_Dez'.split('_'),
-        weekdays: 'Domingo_Segunda-Feira_Terça-Feira_Quarta-Feira_Quinta-Feira_Sexta-Feira_Sábado'.split('_'),
+        months: 'janeiro_fevereiro_março_abril_maio_junho_julho_agosto_setembro_outubro_novembro_dezembro'.split('_'),
+        monthsShort: 'jan_fev_mar_abr_mai_jun_jul_ago_set_out_nov_dez'.split('_'),
+        weekdays: 'Domingo_Segunda-feira_Terça-feira_Quarta-feira_Quinta-feira_Sexta-feira_Sábado'.split('_'),
         weekdaysShort: 'Dom_Seg_Ter_Qua_Qui_Sex_Sáb'.split('_'),
         weekdaysMin: 'Do_2ª_3ª_4ª_5ª_6ª_Sá'.split('_'),
         weekdaysParseExact: true,
@@ -13309,7 +13991,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 93 */
+/* 96 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13330,8 +14012,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     'use strict';
 
     var ptBr = moment.defineLocale('pt-br', {
-        months: 'Janeiro_Fevereiro_Março_Abril_Maio_Junho_Julho_Agosto_Setembro_Outubro_Novembro_Dezembro'.split('_'),
-        monthsShort: 'Jan_Fev_Mar_Abr_Mai_Jun_Jul_Ago_Set_Out_Nov_Dez'.split('_'),
+        months: 'janeiro_fevereiro_março_abril_maio_junho_julho_agosto_setembro_outubro_novembro_dezembro'.split('_'),
+        monthsShort: 'jan_fev_mar_abr_mai_jun_jul_ago_set_out_nov_dez'.split('_'),
         weekdays: 'Domingo_Segunda-feira_Terça-feira_Quarta-feira_Quinta-feira_Sexta-feira_Sábado'.split('_'),
         weekdaysShort: 'Dom_Seg_Ter_Qua_Qui_Sex_Sáb'.split('_'),
         weekdaysMin: 'Do_2ª_3ª_4ª_5ª_6ª_Sá'.split('_'),
@@ -13359,6 +14041,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             future: 'em %s',
             past: '%s atrás',
             s: 'poucos segundos',
+            ss: '%d segundos',
             m: 'um minuto',
             mm: '%d minutos',
             h: 'uma hora',
@@ -13378,7 +14061,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 94 */
+/* 97 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13462,7 +14145,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 95 */
+/* 98 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13646,7 +14329,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         },
         week: {
             dow: 1, // Monday is the first day of the week.
-            doy: 7 // The week that contains Jan 1st is the first week of the year.
+            doy: 4 // The week that contains Jan 4th is the first week of the year.
         }
     });
 
@@ -13654,7 +14337,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 96 */
+/* 99 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13740,7 +14423,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 97 */
+/* 100 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13809,7 +14492,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 98 */
+/* 101 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13890,7 +14573,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 99 */
+/* 102 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14060,7 +14743,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 100 */
+/* 103 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14231,7 +14914,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 101 */
+/* 104 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14310,7 +14993,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 102 */
+/* 105 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14421,7 +15104,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 103 */
+/* 106 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14532,7 +15215,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 104 */
+/* 107 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14629,7 +15312,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 105 */
+/* 108 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14704,7 +15387,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 106 */
+/* 109 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14772,7 +15455,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 107 */
+/* 110 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14911,7 +15594,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 108 */
+/* 111 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15009,7 +15692,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 109 */
+/* 112 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15083,7 +15766,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 110 */
+/* 113 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15159,7 +15842,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 111 */
+/* 114 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15230,7 +15913,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 112 */
+/* 115 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15347,7 +16030,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 113 */
+/* 116 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15406,9 +16089,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         calendar: {
             sameDay: '[bugün saat] LT',
             nextDay: '[yarın saat] LT',
-            nextWeek: '[haftaya] dddd [saat] LT',
+            nextWeek: '[gelecek] dddd [saat] LT',
             lastDay: '[dün] LT',
-            lastWeek: '[geçen hafta] dddd [saat] LT',
+            lastWeek: '[geçen] dddd [saat] LT',
             sameElse: 'L'
         },
         relativeTime: {
@@ -15447,7 +16130,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 114 */
+/* 117 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15548,7 +16231,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 115 */
+/* 118 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15615,7 +16298,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 116 */
+/* 119 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15682,7 +16365,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 117 */
+/* 120 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15837,7 +16520,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 118 */
+/* 121 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15924,7 +16607,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 119 */
+/* 122 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15991,7 +16674,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 120 */
+/* 123 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16058,7 +16741,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 121 */
+/* 124 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16147,7 +16830,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 122 */
+/* 125 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16221,7 +16904,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 123 */
+/* 126 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16290,7 +16973,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 124 */
+/* 127 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16409,7 +17092,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 125 */
+/* 128 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16523,7 +17206,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 126 */
+/* 129 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16636,7 +17319,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 127 */
+/* 130 */
 /***/ (function(module, exports) {
 
 /* WEBPACK VAR INJECTION */(function(__webpack_amd_options__) {/* globals __webpack_amd_options__ */
@@ -16645,16 +17328,16 @@ module.exports = __webpack_amd_options__;
 /* WEBPACK VAR INJECTION */}.call(exports, {}))
 
 /***/ }),
-/* 128 */
+/* 131 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(129);
-__webpack_require__(172);
-module.exports = __webpack_require__(173);
+__webpack_require__(132);
+__webpack_require__(174);
+module.exports = __webpack_require__(175);
 
 
 /***/ }),
-/* 129 */
+/* 132 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16662,37 +17345,39 @@ module.exports = __webpack_require__(173);
 
 var _hyperapp = __webpack_require__(1);
 
-var _actions = __webpack_require__(133);
+var _actions = __webpack_require__(134);
 
 var _actions2 = _interopRequireDefault(_actions);
 
-var _state = __webpack_require__(142);
+var _state = __webpack_require__(143);
 
 var _state2 = _interopRequireDefault(_state);
 
-var _Main = __webpack_require__(143);
+var _Main = __webpack_require__(144);
 
 var _Main2 = _interopRequireDefault(_Main);
 
-var _events = __webpack_require__(169);
-
-var _events2 = _interopRequireDefault(_events);
-
-var _logger = __webpack_require__(171);
+var _logger = __webpack_require__(173);
 
 var _logger2 = _interopRequireDefault(_logger);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var options = { state: _state2.default, events: _events2.default, actions: _actions2.default, view: _Main2.default };
+var options = {
+    state: _state2.default,
+    actions: _actions2.default,
+    view: _Main2.default
+};
 if (process.env.NODE_ENV == "dev") {
-    options.mixins = [(0, _logger2.default)()];
+    (0, _logger2.default)()(_hyperapp.app)(options);
+    //app(options);
+} else {
+    (0, _hyperapp.app)(options);
 }
-(0, _hyperapp.app)(options, document.querySelector("#app"));
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(130)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(133)))
 
 /***/ }),
-/* 130 */
+/* 133 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16885,321 +17570,7 @@ process.umask = function () {
 };
 
 /***/ }),
-/* 131 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.h = h;
-var i;
-var stack = [];
-
-function h(tag, data) {
-  var node;
-  var children = [];
-
-  for (i = arguments.length; i-- > 2;) {
-    stack.push(arguments[i]);
-  }
-
-  while (stack.length) {
-    if (Array.isArray(node = stack.pop())) {
-      for (i = node.length; i--;) {
-        stack.push(node[i]);
-      }
-    } else if (node != null && node !== true && node !== false) {
-      if (typeof node === "number") {
-        node = node + "";
-      }
-      children.push(node);
-    }
-  }
-
-  return typeof tag === "string" ? {
-    tag: tag,
-    data: data || {},
-    children: children
-  } : tag(data, children);
-}
-
-/***/ }),
-/* 132 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.app = app;
-var globalInvokeLaterStack = [];
-
-function app(props) {
-  var appState;
-  var appView = props.view;
-  var appActions = {};
-  var appEvents = {};
-  var appMixins = props.mixins || [];
-  var appRoot = props.root || document.body;
-  var element;
-  var oldNode;
-  var renderLock;
-
-  appMixins.concat(props).map(function (mixin) {
-    mixin = typeof mixin === "function" ? mixin(emit) : mixin;
-
-    Object.keys(mixin.events || []).map(function (key) {
-      appEvents[key] = (appEvents[key] || []).concat(mixin.events[key]);
-    });
-
-    appState = merge(appState, mixin.state);
-    initialize(appActions, mixin.actions);
-  });
-
-  requestRender((oldNode = emit("load", element = appRoot.children[0])) === element && (oldNode = element = null));
-
-  return emit;
-
-  function initialize(actions, withActions, lastName) {
-    Object.keys(withActions || []).map(function (key) {
-      var action = withActions[key];
-      var name = lastName ? lastName + "." + key : key;
-
-      if (typeof action === "function") {
-        actions[key] = function (data) {
-          emit("action", { name: name, data: data });
-
-          var result = emit("resolve", action(appState, appActions, data));
-
-          return typeof result === "function" ? result(update) : update(result);
-        };
-      } else {
-        initialize(actions[key] || (actions[key] = {}), action, name);
-      }
-    });
-  }
-
-  function render(cb) {
-    element = patch(appRoot, element, oldNode, oldNode = emit("render", appView)(appState, appActions), renderLock = !renderLock);
-    while (cb = globalInvokeLaterStack.pop()) {
-      cb();
-    }
-  }
-
-  function requestRender() {
-    if (appView && !renderLock) {
-      requestAnimationFrame(render, renderLock = !renderLock);
-    }
-  }
-
-  function update(withState) {
-    if (typeof withState === "function") {
-      return update(withState(appState));
-    }
-    if (withState && (withState = emit("update", merge(appState, withState)))) {
-      requestRender(appState = withState);
-    }
-    return appState;
-  }
-
-  function emit(name, data) {
-    return (appEvents[name] || []).map(function (cb) {
-      var result = cb(appState, appActions, data);
-      if (result != null) {
-        data = result;
-      }
-    }), data;
-  }
-
-  function merge(a, b) {
-    var obj = {};
-
-    for (var i in a) {
-      obj[i] = a[i];
-    }
-
-    for (var i in b) {
-      obj[i] = b[i];
-    }
-
-    return obj;
-  }
-
-  function getKey(node) {
-    if (node && (node = node.data)) {
-      return node.key;
-    }
-  }
-
-  function createElement(node, isSVG) {
-    if (typeof node === "string") {
-      var element = document.createTextNode(node);
-    } else {
-      var element = (isSVG = isSVG || node.tag === "svg") ? document.createElementNS("http://www.w3.org/2000/svg", node.tag) : document.createElement(node.tag);
-
-      if (node.data && node.data.oncreate) {
-        globalInvokeLaterStack.push(function () {
-          node.data.oncreate(element);
-        });
-      }
-
-      for (var i in node.data) {
-        setData(element, i, node.data[i]);
-      }
-
-      for (var i = 0; i < node.children.length;) {
-        element.appendChild(createElement(node.children[i++], isSVG));
-      }
-    }
-
-    return element;
-  }
-
-  function setData(element, name, value, oldValue) {
-    if (name === "key") {} else if (name === "style") {
-      for (var i in merge(oldValue, value = value || {})) {
-        element.style[i] = value[i] || "";
-      }
-    } else {
-      try {
-        element[name] = value;
-      } catch (_) {}
-
-      if (typeof value !== "function") {
-        if (value) {
-          element.setAttribute(name, value);
-        } else {
-          element.removeAttribute(name);
-        }
-      }
-    }
-  }
-
-  function updateElement(element, oldData, data) {
-    for (var i in merge(oldData, data)) {
-      var value = data[i];
-      var oldValue = i === "value" || i === "checked" ? element[i] : oldData[i];
-
-      if (value !== oldValue) {
-        setData(element, i, value, oldValue);
-      }
-    }
-
-    if (data && data.onupdate) {
-      globalInvokeLaterStack.push(function () {
-        data.onupdate(element, oldData);
-      });
-    }
-  }
-
-  function removeElement(parent, element, data) {
-    if (data && data.onremove) {
-      data.onremove(element);
-    } else {
-      parent.removeChild(element);
-    }
-  }
-
-  function patch(parent, element, oldNode, node, isSVG, nextSibling) {
-    if (oldNode == null) {
-      element = parent.insertBefore(createElement(node, isSVG), element);
-    } else if (node.tag != null && node.tag === oldNode.tag) {
-      updateElement(element, oldNode.data, node.data);
-
-      isSVG = isSVG || node.tag === "svg";
-
-      var len = node.children.length;
-      var oldLen = oldNode.children.length;
-      var oldKeyed = {};
-      var oldElements = [];
-      var keyed = {};
-
-      for (var i = 0; i < oldLen; i++) {
-        var oldElement = oldElements[i] = element.childNodes[i];
-        var oldChild = oldNode.children[i];
-        var oldKey = getKey(oldChild);
-
-        if (null != oldKey) {
-          oldKeyed[oldKey] = [oldElement, oldChild];
-        }
-      }
-
-      var i = 0;
-      var j = 0;
-
-      while (j < len) {
-        var oldElement = oldElements[i];
-        var oldChild = oldNode.children[i];
-        var newChild = node.children[j];
-
-        var oldKey = getKey(oldChild);
-        if (keyed[oldKey]) {
-          i++;
-          continue;
-        }
-
-        var newKey = getKey(newChild);
-
-        var keyedNode = oldKeyed[newKey] || [];
-
-        if (null == newKey) {
-          if (null == oldKey) {
-            patch(element, oldElement, oldChild, newChild, isSVG);
-            j++;
-          }
-          i++;
-        } else {
-          if (oldKey === newKey) {
-            patch(element, keyedNode[0], keyedNode[1], newChild, isSVG);
-            i++;
-          } else if (keyedNode[0]) {
-            element.insertBefore(keyedNode[0], oldElement);
-            patch(element, keyedNode[0], keyedNode[1], newChild, isSVG);
-          } else {
-            patch(element, oldElement, null, newChild, isSVG);
-          }
-
-          j++;
-          keyed[newKey] = newChild;
-        }
-      }
-
-      while (i < oldLen) {
-        var oldChild = oldNode.children[i];
-        var oldKey = getKey(oldChild);
-        if (null == oldKey) {
-          removeElement(element, oldElements[i], oldChild.data);
-        }
-        i++;
-      }
-
-      for (var i in oldKeyed) {
-        var keyedNode = oldKeyed[i];
-        var reusableNode = keyedNode[1];
-        if (!keyed[reusableNode.data.key]) {
-          removeElement(element, keyedNode[0], reusableNode.data);
-        }
-      }
-    } else if (element && node !== element.nodeValue) {
-      if (typeof node === "string" && typeof oldNode === "string") {
-        element.nodeValue = node;
-      } else {
-        element = parent.insertBefore(createElement(node, isSVG), nextSibling = element);
-        removeElement(parent, nextSibling, oldNode.data);
-      }
-    }
-
-    return element;
-  }
-}
-
-/***/ }),
-/* 133 */
+/* 134 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17211,19 +17582,19 @@ Object.defineProperty(exports, "__esModule", {
 
 var _common = __webpack_require__(10);
 
-var _notification = __webpack_require__(135);
+var _notification = __webpack_require__(136);
 
-var _group = __webpack_require__(136);
+var _group = __webpack_require__(137);
 
-var _tab = __webpack_require__(137);
+var _tab = __webpack_require__(138);
 
-var _items = __webpack_require__(138);
+var _items = __webpack_require__(139);
 
-var _user = __webpack_require__(139);
+var _user = __webpack_require__(140);
 
-var _post = __webpack_require__(140);
+var _post = __webpack_require__(141);
 
-var _invite = __webpack_require__(141);
+var _invite = __webpack_require__(142);
 
 exports.default = {
     initialize: _user.initialize,
@@ -17282,17 +17653,19 @@ exports.default = {
     cancelCommentEdit: _items.cancelCommentEdit,
     deleteComment: _items.deleteComment,
     saveEditedComment: _items.saveEditedComment,
-    createNewGroup: _group.createNewGroup
+    createNewGroup: _group.createNewGroup,
+    setPost: _post.setPost,
+    updateState: _common.updateState
 };
 
 /***/ }),
-/* 134 */
+/* 135 */
 /***/ (function(module, exports) {
 
 module.exports = {"endpoint":"http://localhost:8000"}
 
 /***/ }),
-/* 135 */
+/* 136 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17305,10 +17678,10 @@ exports.notificationJoinedGroup = exports.setNotificationCount = exports.notific
 
 var _request = __webpack_require__(2);
 
-var fetchNotifications = exports.fetchNotifications = function fetchNotifications(state, actions, tab_id) {
-    var tab = state.notificationTabs.tabs[tab_id];
+var fetchNotifications = exports.fetchNotifications = function fetchNotifications(state, actions) {
+    return function (tab_id) {
+        var tab = state.notificationTabs.tabs[tab_id];
 
-    return function (update) {
         var params = {
             queryParams: {
                 handle: "tab-" + tab_id,
@@ -17332,17 +17705,17 @@ var fetchNotifications = exports.fetchNotifications = function fetchNotification
             }
             tab.isFetching = false;
             state.notificationTabs.tabs[tab_id] = tab;
-            update(state);
+            actions.updateState(state);
         });
     };
 };
 
-var notificationClicked = exports.notificationClicked = function notificationClicked(state, actions, _ref) {
-    var active = _ref.active,
-        index = _ref.index;
+var notificationClicked = exports.notificationClicked = function notificationClicked(state, actions) {
+    return function (_ref) {
+        var active = _ref.active,
+            index = _ref.index;
 
-    if (active == "notGroups") return;
-    return function (update) {
+        if (active == "notGroups") return;
         var item = state.notificationTabs.tabs[active].data.rows[index];
         var params = {
             queryParams: {
@@ -17357,23 +17730,27 @@ var notificationClicked = exports.notificationClicked = function notificationCli
             state.modals.notification.open = true;
             state.modals.notification.title = result.rows[0].title;
             state.modals.notification.data = result;
-            update(state);
+            actions.updateState(state);
         });
     };
 };
 
-var setNotificationCount = exports.setNotificationCount = function setNotificationCount(state, actions, data) {
-    state.notificationStatus = data;
-    return state;
+var setNotificationCount = exports.setNotificationCount = function setNotificationCount(state, actions) {
+    return function (data) {
+        state.notificationStatus = data;
+        actions.updateState(state);
+    };
 };
 
-var notificationJoinedGroup = exports.notificationJoinedGroup = function notificationJoinedGroup(state, actions, index) {
-    state.notificationTabs.tabs.notGroups.data.rows[index].accepted = 1;
-    return state;
+var notificationJoinedGroup = exports.notificationJoinedGroup = function notificationJoinedGroup(state, actions) {
+    return function (index) {
+        state.notificationTabs.tabs.notGroups.data.rows[index].accepted = 1;
+        actions.updateState(state);
+    };
 };
 
 /***/ }),
-/* 136 */
+/* 137 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17389,48 +17766,48 @@ var _request = __webpack_require__(2);
 var _utils = __webpack_require__(11);
 
 // fetch all groups of logged in user
-var fetchGroups = exports.fetchGroups = function fetchGroups(state, actions, callback) {
-    var params = {
-        queryParams: {
-            chrome_id: state.chrome_id,
-            action: "fetchUserGroups"
-        }
+var fetchGroups = exports.fetchGroups = function fetchGroups(state, actions) {
+    return function (callback) {
+        var params = {
+            queryParams: {
+                chrome_id: state.chrome_id,
+                action: "fetchUserGroups"
+            }
+        };
+        (0, _request.request)(params).then(function (result) {
+            var groupsData = result.map(function (group) {
+                group.name = group.gname;
+                delete group["gname"];
+                return group;
+            });
+            actions.setGroups({
+                action: "",
+                payload: groupsData
+            });
+            if (typeof callback == "function") {
+                callback();
+            }
+        });
     };
-    (0, _request.request)(params).then(function (result) {
-        var groupsData = result.map(function (group) {
-            group.name = group.gname;
-            delete group["gname"];
-            return group;
-        });
-        actions.setGroups({
-            action: "",
-            payload: groupsData
-        });
-        if (typeof callback == "function") {
-            callback();
-        }
-    });
 };
 
 // fetch all linkcast groups for a user to join.
 var fetchAllGroups = exports.fetchAllGroups = function fetchAllGroups(state, actions) {
-    return function (update) {
-        var params = {
-            queryParams: {
-                chrome_id: state.chrome_id,
-                action: "getAllGroups"
-            }
-        };
-        (0, _request.request)(params).then(function (result) {
-            state.allGroups.isFetching = false;
-            state.allGroups.data = result;
-            update(state);
-        });
+    var params = {
+        queryParams: {
+            chrome_id: state.chrome_id,
+            action: "getAllGroups"
+        }
     };
+    (0, _request.request)(params).then(function (result) {
+        state.allGroups.isFetching = false;
+        state.allGroups.data = result;
+        actions.updateState(state);
+    });
 };
 
-var fetchGroupUsers = exports.fetchGroupUsers = function fetchGroupUsers(state, actions, e) {
-    return function (update) {
+var fetchGroupUsers = exports.fetchGroupUsers = function fetchGroupUsers(state, actions) {
+    return function (e) {
         var params = {
             queryParams: {
                 chrome_id: state.chrome_id,
@@ -17443,44 +17820,49 @@ var fetchGroupUsers = exports.fetchGroupUsers = function fetchGroupUsers(state, 
             state.groupUsers.data = result;
             state.groupUsers.group_id = e.target.value;
             state.groupUsers.admin_id = state.allGroups.data[e.target.options.selectedIndex].admin;
-            update(state);
+            actions.updateState(state);
         });
     };
 };
 
-var setGroups = exports.setGroups = function setGroups(state, actions, data) {
-    state.groups.isFetching = false;
-    data.payload.unshift({
-        group_id: 0,
-        name: "All"
-    });
-    state.groups.data = data.payload;
-    state.groups.selected = data.payload[0] ? data.payload[0].id : null;
-    return state;
-};
-
-var setDefaultGroup = exports.setDefaultGroup = function setDefaultGroup(state, actions, index) {
-    state.groups.defaultGroup = parseInt(state.groups.data[index].group_id);
-    localStorage.defaultGroup = state.groups.defaultGroup;
-    state.mainNav.tabs.feed.initialized = false;
-    state.mainNav.tabs.feed.data = {
-        rows: [],
-        page: 1,
-        pages: 0,
-        total: 0
+var setGroups = exports.setGroups = function setGroups(state, actions) {
+    return function (data) {
+        state.groups.isFetching = false;
+        data.payload.unshift({
+            group_id: 0,
+            name: "All"
+        });
+        state.groups.data = data.payload;
+        state.groups.selected = data.payload[0] ? data.payload[0].id : null;
+        actions.updateState(state);
     };
-    actions.fetchItems({ stateKey: "mainNav", tab_id: "feed" });
-    state.message = "Default group set to " + state.groups.data[index].name;
-
-    return state;
 };
 
-var leaveGroup = exports.leaveGroup = function leaveGroup(state, actions, _ref) {
-    var e = _ref.e,
-        key = _ref.key;
+var setDefaultGroup = exports.setDefaultGroup = function setDefaultGroup(state, actions) {
+    return function (index) {
+        state.groups.defaultGroup = parseInt(state.groups.data[index].group_id);
+        localStorage.defaultGroup = state.groups.defaultGroup;
+        state.mainNav.tabs.feed.initialized = false;
+        state.mainNav.tabs.feed.data = {
+            rows: [],
+            page: 1,
+            pages: 0,
+            total: 0
+        };
+        actions.fetchItems({ stateKey: "mainNav", tab_id: "feed" });
+        state.message = "Default group set to " + state.groups.data[index].name;
 
-    var group = state.allGroups.data[key];
-    return function (update) {
+        actions.updateState(state);
+    };
+};
+
+var leaveGroup = exports.leaveGroup = function leaveGroup(state, actions) {
+    return function (_ref) {
+        var e = _ref.e,
+            key = _ref.key;
+
+        var group = state.allGroups.data[key];
+
         var params = {
             method: "POST",
             queryParams: {
@@ -17498,11 +17880,11 @@ var leaveGroup = exports.leaveGroup = function leaveGroup(state, actions, _ref) 
         });
     };
 };
-var joinGroup = exports.joinGroup = function joinGroup(state, actions, _ref2) {
-    var group = _ref2.group,
-        callback = _ref2.callback;
+var joinGroup = exports.joinGroup = function joinGroup(state, actions) {
+    return function (_ref2) {
+        var group = _ref2.group,
+            callback = _ref2.callback;
 
-    return function (update) {
         var params = {
             method: "POST",
             queryParams: {
@@ -17522,12 +17904,12 @@ var joinGroup = exports.joinGroup = function joinGroup(state, actions, _ref2) {
     };
 };
 
-var acceptGroupInvite = exports.acceptGroupInvite = function acceptGroupInvite(state, actions, _ref3) {
-    var e = _ref3.e,
-        index = _ref3.index,
-        activity = _ref3.activity;
+var acceptGroupInvite = exports.acceptGroupInvite = function acceptGroupInvite(state, actions) {
+    return function (_ref3) {
+        var e = _ref3.e,
+            index = _ref3.index,
+            activity = _ref3.activity;
 
-    return function (update) {
         var params = {
             method: "POST",
             queryParams: {
@@ -17540,17 +17922,17 @@ var acceptGroupInvite = exports.acceptGroupInvite = function acceptGroupInvite(s
         (0, _request.request)(params).then(function (result) {
             if (result.flag == 1) {
                 delete state.notificationTabs.tabs.notGroups.data.rows[index];
-                update(state);
+                actions.updateState(state);
             }
         });
     };
 };
-var rejectGroupInvite = exports.rejectGroupInvite = function rejectGroupInvite(state, actions, _ref4) {
-    var e = _ref4.e,
-        index = _ref4.index,
-        activity = _ref4.activity;
+var rejectGroupInvite = exports.rejectGroupInvite = function rejectGroupInvite(state, actions) {
+    return function (_ref4) {
+        var e = _ref4.e,
+            index = _ref4.index,
+            activity = _ref4.activity;
 
-    return function (update) {
         var params = {
             method: "POST",
             queryParams: {
@@ -17563,17 +17945,17 @@ var rejectGroupInvite = exports.rejectGroupInvite = function rejectGroupInvite(s
         (0, _request.request)(params).then(function (result) {
             if (result.flag == 1) {
                 delete state.notificationTabs.tabs.notGroups.data.rows[index];
-                update(state);
+                actions.updateState(state);
             }
         });
     };
 };
-var approveGroupRequest = exports.approveGroupRequest = function approveGroupRequest(state, actions, _ref5) {
-    var e = _ref5.e,
-        index = _ref5.index,
-        activity = _ref5.activity;
+var approveGroupRequest = exports.approveGroupRequest = function approveGroupRequest(state, actions) {
+    return function (_ref5) {
+        var e = _ref5.e,
+            index = _ref5.index,
+            activity = _ref5.activity;
 
-    return function (update) {
         var params = {
             method: "POST",
             queryParams: {
@@ -17586,17 +17968,17 @@ var approveGroupRequest = exports.approveGroupRequest = function approveGroupReq
         (0, _request.request)(params).then(function (result) {
             if (result.flag == 1) {
                 delete state.notificationTabs.tabs.notGroups.data.rows[index];
-                update(state);
+                actions.updateState(state);
             }
         });
     };
 };
-var rejectGroupRequest = exports.rejectGroupRequest = function rejectGroupRequest(state, actions, _ref6) {
-    var e = _ref6.e,
-        index = _ref6.index,
-        activity = _ref6.activity;
+var rejectGroupRequest = exports.rejectGroupRequest = function rejectGroupRequest(state, actions) {
+    return function (_ref6) {
+        var e = _ref6.e,
+            index = _ref6.index,
+            activity = _ref6.activity;
 
-    return function (update) {
         var params = {
             method: "POST",
             queryParams: {
@@ -17609,14 +17991,14 @@ var rejectGroupRequest = exports.rejectGroupRequest = function rejectGroupReques
         (0, _request.request)(params).then(function (result) {
             if (result.flag == 1) {
                 delete state.notificationTabs.tabs.notGroups.data.rows[index];
-                update(state);
+                actions.updateState(state);
             }
         });
     };
 };
 
-var saveEditedGroup = exports.saveEditedGroup = function saveEditedGroup(state, actions, data) {
-    return function (update) {
+var saveEditedGroup = exports.saveEditedGroup = function saveEditedGroup(state, actions) {
+    return function (data) {
         var params = {
             method: "POST",
             queryParams: {
@@ -17633,12 +18015,12 @@ var saveEditedGroup = exports.saveEditedGroup = function saveEditedGroup(state, 
 
         (0, _request.request)(params).then(function (result) {
             state.message = result.msg;
-            update(state);
+            actions.updateState(state);
         });
     };
 };
-var changePublicRights = exports.changePublicRights = function changePublicRights(state, actions, data) {
-    return function (update) {
+var changePublicRights = exports.changePublicRights = function changePublicRights(state, actions) {
+    return function (data) {
         var params = {
             method: "POST",
             queryParams: {
@@ -17654,13 +18036,13 @@ var changePublicRights = exports.changePublicRights = function changePublicRight
             if (result.flag == 1) {
                 state.groupUsers.data[data.index].group_rights = data.group_rights;
                 state.message = result.msg;
-                update(state);
+                actions.updateState(state);
             }
         });
     };
 };
-var removeUserFromGroup = exports.removeUserFromGroup = function removeUserFromGroup(state, actions, data) {
-    return function (update) {
+var removeUserFromGroup = exports.removeUserFromGroup = function removeUserFromGroup(state, actions) {
+    return function (data) {
         var user = state.groupUsers.data[data.index];
         var params = {
             method: "POST",
@@ -17676,18 +18058,19 @@ var removeUserFromGroup = exports.removeUserFromGroup = function removeUserFromG
             if (result.flag == 1) {
                 delete state.groupUsers.data[data.index];
                 state.message = result.msg;
-                update(state);
+                actions.updateState(state);
             }
         });
     };
 };
 
-var createNewGroup = exports.createNewGroup = function createNewGroup(state, actions, data) {
-    if (data.name.length == 0 || data.desc.length == 0) {
-        state.message = "All fields are mandatory";
-        return state;
-    }
-    return function (update) {
+var createNewGroup = exports.createNewGroup = function createNewGroup(state, actions) {
+    return function (data) {
+        if (data.name.length == 0 || data.desc.length == 0) {
+            state.message = "All fields are mandatory";
+            actions.updateState(state);
+        }
+
         var user = state.groupUsers.data[data.index];
         var params = {
             method: "POST",
@@ -17708,13 +18091,13 @@ var createNewGroup = exports.createNewGroup = function createNewGroup(state, act
                 state.groupTabs.active = "manage";
                 actions.fetchAllGroups();
                 actions.fetchGroups(function () {
-                    update(state);
+                    actions.updateState(state);
                     document.querySelector(".manage-gdd").value = result.group_id;
                     (0, _utils.trigger)(".manage-gdd", "change");
                 });
                 return false;
             }
-            update(state);
+            actions.updateState(state);
         });
     };
 };
@@ -17724,7 +18107,7 @@ var createNewGroup = exports.createNewGroup = function createNewGroup(state, act
 // }
 
 /***/ }),
-/* 137 */
+/* 138 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17733,71 +18116,74 @@ var createNewGroup = exports.createNewGroup = function createNewGroup(state, act
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-var onTabChange = exports.onTabChange = function onTabChange(state, actions, _ref) {
-    var stateKey = _ref.stateKey,
-        tab_id = _ref.tab_id;
+var onTabChange = exports.onTabChange = function onTabChange(state, actions) {
+    return function (_ref) {
+        var stateKey = _ref.stateKey,
+            tab_id = _ref.tab_id;
 
-    if (state[stateKey].tabs[tab_id].isFetching) {
-        state[stateKey].tabs[tab_id].isFetching = true;
-    }
-    state[stateKey].active = tab_id;
-    var params = { stateKey: stateKey, tab_id: tab_id };
-    _gaq.push(["_trackPageview", "/" + state[stateKey].tabs[tab_id].name]);
-    switch (tab_id) {
-        case "notification":
-            actions.onTabChange({
-                stateKey: "notificationTabs",
-                tab_id: state.notificationTabs.active
-            });
-            break;
-        case "notLinks":
-            actions.fetchNotifications(tab_id);
-            break;
-        case "notGroups":
-            actions.fetchNotifications(tab_id);
-            break;
-        case "feed":
-            actions.fetchItems(params);
-            break;
-        case "search":
-            state[stateKey].tabs[tab_id].q = "";
-            state[stateKey].tabs[tab_id].data = {
-                rows: [],
-                page: 1,
-                pages: 0,
-                total: 0
-            };
-            break;
-        case "links":
-            actions.onTabChange({
-                stateKey: "linkTabs",
-                tab_id: state.linkTabs.active
-            });
-            break;
-        case "groups":
-            actions.onTabChange({
-                stateKey: "groupTabs",
-                tab_id: state.groupTabs.active
-            });
-            break;
-        case "favourites":
-            actions.fetchItems(params);
-            break;
-        case "sent":
-            actions.fetchItems(params);
-            break;
-        case "public":
-            actions.fetchAllGroups(params);
-            break;
-        case "manage":
-        //actions.fetchAllGroups(params);
-    }
+        if (state[stateKey].tabs[tab_id].isFetching) {
+            state[stateKey].tabs[tab_id].isFetching = true;
+        }
+        state.message = "";
+        state[stateKey].active = tab_id;
+        var params = { stateKey: stateKey, tab_id: tab_id };
+        _gaq.push(["_trackPageview", "/" + state[stateKey].tabs[tab_id].name]);
+        switch (tab_id) {
+            case "notification":
+                actions.onTabChange({
+                    stateKey: "notificationTabs",
+                    tab_id: state.notificationTabs.active
+                });
+                break;
+            case "notLinks":
+                actions.fetchNotifications(tab_id);
+                break;
+            case "notGroups":
+                actions.fetchNotifications(tab_id);
+                break;
+            case "feed":
+                actions.fetchItems(params);
+                break;
+            case "search":
+                state[stateKey].tabs[tab_id].q = "";
+                state[stateKey].tabs[tab_id].data = {
+                    rows: [],
+                    page: 1,
+                    pages: 0,
+                    total: 0
+                };
+                break;
+            case "links":
+                actions.onTabChange({
+                    stateKey: "linkTabs",
+                    tab_id: state.linkTabs.active
+                });
+                break;
+            case "groups":
+                actions.onTabChange({
+                    stateKey: "groupTabs",
+                    tab_id: state.groupTabs.active
+                });
+                break;
+            case "favourites":
+                actions.fetchItems(params);
+                break;
+            case "sent":
+                actions.fetchItems(params);
+                break;
+            case "public":
+                actions.fetchAllGroups(params);
+                break;
+            case "manage":
+            //actions.fetchAllGroups(params);
+        }
 
-    return state;
+        actions.updateState(state);
+    };
 };
 
 /***/ }),
-/* 138 */
+/* 139 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17814,17 +18200,16 @@ var _request = __webpack_require__(2);
 
 var _common = __webpack_require__(10);
 
-var fetchItems = exports.fetchItems = function fetchItems(state, actions, _ref) {
-    var stateKey = _ref.stateKey,
-        tab_id = _ref.tab_id,
-        q = _ref.q;
+var fetchItems = exports.fetchItems = function fetchItems(state, actions) {
+    return function (_ref) {
+        var stateKey = _ref.stateKey,
+            tab_id = _ref.tab_id,
+            q = _ref.q;
 
-    var tab = state[stateKey].tabs[tab_id];
-    if (tab_id == "search") {
-        tab.data.rows = [];
-    }
-
-    return function (update) {
+        var tab = state[stateKey].tabs[tab_id];
+        if (tab_id == "search") {
+            tab.data.rows = [];
+        }
         var params = {
             queryParams: {
                 handle: "tab-" + tab_id,
@@ -17854,13 +18239,13 @@ var fetchItems = exports.fetchItems = function fetchItems(state, actions, _ref) 
             }
             tab.isFetching = false;
             state[stateKey].tabs[tab_id] = tab;
-            update(state);
+            actions.updateState(state);
         });
     };
 };
 
-var loadMore = exports.loadMore = function loadMore(state, actions, e) {
-    return function (update) {
+var loadMore = exports.loadMore = function loadMore(state, actions) {
+    return function (e) {
         var modelStr = e.currentTarget.getAttribute("model");
         var tab = (0, _common.deepFind)(state, modelStr);
 
@@ -17872,7 +18257,8 @@ var loadMore = exports.loadMore = function loadMore(state, actions, e) {
         var tabName = modelStr.split(".").pop();
         tab.loadMore = true;
         state[modelStr.split(".")[0]].tabs[tabName] = tab;
-        update(state);
+        actions.updateState(state);
+        var $preloader = document.querySelector(".preloader");
         var params = {
             queryParams: {
                 chrome_id: state.chrome_id,
@@ -17886,24 +18272,26 @@ var loadMore = exports.loadMore = function loadMore(state, actions, e) {
         if (tabName == "search") {
             params.queryParams.q = tab.q;
         }
-        document.querySelector(".preloader").classList.remove("invisible");
+        $preloader.classList.remove("invisible");
         (0, _request.request)(params).then(function (result) {
-            document.querySelector(".preloader").classList.add("invisible");
             tab.data.page++;
             tab.data.rows = tab.data.rows.concat(result.rows);
             tab.loadMore = false;
             state[modelStr.split(".")[0]].tabs[tabName] = tab;
-            update(state);
+            actions.updateState(state);
+            setTimeout(function () {
+                return $preloader.classList.add("invisible");
+            }, 0);
         });
     };
 };
 
-var fetchComments = exports.fetchComments = function fetchComments(state, actions, _ref2) {
-    var item = _ref2.item,
-        model = _ref2.model,
-        key = _ref2.key;
+var fetchComments = exports.fetchComments = function fetchComments(state, actions) {
+    return function (_ref2) {
+        var item = _ref2.item,
+            model = _ref2.model,
+            key = _ref2.key;
 
-    return function (update) {
         var params = {
             queryParams: {
                 commentsPage: 1,
@@ -17924,183 +18312,187 @@ var fetchComments = exports.fetchComments = function fetchComments(state, action
             } else {
                 state[root].tabs[state[root].active].data.rows[key] = item;
             }
-            update(state);
+            actions.updateState(state);
         });
     };
 };
 
-var handleFavourite = exports.handleFavourite = function handleFavourite(state, actions, _ref3) {
-    var e = _ref3.e,
-        key = _ref3.key;
+var handleFavourite = exports.handleFavourite = function handleFavourite(state, actions) {
+    return function (_ref3) {
+        var e = _ref3.e,
+            key = _ref3.key;
 
-    var model = e.target.parentElement.closest("[model]").model;
-    var item = (0, _common.deepFind)(state, model).data.rows[key];
-    var favourite = parseInt(item.favourite);
-    item.favourite = favourite ? 0 : 1;
+        var model = e.target.parentElement.closest("[model]").model;
+        var item = (0, _common.deepFind)(state, model).data.rows[key];
+        var favourite = parseInt(item.favourite);
+        item.favourite = favourite ? 0 : 1;
 
-    var _model$split3 = model.split("."),
-        _model$split4 = _slicedToArray(_model$split3, 1),
-        root = _model$split4[0];
+        var _model$split3 = model.split("."),
+            _model$split4 = _slicedToArray(_model$split3, 1),
+            root = _model$split4[0];
 
-    if (root == "modals") {
-        state[root].notification.data.rows[key] = item;
-    } else {
-        state[root].tabs[state[root].active].data.rows[key] = item;
-    }
-    var params = {
-        queryParams: {
-            chrome_id: state.chrome_id,
-            item_id: item.id,
-            action: favourite ? "removeFromFavourite" : "addToFavourite"
+        if (root == "modals") {
+            state[root].notification.data.rows[key] = item;
+        } else {
+            state[root].tabs[state[root].active].data.rows[key] = item;
         }
-    };
-    _gaq.push(["_trackEvent", "clicked", "favourite"]);
-    return function (update) {
+        var params = {
+            queryParams: {
+                chrome_id: state.chrome_id,
+                item_id: item.id,
+                action: favourite ? "removeFromFavourite" : "addToFavourite"
+            }
+        };
+        _gaq.push(["_trackEvent", "clicked", "favourite"]);
         (0, _request.request)(params).then(function (result) {
             if (result.flag) {
-                update(state);
+                actions.updateState(state);
             }
         });
     };
 };
-var handleLike = exports.handleLike = function handleLike(state, actions, _ref4) {
-    var e = _ref4.e,
-        key = _ref4.key;
+var handleLike = exports.handleLike = function handleLike(state, actions) {
+    return function (_ref4) {
+        var e = _ref4.e,
+            key = _ref4.key;
 
-    var model = e.target.parentElement.closest("[model]").model;
-    var item = (0, _common.deepFind)(state, model).data.rows[key];
-    item.liked = parseInt(item.liked) ? 0 : 1;
-    item.likes_count = parseInt(item.likes_count) + (item.liked ? 1 : -1);
+        var model = e.target.parentElement.closest("[model]").model;
+        var item = (0, _common.deepFind)(state, model).data.rows[key];
+        item.liked = parseInt(item.liked) ? 0 : 1;
+        item.likes_count = parseInt(item.likes_count) + (item.liked ? 1 : -1);
 
-    var _model$split5 = model.split("."),
-        _model$split6 = _slicedToArray(_model$split5, 1),
-        root = _model$split6[0];
+        var _model$split5 = model.split("."),
+            _model$split6 = _slicedToArray(_model$split5, 1),
+            root = _model$split6[0];
 
-    if (root == "modals") {
-        state[root].notification.data.rows[key] = item;
-    } else {
-        state[root].tabs[state[root].active].data.rows[key] = item;
-    }
-    var params = {
-        queryParams: {
-            chrome_id: state.chrome_id,
-            item_id: item.id,
-            action: "likeClicked"
+        if (root == "modals") {
+            state[root].notification.data.rows[key] = item;
+        } else {
+            state[root].tabs[state[root].active].data.rows[key] = item;
         }
-    };
-    _gaq.push(["_trackEvent", "clicked", "like"]);
-    return function (update) {
-        (0, _request.request)(params).then(function (result) {
-            if (result.flag) {
-                update(state);
+        var params = {
+            queryParams: {
+                chrome_id: state.chrome_id,
+                item_id: item.id,
+                action: "likeClicked"
             }
-        });
-    };
-};
-
-var showComments = exports.showComments = function showComments(state, actions, _ref5) {
-    var e = _ref5.e,
-        key = _ref5.key;
-
-    var model = e.target.parentElement.closest("[model]").model;
-    var item = (0, _common.deepFind)(state, model).data.rows[key];
-    item.showComments = 1;
-
-    var _model$split7 = model.split("."),
-        _model$split8 = _slicedToArray(_model$split7, 1),
-        root = _model$split8[0];
-
-    if (root == "modals") {
-        state[root].notification.data.rows[key] = item;
-    } else {
-        state[root].tabs[state[root].active].data.rows[key] = item;
-    }
-    actions.fetchComments({ item: item, model: model, key: key });
-
-    return state;
-};
-var handleShare = exports.handleShare = function handleShare(state, actions, _ref6) {
-    var e = _ref6.e,
-        key = _ref6.key;
-
-    var model = e.target.parentElement.closest("[model]").model;
-    var item = (0, _common.deepFind)(state, model).data.rows[key];
-    state.post.title = item.title;
-    state.post.url = item.url;
-    state.post.thumbnail = item.thumbnail;
-    state.mainNav.active = "post";
-    state.modals.notification.open = false;
-    _gaq.push(["_trackEvent", "clicked", "share"]);
-    return state;
-};
-var handleDelete = exports.handleDelete = function handleDelete(state, actions, _ref7) {
-    var e = _ref7.e,
-        key = _ref7.key;
-
-    var model = e.target.parentElement.closest("[model]").model;
-    var item = (0, _common.deepFind)(state, model).data.rows[key];
-
-    var _model$split9 = model.split("."),
-        _model$split10 = _slicedToArray(_model$split9, 1),
-        root = _model$split10[0];
-
-    if (root == "modals") {
-        delete state[root].notification.data.rows[key];
-        state[root].notification.open = false;
-    } else {
-        delete state[root].tabs[state[root].active].data.rows[key];
-    }
-
-    var params = {
-        queryParams: {
-            chrome_id: state.chrome_id,
-            item_id: item.id,
-            action: "deleteItem"
-        }
-    };
-    _gaq.push(["_trackEvent", "clicked", "delete"]);
-    return function (update) {
+        };
+        _gaq.push(["_trackEvent", "clicked", "like"]);
         (0, _request.request)(params).then(function (result) {
             if (result.flag) {
-                update(state);
+                actions.updateState(state);
             }
         });
     };
 };
 
-var handleCommentInput = exports.handleCommentInput = function handleCommentInput(state, actions, _ref8) {
-    var e = _ref8.e,
-        key = _ref8.key;
+var showComments = exports.showComments = function showComments(state, actions) {
+    return function (_ref5) {
+        var e = _ref5.e,
+            key = _ref5.key;
 
-    if (e.keyCode != 13) return;
-    var comment = e.target.value;
-    // if edit comment then cancel this process
-    if (state.editComment.open) {
-        actions.saveEditedComment(comment);
-        return state;
-    }
-    var model = e.target.parentElement.closest("[model]").model;
-    var item = (0, _common.deepFind)(state, model).data.rows[key];
+        var model = e.target.parentElement.closest("[model]").model;
+        var item = (0, _common.deepFind)(state, model).data.rows[key];
+        item.showComments = 1;
 
-    var _model$split11 = model.split("."),
-        _model$split12 = _slicedToArray(_model$split11, 1),
-        root = _model$split12[0];
+        var _model$split7 = model.split("."),
+            _model$split8 = _slicedToArray(_model$split7, 1),
+            root = _model$split8[0];
 
-    if (!item.commentList) {
-        item.commentList = [];
-    }
-    e.target.value = "";
-    var params = {
-        method: "POST",
-        queryParams: {
-            chrome_id: state.chrome_id,
-            item_id: item.id,
-            comment: comment,
-            action: "insertComment"
+        if (root == "modals") {
+            state[root].notification.data.rows[key] = item;
+        } else {
+            state[root].tabs[state[root].active].data.rows[key] = item;
         }
+        actions.fetchComments({ item: item, model: model, key: key });
+
+        actions.updateState(state);
     };
-    _gaq.push(["_trackEvent", "clicked", "newComment"]);
-    return function (update) {
+};
+var handleShare = exports.handleShare = function handleShare(state, actions) {
+    return function (_ref6) {
+        var e = _ref6.e,
+            key = _ref6.key;
+
+        var model = e.target.parentElement.closest("[model]").model;
+        var item = (0, _common.deepFind)(state, model).data.rows[key];
+        state.post.title = item.title;
+        state.post.url = item.url;
+        state.post.thumbnail = item.thumbnail;
+        state.mainNav.active = "post";
+        state.modals.notification.open = false;
+        _gaq.push(["_trackEvent", "clicked", "share"]);
+        actions.updateState(state);
+    };
+};
+var handleDelete = exports.handleDelete = function handleDelete(state, actions) {
+    return function (_ref7) {
+        var e = _ref7.e,
+            key = _ref7.key;
+
+        var model = e.target.parentElement.closest("[model]").model;
+        var item = (0, _common.deepFind)(state, model).data.rows[key];
+
+        var _model$split9 = model.split("."),
+            _model$split10 = _slicedToArray(_model$split9, 1),
+            root = _model$split10[0];
+
+        if (root == "modals") {
+            delete state[root].notification.data.rows[key];
+            state[root].notification.open = false;
+        } else {
+            delete state[root].tabs[state[root].active].data.rows[key];
+        }
+
+        var params = {
+            queryParams: {
+                chrome_id: state.chrome_id,
+                item_id: item.id,
+                action: "deleteItem"
+            }
+        };
+        _gaq.push(["_trackEvent", "clicked", "delete"]);
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag) {
+                actions.updateState(state);
+            }
+        });
+    };
+};
+
+var handleCommentInput = exports.handleCommentInput = function handleCommentInput(state, actions) {
+    return function (_ref8) {
+        var e = _ref8.e,
+            key = _ref8.key;
+
+        if (e.keyCode != 13) return;
+        var comment = e.target.value;
+        // if edit comment then cancel this process
+        if (state.editComment.open) {
+            actions.saveEditedComment(comment);
+            actions.updateState(state);
+        }
+        var model = e.target.parentElement.closest("[model]").model;
+        var item = (0, _common.deepFind)(state, model).data.rows[key];
+
+        var _model$split11 = model.split("."),
+            _model$split12 = _slicedToArray(_model$split11, 1),
+            root = _model$split12[0];
+
+        if (!item.commentList) {
+            item.commentList = [];
+        }
+        e.target.value = "";
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.chrome_id,
+                item_id: item.id,
+                comment: comment,
+                action: "insertComment"
+            }
+        };
+        _gaq.push(["_trackEvent", "clicked", "newComment"]);
         (0, _request.request)(params).then(function (result) {
             if (result.flag == 1) {
                 var newComment = {
@@ -18117,116 +18509,122 @@ var handleCommentInput = exports.handleCommentInput = function handleCommentInpu
                 } else {
                     state[root].tabs[state[root].active].data.rows[key].commentList.unshift(newComment);
                 }
-                update(state);
+                actions.updateState(state);
             }
         });
     };
 };
 
-var itemClicked = exports.itemClicked = function itemClicked(state, actions, _ref9) {
-    var e = _ref9.e,
-        key = _ref9.key;
+var itemClicked = exports.itemClicked = function itemClicked(state, actions) {
+    return function (_ref9) {
+        var e = _ref9.e,
+            key = _ref9.key;
 
-    e.preventDefault();
-    var model = e.target.parentElement.closest("[model]").model;
-    var item = (0, _common.deepFind)(state, model).data.rows[key];
+        e.preventDefault();
+        var model = e.target.parentElement.closest("[model]").model;
+        var item = (0, _common.deepFind)(state, model).data.rows[key];
 
-    var _model$split13 = model.split("."),
-        _model$split14 = _slicedToArray(_model$split13, 1),
-        root = _model$split14[0];
+        var _model$split13 = model.split("."),
+            _model$split14 = _slicedToArray(_model$split13, 1),
+            root = _model$split14[0];
 
-    if (item.uid != state.user.data.id) {
-        var count = parseInt(item.times_clicked) + 1;
-        if (root == "modals") {
-            state[root].notification.data.rows[key].times_clicked = count;
-        } else {
-            state[root].tabs[state[root].active].data.rows[key].times_clicked = count;
+        if (item.uid != state.user.data.id) {
+            var count = parseInt(item.times_clicked) + 1;
+            if (root == "modals") {
+                state[root].notification.data.rows[key].times_clicked = count;
+            } else {
+                state[root].tabs[state[root].active].data.rows[key].times_clicked = count;
+            }
         }
-    }
-    var params = {
-        chrome_id: state.chrome_id,
-        item_id: item.id,
-        action: "itemClicked"
-    };
-    _gaq.push(["_trackEvent", "clicked", "itemClicked"]);
-    if (chrome.extension) {
-        var bgPage = chrome.extension.getBackgroundPage();
-        bgPage.sendClickedStat(params);
-    }
-    window.open(e.target.href);
-    return state;
-};
-
-var lazyLoad = exports.lazyLoad = function lazyLoad(state, actions, _ref10) {
-    var e = _ref10.e,
-        image = _ref10.image;
-
-    var ele = document.createElement("img");
-    ele.src = image;
-    ele.onload = function () {
-        e.src = image;
-    };
-};
-
-var editComment = exports.editComment = function editComment(state, actions, _ref11) {
-    var model = _ref11.model,
-        itemKey = _ref11.itemKey,
-        commentKey = _ref11.commentKey;
-
-    state.editComment.open = true;
-    state.editComment.cursor = { model: model, itemKey: itemKey, commentKey: commentKey };
-    var item = (0, _common.deepFind)(state, model).data.rows[itemKey];
-
-    var _model$split15 = model.split("."),
-        _model$split16 = _slicedToArray(_model$split15, 1),
-        root = _model$split16[0];
-
-    var comment = void 0;
-    if (root == "modals") {
-        comment = state[root].notification.data.rows[itemKey].commentList[commentKey];
-    } else {
-        comment = state[root].tabs[state[root].active].data.rows[itemKey].commentList[commentKey];
-    }
-    state.editComment.data = comment;
-    return state;
-};
-
-var saveEditedComment = exports.saveEditedComment = function saveEditedComment(state, actions, comment) {
-    var _state$editComment$cu = state.editComment.cursor,
-        model = _state$editComment$cu.model,
-        itemKey = _state$editComment$cu.itemKey,
-        commentKey = _state$editComment$cu.commentKey;
-
-    var item = (0, _common.deepFind)(state, model).data.rows[itemKey];
-
-    var _model$split17 = model.split("."),
-        _model$split18 = _slicedToArray(_model$split17, 1),
-        root = _model$split18[0];
-
-    var commentObj = null;
-    if (root == "modals") {
-        commentObj = state[root].notification.data.rows[itemKey].commentList[commentKey];
-    } else {
-        commentObj = state[root].tabs[state[root].active].data.rows[itemKey].commentList[commentKey];
-    }
-    commentObj.comment = comment;
-    var commentId = commentObj.id;
-
-    var params = {
-        method: "POST",
-        queryParams: {
+        var params = {
             chrome_id: state.chrome_id,
-            comment_id: commentId,
-            comment: comment,
-            action: "updateComment"
+            item_id: item.id,
+            action: "itemClicked"
+        };
+        _gaq.push(["_trackEvent", "clicked", "itemClicked"]);
+        if (chrome.extension) {
+            var bgPage = chrome.extension.getBackgroundPage();
+            bgPage.sendClickedStat(params);
         }
+        window.open(e.target.href);
+        actions.updateState(state);
     };
-    _gaq.push(["_trackEvent", "clicked", "saveEditedComment"]);
-    return function (update) {
+};
+
+var lazyLoad = exports.lazyLoad = function lazyLoad(state, actions) {
+    return function (_ref10) {
+        var e = _ref10.e,
+            image = _ref10.image;
+
+        var ele = document.createElement("img");
+        ele.src = image;
+        ele.onload = function () {
+            e.src = image;
+        };
+    };
+};
+
+var editComment = exports.editComment = function editComment(state, actions) {
+    return function (_ref11) {
+        var model = _ref11.model,
+            itemKey = _ref11.itemKey,
+            commentKey = _ref11.commentKey;
+
+        state.editComment.open = true;
+        state.editComment.cursor = { model: model, itemKey: itemKey, commentKey: commentKey };
+        var item = (0, _common.deepFind)(state, model).data.rows[itemKey];
+
+        var _model$split15 = model.split("."),
+            _model$split16 = _slicedToArray(_model$split15, 1),
+            root = _model$split16[0];
+
+        var comment = void 0;
+        if (root == "modals") {
+            comment = state[root].notification.data.rows[itemKey].commentList[commentKey];
+        } else {
+            comment = state[root].tabs[state[root].active].data.rows[itemKey].commentList[commentKey];
+        }
+        state.editComment.data = comment;
+        actions.updateState(state);
+    };
+};
+
+var saveEditedComment = exports.saveEditedComment = function saveEditedComment(state, actions) {
+    return function (comment) {
+        var _state$editComment$cu = state.editComment.cursor,
+            model = _state$editComment$cu.model,
+            itemKey = _state$editComment$cu.itemKey,
+            commentKey = _state$editComment$cu.commentKey;
+
+        var item = (0, _common.deepFind)(state, model).data.rows[itemKey];
+
+        var _model$split17 = model.split("."),
+            _model$split18 = _slicedToArray(_model$split17, 1),
+            root = _model$split18[0];
+
+        var commentObj = null;
+        if (root == "modals") {
+            commentObj = state[root].notification.data.rows[itemKey].commentList[commentKey];
+        } else {
+            commentObj = state[root].tabs[state[root].active].data.rows[itemKey].commentList[commentKey];
+        }
+        commentObj.comment = comment;
+        var commentId = commentObj.id;
+
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.chrome_id,
+                comment_id: commentId,
+                comment: comment,
+                action: "updateComment"
+            }
+        };
+        _gaq.push(["_trackEvent", "clicked", "saveEditedComment"]);
         actions.cancelCommentEdit();
         (0, _request.request)(params).then(function (result) {
             if (result.flag) {
-                update(state);
+                actions.updateState(state);
             }
         });
     };
@@ -18262,25 +18660,23 @@ var deleteComment = exports.deleteComment = function deleteComment(state, action
         }
     };
     _gaq.push(["_trackEvent", "clicked", "deleteComment"]);
-    return function (update) {
-        (0, _request.request)(params).then(function (result) {
-            if (result.flag) {
-                actions.cancelCommentEdit();
-                update(state);
-            }
-        });
-    };
+    (0, _request.request)(params).then(function (result) {
+        if (result.flag) {
+            actions.cancelCommentEdit();
+            actions.updateState(state);
+        }
+    });
 };
 
 var cancelCommentEdit = exports.cancelCommentEdit = function cancelCommentEdit(state, actions) {
     state.editComment.open = false;
     state.editComment.data = {};
     state.editComment.cursor = {};
-    return state;
+    actions.updateState(state);
 };
 
 /***/ }),
-/* 139 */
+/* 140 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18295,13 +18691,14 @@ var _request = __webpack_require__(2);
 
 var _common = __webpack_require__(10);
 
-var saveProfile = exports.saveProfile = function saveProfile(state, actions, _ref) {
-    var e = _ref.e,
-        data = _ref.data;
+var saveProfile = exports.saveProfile = function saveProfile(state, actions) {
+    return function (_ref) {
+        var e = _ref.e,
+            data = _ref.data;
 
-    e.preventDefault();
-    data = Object.assign(state.user.data, data);
-    return function (update) {
+        e.preventDefault();
+        data = Object.assign(state.user.data, data);
+
         var params = {
             queryParams: {
                 chrome_id: state.chrome_id,
@@ -18314,19 +18711,21 @@ var saveProfile = exports.saveProfile = function saveProfile(state, actions, _re
         (0, _request.request)(params).then(function (result) {
             state.user.data = data;
             state.message = result.msg;
-            update(state);
+            actions.updateState(state);
         });
     };
 };
-var showProfile = exports.showProfile = function showProfile(state, actions, _ref2) {
-    var e = _ref2.e,
-        user_id = _ref2.user_id;
 
-    e.preventDefault();
-    return function (update) {
+var showProfile = exports.showProfile = function showProfile(state, actions) {
+    return function (_ref2) {
+        var e = _ref2.e,
+            user_id = _ref2.user_id;
+
+        e.preventDefault();
+
         state.modals.profile.links.isFetching = true;
         state.modals.profile.open = 1;
-        update(state);
+        actions.updateState(state);
         var params1 = {
             queryParams: {
                 chrome_id: state.chrome_id,
@@ -18338,21 +18737,22 @@ var showProfile = exports.showProfile = function showProfile(state, actions, _re
             state.modals.profile.user = result;
             state.modals.profile.user.id = user_id;
             state.modals.profile.links.data.page = 0;
-            update(state);
+            actions.updateState(state);
         });
         actions.getUserLinks({ e: e, user_id: user_id });
     };
 };
 
-var getUserLinks = exports.getUserLinks = function getUserLinks(state, actions, _ref3) {
-    var e = _ref3.e,
-        user_id = _ref3.user_id;
+var getUserLinks = exports.getUserLinks = function getUserLinks(state, actions) {
+    return function (_ref3) {
+        var e = _ref3.e,
+            user_id = _ref3.user_id;
 
-    e.preventDefault();
-    return function (update) {
+        e.preventDefault();
+
         state.modals.profile.links.isFetching = true;
         state.modals.profile.open = 1;
-        update(state);
+        actions.updateState(state);
         var newPage = parseInt(state.modals.profile.links.data.page) + 1;
         var params2 = {
             queryParams: {
@@ -18372,16 +18772,16 @@ var getUserLinks = exports.getUserLinks = function getUserLinks(state, actions, 
                 state.modals.profile.links.data.rows = state.modals.profile.links.data.rows.concat(result.rows);
             }
             state.modals.profile.links.data.page = newPage;
-            update(state);
+            actions.updateState(state);
         });
     };
 };
 
-var initialize = exports.initialize = function initialize(state, actions, _ref4) {
-    var chrome_id = _ref4.chrome_id,
-        callback = _ref4.callback;
+var initialize = exports.initialize = function initialize(state, actions) {
+    return function (_ref4) {
+        var chrome_id = _ref4.chrome_id,
+            callback = _ref4.callback;
 
-    return function (update) {
         var params = {
             queryParams: {
                 chrome_id: chrome_id,
@@ -18394,30 +18794,34 @@ var initialize = exports.initialize = function initialize(state, actions, _ref4)
                 state.user.data = result.data;
                 state.user.loggedIn = true;
                 state.groups.defaultGroup = localStorage.defaultGroup;
-                update(state);
+                actions.updateState(state);
                 callback();
             }
         });
     };
 };
 
-var saveCustomization = exports.saveCustomization = function saveCustomization(state, actions, _ref5) {
-    var e = _ref5.e,
-        key = _ref5.key;
+var saveCustomization = exports.saveCustomization = function saveCustomization(state, actions) {
+    return function (_ref5) {
+        var e = _ref5.e,
+            key = _ref5.key;
 
-    e.preventDefault();
-    state.user.customize[key] = parseInt(e.target.value);
-    localStorage[key] = parseInt(e.target.value);
-    return state;
+        e.preventDefault();
+        state.user.customize[key] = parseInt(e.target.value);
+        localStorage[key] = parseInt(e.target.value);
+        actions.updateState(state);
+    };
 };
-var doLogout = exports.doLogout = function doLogout(state, ctions, data) {
-    state.user.loggedIn = false;
-    localStorage.clear();
-    return state;
+var doLogout = exports.doLogout = function doLogout(state, actions) {
+    return function (data) {
+        state.user.loggedIn = false;
+        localStorage.clear();
+        actions.updateState(state);
+    };
 };
 
-var doLogin = exports.doLogin = function doLogin(state, actions, data) {
-    return function (update) {
+var doLogin = exports.doLogin = function doLogin(state, actions) {
+    return function (data) {
         var params = {
             method: "POST",
             queryParams: {
@@ -18429,7 +18833,7 @@ var doLogin = exports.doLogin = function doLogin(state, actions, data) {
 
         if (data.nickname.length > 0 && data.password.length > 0) {
             state.user.login.requesting = true;
-            update(state);
+            actions.updateState(state);
             (0, _request.request)(params).then(function (result) {
                 if (result.flag == 1) {
                     if (!localStorage.defaultGroup) {
@@ -18458,17 +18862,17 @@ var doLogin = exports.doLogin = function doLogin(state, actions, data) {
                 state.user.login.msg = result.msg;
                 state.user.login.flag = result.flag;
                 state.groups.defaultGroup = localStorage.defaultGroup;
-                update(state);
+                actions.updateState(state);
             });
         } else {
             state.message = "All fields are required";
-            update(state);
+            actions.updateState(state);
         }
     };
 };
 
-var doRegister = exports.doRegister = function doRegister(state, actions, data) {
-    return function (update) {
+var doRegister = exports.doRegister = function doRegister(state, actions) {
+    return function (data) {
         var chrome_id = (0, _common.getRandomToken)();
         var params = {
             queryParams: {
@@ -18481,7 +18885,7 @@ var doRegister = exports.doRegister = function doRegister(state, actions, data) 
         };
         if (data.nickname.length > 0 && data.password.length > 0) {
             state.user.register.requesting = true;
-            update(state);
+            actions.updateState(state);
             (0, _request.request)(params).then(function (result) {
                 if (result.flag == 1) {
                     //update localstorage
@@ -18509,17 +18913,17 @@ var doRegister = exports.doRegister = function doRegister(state, actions, data) 
 
 var forgotPassword = exports.forgotPassword = function forgotPassword(state, actions) {
     state.modals.forgotPassword.open = true;
-    return state;
+    actions.updateState(state);
 };
 
-var sendRecoveryEmail = exports.sendRecoveryEmail = function sendRecoveryEmail(state, actions, data) {
-    if (data.email.length == 0) {
-        state.message = "Enter an email";
-        return state;
-    }
-    var valid = (0, _common.validateEmail)(data.email);
-    if (valid) {
-        return function (update) {
+var sendRecoveryEmail = exports.sendRecoveryEmail = function sendRecoveryEmail(state, actions) {
+    return function (data) {
+        if (data.email.length == 0) {
+            state.message = "Enter an email";
+            actions.updateState(state);
+        }
+        var valid = (0, _common.validateEmail)(data.email);
+        if (valid) {
             var params = {
                 method: "POST",
                 queryParams: {
@@ -18533,67 +18937,11 @@ var sendRecoveryEmail = exports.sendRecoveryEmail = function sendRecoveryEmail(s
                     state.message = "Check your email";
                 }
                 state.message = result.msg;
-                update(state);
+                actions.updateState(state);
             });
-        };
-    } else {
-        state.message = "Invalid Email";
-        return state;
-    }
-    //...
-};
-
-/***/ }),
-/* 140 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.detectSite = exports.doPost = undefined;
-
-var _request = __webpack_require__(2);
-
-var doPost = exports.doPost = function doPost(state, actions, data) {
-    return function (update) {
-        state.post.posting = true;
-        update(state);
-        data.action = "insertTrack";
-        data.chrome_id = state.chrome_id;
-        var params = {
-            method: "POST",
-            queryParams: data
-        };
-        (0, _request.request)(params).then(function (result) {
-            state.post.posting = false;
-            state.groups.defaultGroup = data.group;
-            state.mainNav.active = "feed";
-            actions.fetchItems({ stateKey: "mainNav", tab_id: "feed" });
-            update(state);
-        });
-    };
-};
-
-var detectSite = exports.detectSite = function detectSite(state, actions) {
-    return function (update) {
-        if (chrome.tabs) {
-            chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
-                //var url = tabs[0].url;
-
-                var payload = { action: "get-meta" };
-
-                chrome.extension.getBackgroundPage().retrieveSiteMeta(payload, function (data) {
-                    if (data && data.url) {
-                        state.post.title = data.title;
-                        state.post.url = data.url;
-                        state.post.thumbnail = data.thumbUrl;
-                        update(state);
-                    }
-                });
-            });
+        } else {
+            state.message = "Invalid Email";
+            actions.updateState(state);
         }
     };
 };
@@ -18608,22 +18956,91 @@ var detectSite = exports.detectSite = function detectSite(state, actions) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.detectSite = exports.setPost = exports.doPost = undefined;
+
+var _request = __webpack_require__(2);
+
+var doPost = exports.doPost = function doPost(state, actions) {
+    return function (data) {
+        state.post = Object.assign(state.post, data);
+        state.post.posting = true;
+        if (data.title.length == 0) {
+            state.message = "Please enter a title";
+            return actions.updateState(state);
+        }
+        if (data.url.length == 0) {
+            state.message = "Please enter an url";
+            return actions.updateState(state);
+        }
+        actions.updateState(state);
+        data.action = "insertTrack";
+        data.chrome_id = state.chrome_id;
+        var params = {
+            method: "POST",
+            queryParams: data
+        };
+        (0, _request.request)(params).then(function (result) {
+            state.post.posting = false;
+            state.groups.defaultGroup = data.group;
+            state.mainNav.active = "feed";
+            actions.fetchItems({ stateKey: "mainNav", tab_id: "feed" });
+            actions.updateState(state);
+        });
+    };
+};
+
+var setPost = exports.setPost = function setPost(state, actions) {
+    return function (data) {
+        state.post = Object.assign(state.post, data);
+        actions.updateState(state);
+    };
+};
+
+var detectSite = exports.detectSite = function detectSite(state, actions) {
+    if (chrome.tabs) {
+        chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
+            //var url = tabs[0].url;
+
+            var payload = { action: "get-meta" };
+
+            chrome.extension.getBackgroundPage().retrieveSiteMeta(payload, function (data) {
+                if (data && data.url) {
+                    state.post.title = data.title;
+                    state.post.url = data.url;
+                    state.post.thumbnail = data.thumbUrl;
+                    actions.updateState(state);
+                }
+            });
+        });
+    }
+};
+
+/***/ }),
+/* 142 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 exports.sendInvites = exports.withdrawInvite = exports.setInviteList = exports.showInviteModal = undefined;
 
 var _request = __webpack_require__(2);
 
 var invites = [];
 
-var showInviteModal = exports.showInviteModal = function showInviteModal(state, actions, _ref) {
-    var e = _ref.e,
-        group_id = _ref.group_id,
-        title = _ref.title;
+var showInviteModal = exports.showInviteModal = function showInviteModal(state, actions) {
+    return function (_ref) {
+        var e = _ref.e,
+            group_id = _ref.group_id,
+            title = _ref.title;
 
-    e.preventDefault();
-    return function (update) {
+        e.preventDefault();
         state.modals.invite.open = true;
         state.modals.invite.group_id = group_id;
-        update(state);
+        actions.updateState(state);
         var params = {
             queryParams: {
                 chrome_id: state.chrome_id,
@@ -18634,7 +19051,7 @@ var showInviteModal = exports.showInviteModal = function showInviteModal(state, 
         (0, _request.request)(params).then(function (result) {
             state.modals.invite.data = result;
             state.modals.invite.title = title;
-            update(state);
+            actions.updateState(state);
             actions.setInviteList({
                 data: state.modals.invite.data.users,
                 resetInvites: true
@@ -18647,69 +19064,72 @@ var showInviteModal = exports.showInviteModal = function showInviteModal(state, 
 var ele = function ele(selector) {
     return document.querySelector(selector);
 };
-var setInviteList = exports.setInviteList = function setInviteList(state, actions, _ref2) {
-    var data = _ref2.data,
-        resetInvites = _ref2.resetInvites;
+var setInviteList = exports.setInviteList = function setInviteList(state, actions) {
+    return function (_ref2) {
+        var data = _ref2.data,
+            resetInvites = _ref2.resetInvites;
 
-    var dataClone = data;
-    if (resetInvites) {
-        invites = [];
-    }
-    var init = function init() {
-        dataClone = dataClone.sort(function (a, b) {
-            return b.nickname - a.nickname;
-        });
-        var list = ele(".token-input-list-facebook");
-        var dd = ele(".token-input-dropdown-facebook");
-        list && list.remove();
-        dd && dd.remove();
+        var dataClone = data;
+        if (resetInvites) {
+            invites = [];
+        }
+        var init = function init() {
+            dataClone = dataClone.sort(function (a, b) {
+                return b.nickname - a.nickname;
+            });
+            var list = ele(".token-input-list-facebook");
+            var dd = ele(".token-input-dropdown-facebook");
+            list && list.remove();
+            dd && dd.remove();
 
-        $("#tags-input-send-invites").tokenInput(dataClone, {
-            theme: "facebook",
-            preventDuplicates: true,
-            searchDelay: 0,
-            propertyToSearch: "nickname",
-            prePopulate: invites,
-            resultsLimit: 5,
-            onAdd: function onAdd(user) {
-                dataClone = dataClone.filter(function (item) {
-                    return item.id != user.id;
-                });
-                invites.push(user);
-                init();
-            },
-            onDelete: function onDelete(user) {
-                invites = invites.filter(function (item) {
-                    return user.id !== item.id;
-                });
-                data.map(function (item) {
-                    if (item.id == user.id) {
-                        dataClone.push(item);
-                        init();
-                        return false;
-                    }
-                });
-            },
-            onResult: function onResult(results) {
-                var tagsearch = $("#token-input-tags-input-send-invites").val();
-                return results.filter(function (item) {
-                    return item.nickname.toLowerCase().indexOf(tagsearch.toLowerCase()) === 0;
-                });
-            }
-        });
-        $("#tags-input-send-invites").focus();
+            $("#tags-input-send-invites").tokenInput(dataClone, {
+                theme: "facebook",
+                preventDuplicates: true,
+                searchDelay: 0,
+                propertyToSearch: "nickname",
+                prePopulate: invites,
+                resultsLimit: 5,
+                onAdd: function onAdd(user) {
+                    dataClone = dataClone.filter(function (item) {
+                        return item.id != user.id;
+                    });
+                    invites.push(user);
+                    init();
+                },
+                onDelete: function onDelete(user) {
+                    invites = invites.filter(function (item) {
+                        return user.id !== item.id;
+                    });
+                    data.map(function (item) {
+                        if (item.id == user.id) {
+                            dataClone.push(item);
+                            init();
+                            return false;
+                        }
+                    });
+                },
+                onResult: function onResult(results) {
+                    var tagsearch = $("#token-input-tags-input-send-invites").val();
+                    return results.filter(function (item) {
+                        return item.nickname.toLowerCase().indexOf(tagsearch.toLowerCase()) === 0;
+                    });
+                }
+            });
+            $("#tags-input-send-invites").focus();
+        };
+        init();
     };
-    init();
 };
 
-var withdrawInvite = exports.withdrawInvite = function withdrawInvite(state, actions, _ref3) {
-    var e = _ref3.e,
-        invite_id = _ref3.invite_id,
-        index = _ref3.index;
+var withdrawInvite = exports.withdrawInvite = function withdrawInvite(state, actions) {
+    return function (_ref3) {
+        var e = _ref3.e,
+            invite_id = _ref3.invite_id,
+            index = _ref3.index;
 
-    var user = state.modals.invite.data.invites[index];
-    delete state.modals.invite.data.invites[index];
-    return function (update) {
+        var user = state.modals.invite.data.invites[index];
+        delete state.modals.invite.data.invites[index];
+
         var params = {
             queryParams: {
                 chrome_id: state.chrome_id,
@@ -18720,7 +19140,7 @@ var withdrawInvite = exports.withdrawInvite = function withdrawInvite(state, act
         };
         (0, _request.request)(params).then(function (result) {
             state.modals.invite.data.users.push(user);
-            update(state);
+            actions.updateState(state);
             actions.setInviteList({
                 data: state.modals.invite.data.users,
                 resetInvites: false
@@ -18732,31 +19152,29 @@ var withdrawInvite = exports.withdrawInvite = function withdrawInvite(state, act
 var sendInvites = exports.sendInvites = function sendInvites(state, actions) {
     if (invites.length == 0) {
         state.message = "No users to invite";
-        return state;
+        actions.updateState(state);
     }
 
     var data = invites.map(function (user) {
         return user.id;
     });
 
-    return function (update) {
-        var params = {
-            queryParams: {
-                chrome_id: state.chrome_id,
-                group_id: state.modals.invite.group_id,
-                users: JSON.stringify(data),
-                action: "sendInvites"
-            }
-        };
-        (0, _request.request)(params).then(function (result) {
-            state.modals.invite.open = false;
-            update(state);
-        });
+    var params = {
+        queryParams: {
+            chrome_id: state.chrome_id,
+            group_id: state.modals.invite.group_id,
+            users: JSON.stringify(data),
+            action: "sendInvites"
+        }
     };
+    (0, _request.request)(params).then(function (result) {
+        state.modals.invite.open = false;
+        actions.updateState(state);
+    });
 };
 
 /***/ }),
-/* 142 */
+/* 143 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19040,7 +19458,7 @@ exports.default = {
 };
 
 /***/ }),
-/* 143 */
+/* 144 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19054,31 +19472,31 @@ var _hyperapp = __webpack_require__(1);
 
 var _TabComponent = __webpack_require__(4);
 
-var _Notifications = __webpack_require__(144);
+var _Notifications = __webpack_require__(145);
 
 var _Notifications2 = _interopRequireDefault(_Notifications);
 
-var _Feed = __webpack_require__(147);
+var _Feed = __webpack_require__(148);
 
 var _Feed2 = _interopRequireDefault(_Feed);
 
-var _Post = __webpack_require__(148);
+var _Post = __webpack_require__(149);
 
 var _Post2 = _interopRequireDefault(_Post);
 
-var _MyLinks = __webpack_require__(149);
+var _MyLinks = __webpack_require__(150);
 
 var _MyLinks2 = _interopRequireDefault(_MyLinks);
 
-var _Groups = __webpack_require__(150);
+var _Groups = __webpack_require__(151);
 
 var _Groups2 = _interopRequireDefault(_Groups);
 
-var _Settings = __webpack_require__(155);
+var _Settings = __webpack_require__(156);
 
 var _Settings2 = _interopRequireDefault(_Settings);
 
-var _Search = __webpack_require__(160);
+var _Search = __webpack_require__(161);
 
 var _Search2 = _interopRequireDefault(_Search);
 
@@ -19086,31 +19504,41 @@ var _request = __webpack_require__(2);
 
 var _request2 = _interopRequireDefault(_request);
 
-var _ProfileModal = __webpack_require__(161);
+var _ProfileModal = __webpack_require__(162);
 
 var _ProfileModal2 = _interopRequireDefault(_ProfileModal);
 
-var _InviteModal = __webpack_require__(162);
+var _InviteModal = __webpack_require__(163);
 
 var _InviteModal2 = _interopRequireDefault(_InviteModal);
 
-var _ForgotPasswordModal = __webpack_require__(163);
+var _ForgotPasswordModal = __webpack_require__(164);
 
 var _ForgotPasswordModal2 = _interopRequireDefault(_ForgotPasswordModal);
 
-var _EditCommentModal = __webpack_require__(164);
+var _EditCommentModal = __webpack_require__(165);
 
 var _EditCommentModal2 = _interopRequireDefault(_EditCommentModal);
+
+var _events = __webpack_require__(166);
+
+var _events2 = _interopRequireDefault(_events);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 window.moment = __webpack_require__(0);
-__webpack_require__(167);
-__webpack_require__(168);
-__webpack_require__(192);
-
+__webpack_require__(170);
+__webpack_require__(171);
+__webpack_require__(172);
+var loaded = false;
 var main = function main(state, actions) {
+    if (!loaded) {
+        _events2.default.load(state, actions);
+        loaded = true;
+    }
     var data = null;
+    var appHeight = document.body.clientHeight;
+    var msgTopSpace = appHeight - 80;
     actions.resetMessage();
     switch (state.mainNav.active) {
         case "notification":
@@ -19202,7 +19630,11 @@ var main = function main(state, actions) {
         }),
         state.message != "" && (0, _hyperapp.h)(
             "div",
-            { id: "msg", "class": "alert alert-warning" },
+            {
+                id: "msg",
+                "class": "alert alert-warning",
+                style: { top: msgTopSpace + "px" }
+            },
             state.message
         ),
         (0, _hyperapp.h)(
@@ -19229,7 +19661,7 @@ var main = function main(state, actions) {
 exports.default = main;
 
 /***/ }),
-/* 144 */
+/* 145 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19244,7 +19676,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var _hyperapp = __webpack_require__(1);
 
-var _NotificationItems = __webpack_require__(145);
+var _NotificationItems = __webpack_require__(146);
 
 var _TabComponent = __webpack_require__(4);
 
@@ -19387,7 +19819,7 @@ var NotificationItem = exports.NotificationItem = function NotificationItem(item
 exports.default = (0, _ScrollHoc2.default)(Notifications);
 
 /***/ }),
-/* 145 */
+/* 146 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19915,7 +20347,7 @@ var Linkcast = exports.Linkcast = function Linkcast(data) {
 };
 
 /***/ }),
-/* 146 */
+/* 147 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19995,7 +20427,7 @@ var Comments = function Comments(props) {
 exports.default = Comments;
 
 /***/ }),
-/* 147 */
+/* 148 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20092,7 +20524,7 @@ var Feed = function Feed(props) {
 exports.default = (0, _ScrollHoc2.default)(Feed);
 
 /***/ }),
-/* 148 */
+/* 149 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20122,12 +20554,13 @@ var Post = function Post(_ref) {
         group: state.groups.defaultGroup
     };
     var _onChange = function _onChange(e, key) {
-        params[key] = e.target.value;
+        params[key] = e.target.value.trim();
 
         if (e.target.tagName == "SELECT") {
             var selectedIdx = e.target.options.selectedIndex;
             params[key] = state.groups.data[selectedIdx].group_id;
         }
+        actions.setPost(params);
     };
     var handlePost = function handlePost(e) {
         e.preventDefault();
@@ -20152,7 +20585,7 @@ var Post = function Post(_ref) {
                     type: "text",
                     "class": "form-control",
                     value: state.post.title,
-                    onblur: function onblur(e) {
+                    onkeyup: function onkeyup(e) {
                         return _onChange(e, "title");
                     }
                 })
@@ -20174,7 +20607,7 @@ var Post = function Post(_ref) {
                     type: "text",
                     "class": "form-control",
                     value: state.post.url,
-                    onblur: function onblur(e) {
+                    onkeyup: function onkeyup(e) {
                         return _onChange(e, "url");
                     }
                 })
@@ -20196,7 +20629,7 @@ var Post = function Post(_ref) {
                     type: "text",
                     "class": "form-control",
                     value: state.post.comments,
-                    onblur: function onblur(e) {
+                    onkeyup: function onkeyup(e) {
                         return _onChange(e, "comments");
                     }
                 })
@@ -20244,7 +20677,7 @@ var Post = function Post(_ref) {
 exports.default = Post;
 
 /***/ }),
-/* 149 */
+/* 150 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20314,7 +20747,7 @@ var MyLinks = function MyLinks(props) {
 exports.default = (0, _ScrollHoc2.default)(MyLinks);
 
 /***/ }),
-/* 150 */
+/* 151 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20336,15 +20769,15 @@ var _ScrollHoc = __webpack_require__(5);
 
 var _ScrollHoc2 = _interopRequireDefault(_ScrollHoc);
 
-var _PublicGroups = __webpack_require__(151);
+var _PublicGroups = __webpack_require__(152);
 
 var _PublicGroups2 = _interopRequireDefault(_PublicGroups);
 
-var _ManageGroups = __webpack_require__(152);
+var _ManageGroups = __webpack_require__(153);
 
 var _ManageGroups2 = _interopRequireDefault(_ManageGroups);
 
-var _CreateGroup = __webpack_require__(154);
+var _CreateGroup = __webpack_require__(155);
 
 var _CreateGroup2 = _interopRequireDefault(_CreateGroup);
 
@@ -20396,7 +20829,7 @@ var Groups = function Groups(_ref) {
 exports.default = Groups;
 
 /***/ }),
-/* 151 */
+/* 152 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20596,7 +21029,7 @@ var PublicGroupsTable = function PublicGroupsTable(_ref2) {
 exports.default = PublicGroups;
 
 /***/ }),
-/* 152 */
+/* 153 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20608,7 +21041,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _hyperapp = __webpack_require__(1);
 
-var _Users = __webpack_require__(153);
+var _Users = __webpack_require__(154);
 
 var _Users2 = _interopRequireDefault(_Users);
 
@@ -20934,7 +21367,7 @@ var GroupEditForm = function GroupEditForm(_ref2) {
 exports.default = ManageGroups;
 
 /***/ }),
-/* 153 */
+/* 154 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21039,7 +21472,7 @@ var Users = function Users(_ref) {
 exports.default = Users;
 
 /***/ }),
-/* 154 */
+/* 155 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21246,7 +21679,7 @@ var CreateGroup = function CreateGroup(props) {
 exports.default = CreateGroup;
 
 /***/ }),
-/* 155 */
+/* 156 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21264,15 +21697,15 @@ var _Links2 = _interopRequireDefault(_Links);
 
 var _TabComponent = __webpack_require__(4);
 
-var _Profile = __webpack_require__(156);
+var _Profile = __webpack_require__(157);
 
 var _Profile2 = _interopRequireDefault(_Profile);
 
-var _Customize = __webpack_require__(158);
+var _Customize = __webpack_require__(159);
 
 var _Customize2 = _interopRequireDefault(_Customize);
 
-var _About = __webpack_require__(159);
+var _About = __webpack_require__(160);
 
 var _About2 = _interopRequireDefault(_About);
 
@@ -21339,7 +21772,7 @@ var Settings = function Settings(_ref) {
 exports.default = Settings;
 
 /***/ }),
-/* 156 */
+/* 157 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21351,7 +21784,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _hyperapp = __webpack_require__(1);
 
-__webpack_require__(157);
+__webpack_require__(158);
 
 var Profile = function Profile(_ref) {
     var state = _ref.state,
@@ -21707,7 +22140,7 @@ var LoginRegistration = function LoginRegistration(_ref3) {
 exports.default = Profile;
 
 /***/ }),
-/* 157 */
+/* 158 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21795,7 +22228,7 @@ exports.default = Profile;
 })(window, window.document);
 
 /***/ }),
-/* 158 */
+/* 159 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21967,7 +22400,7 @@ var Customize = function Customize(_ref) {
 exports.default = Customize;
 
 /***/ }),
-/* 159 */
+/* 160 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22026,7 +22459,7 @@ var About = function About(_ref) {
 exports.default = About;
 
 /***/ }),
-/* 160 */
+/* 161 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22108,7 +22541,7 @@ var Search = function Search(props) {
 exports.default = (0, _ScrollHoc2.default)(Search);
 
 /***/ }),
-/* 161 */
+/* 162 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22176,7 +22609,7 @@ var P = function P(_ref) {
 exports.default = (0, _ModalHoc2.default)(P);
 
 /***/ }),
-/* 162 */
+/* 163 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22290,7 +22723,7 @@ var InviteModal = function InviteModal(_ref) {
 exports.default = (0, _ModalHoc2.default)(InviteModal);
 
 /***/ }),
-/* 163 */
+/* 164 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22379,7 +22812,7 @@ var ForgotPasswordModal = function ForgotPasswordModal(_ref) {
 exports.default = (0, _ModalHoc2.default)(ForgotPasswordModal);
 
 /***/ }),
-/* 164 */
+/* 165 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22460,7 +22893,1116 @@ var ForgotPasswordModal = function ForgotPasswordModal(_ref) {
 exports.default = (0, _ModalHoc2.default)(ForgotPasswordModal);
 
 /***/ }),
-/* 165 */
+/* 166 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+/**
+ * There are no events for this application
+ * But this is an example of directory and file structure for events
+ * Seperation of concerns are key in functional paradigms!
+*/
+var ResizeObserver = __webpack_require__(167).default;
+var $bgEle = void 0,
+    $container = void 0;
+
+var changeSize = function changeSize() {
+    $bgEle.forEach(function (ele) {
+        ele.style.width = $container.offsetWidth + "px";
+        ele.style.height = $container.offsetHeight + "px";
+    });
+};
+var observeSizeChanges = function observeSizeChanges() {
+    $bgEle = document.querySelectorAll(".background");
+    $container = document.querySelector(".container");
+    changeSize();
+    new ResizeObserver(changeSize).observe($container);
+};
+exports.default = {
+    load: function load(state, actions) {
+        setTimeout(observeSizeChanges, 100);
+        if (localStorage.chrome_id) {
+            actions.initialize({
+                chrome_id: localStorage.chrome_id,
+                callback: function callback() {
+                    if (chrome.extension) {
+                        var bgPage = chrome.extension.getBackgroundPage();
+                        actions.setNotificationCount(bgPage.countData);
+                        bgPage.updateNotification(0);
+                        var manifest = chrome.runtime.getManifest();
+                        var version = manifest.version;
+                        actions.setVersion(version);
+                    }
+                    actions.onTabChange({
+                        stateKey: "notificationTabs",
+                        tab_id: "notLinks"
+                    });
+                    actions.fetchGroups();
+                    actions.detectSite();
+                }
+            });
+            if (new Date().getDate() == 31) {
+                if (!localStorage.counter || parseInt(localStorage.counter) <= 4) {
+                    document.querySelector("body").classList.add("halloween");
+                    if (!localStorage.counter) {
+                        localStorage.counter = 0;
+                    }
+                    localStorage.counter = parseInt(localStorage.counter) + 1;
+                }
+            }
+        } else {
+            state.mainNav.active = "settings";
+            state.settingsTabs.active = "profile";
+            actions.updateState(state);
+        }
+    }
+};
+
+/***/ }),
+/* 167 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+/**
+ * A collection of shims that provide minimal functionality of the ES6 collections.
+ *
+ * These implementations are not meant to be used outside of the ResizeObserver
+ * modules as they cover only a limited range of use cases.
+ */
+/* eslint-disable require-jsdoc, valid-jsdoc */
+var MapShim = function () {
+    if (typeof Map != 'undefined') {
+        return Map;
+    }
+
+    /**
+     * Returns index in provided array that matches the specified key.
+     *
+     * @param {Array<Array>} arr
+     * @param {*} key
+     * @returns {number}
+     */
+    function getIndex(arr, key) {
+        var result = -1;
+
+        arr.some(function (entry, index) {
+            if (entry[0] === key) {
+                result = index;
+
+                return true;
+            }
+
+            return false;
+        });
+
+        return result;
+    }
+
+    return function () {
+        function anonymous() {
+            this.__entries__ = [];
+        }
+
+        var prototypeAccessors = { size: {} };
+
+        /**
+         * @returns {boolean}
+         */
+        prototypeAccessors.size.get = function () {
+            return this.__entries__.length;
+        };
+
+        /**
+         * @param {*} key
+         * @returns {*}
+         */
+        anonymous.prototype.get = function (key) {
+            var index = getIndex(this.__entries__, key);
+            var entry = this.__entries__[index];
+
+            return entry && entry[1];
+        };
+
+        /**
+         * @param {*} key
+         * @param {*} value
+         * @returns {void}
+         */
+        anonymous.prototype.set = function (key, value) {
+            var index = getIndex(this.__entries__, key);
+
+            if (~index) {
+                this.__entries__[index][1] = value;
+            } else {
+                this.__entries__.push([key, value]);
+            }
+        };
+
+        /**
+         * @param {*} key
+         * @returns {void}
+         */
+        anonymous.prototype.delete = function (key) {
+            var entries = this.__entries__;
+            var index = getIndex(entries, key);
+
+            if (~index) {
+                entries.splice(index, 1);
+            }
+        };
+
+        /**
+         * @param {*} key
+         * @returns {void}
+         */
+        anonymous.prototype.has = function (key) {
+            return !!~getIndex(this.__entries__, key);
+        };
+
+        /**
+         * @returns {void}
+         */
+        anonymous.prototype.clear = function () {
+            this.__entries__.splice(0);
+        };
+
+        /**
+         * @param {Function} callback
+         * @param {*} [ctx=null]
+         * @returns {void}
+         */
+        anonymous.prototype.forEach = function (callback, ctx) {
+            if (ctx === void 0) ctx = null;
+
+            for (var i = 0, list = this.__entries__; i < list.length; i += 1) {
+                var entry = list[i];
+
+                callback.call(ctx, entry[1], entry[0]);
+            }
+        };
+
+        Object.defineProperties(anonymous.prototype, prototypeAccessors);
+
+        return anonymous;
+    }();
+}();
+
+/**
+ * Detects whether window and document objects are available in current environment.
+ */
+var isBrowser = typeof window != 'undefined' && typeof document != 'undefined' && window.document === document;
+
+/**
+ * A shim for the requestAnimationFrame which falls back to the setTimeout if
+ * first one is not supported.
+ *
+ * @returns {number} Requests' identifier.
+ */
+var requestAnimationFrame$1 = function () {
+    if (typeof requestAnimationFrame === 'function') {
+        return requestAnimationFrame;
+    }
+
+    return function (callback) {
+        return setTimeout(function () {
+            return callback(Date.now());
+        }, 1000 / 60);
+    };
+}();
+
+// Defines minimum timeout before adding a trailing call.
+var trailingTimeout = 2;
+
+/**
+ * Creates a wrapper function which ensures that provided callback will be
+ * invoked only once during the specified delay period.
+ *
+ * @param {Function} callback - Function to be invoked after the delay period.
+ * @param {number} delay - Delay after which to invoke callback.
+ * @returns {Function}
+ */
+var throttle = function throttle(callback, delay) {
+    var leadingCall = false,
+        trailingCall = false,
+        lastCallTime = 0;
+
+    /**
+     * Invokes the original callback function and schedules new invocation if
+     * the "proxy" was called during current request.
+     *
+     * @returns {void}
+     */
+    function resolvePending() {
+        if (leadingCall) {
+            leadingCall = false;
+
+            callback();
+        }
+
+        if (trailingCall) {
+            proxy();
+        }
+    }
+
+    /**
+     * Callback invoked after the specified delay. It will further postpone
+     * invocation of the original function delegating it to the
+     * requestAnimationFrame.
+     *
+     * @returns {void}
+     */
+    function timeoutCallback() {
+        requestAnimationFrame$1(resolvePending);
+    }
+
+    /**
+     * Schedules invocation of the original function.
+     *
+     * @returns {void}
+     */
+    function proxy() {
+        var timeStamp = Date.now();
+
+        if (leadingCall) {
+            // Reject immediately following calls.
+            if (timeStamp - lastCallTime < trailingTimeout) {
+                return;
+            }
+
+            // Schedule new call to be in invoked when the pending one is resolved.
+            // This is important for "transitions" which never actually start
+            // immediately so there is a chance that we might miss one if change
+            // happens amids the pending invocation.
+            trailingCall = true;
+        } else {
+            leadingCall = true;
+            trailingCall = false;
+
+            setTimeout(timeoutCallback, delay);
+        }
+
+        lastCallTime = timeStamp;
+    }
+
+    return proxy;
+};
+
+// Minimum delay before invoking the update of observers.
+var REFRESH_DELAY = 20;
+
+// A list of substrings of CSS properties used to find transition events that
+// might affect dimensions of observed elements.
+var transitionKeys = ['top', 'right', 'bottom', 'left', 'width', 'height', 'size', 'weight'];
+
+// Detect whether running in IE 11 (facepalm).
+var isIE11 = typeof navigator != 'undefined' && /Trident\/.*rv:11/.test(navigator.userAgent);
+
+// MutationObserver should not be used if running in Internet Explorer 11 as it's
+// implementation is unreliable. Example: https://jsfiddle.net/x2r3jpuz/2/
+//
+// It's a real bummer that there is no other way to check for this issue but to
+// use the UA information.
+var mutationObserverSupported = typeof MutationObserver != 'undefined' && !isIE11;
+
+/**
+ * Singleton controller class which handles updates of ResizeObserver instances.
+ */
+var ResizeObserverController = function ResizeObserverController() {
+    /**
+     * Indicates whether DOM listeners have been added.
+     *
+     * @private {boolean}
+     */
+    this.connected_ = false;
+
+    /**
+     * Tells that controller has subscribed for Mutation Events.
+     *
+     * @private {boolean}
+     */
+    this.mutationEventsAdded_ = false;
+
+    /**
+     * Keeps reference to the instance of MutationObserver.
+     *
+     * @private {MutationObserver}
+     */
+    this.mutationsObserver_ = null;
+
+    /**
+     * A list of connected observers.
+     *
+     * @private {Array<ResizeObserverSPI>}
+     */
+    this.observers_ = [];
+
+    this.onTransitionEnd_ = this.onTransitionEnd_.bind(this);
+    this.refresh = throttle(this.refresh.bind(this), REFRESH_DELAY);
+};
+
+/**
+ * Adds observer to observers list.
+ *
+ * @param {ResizeObserverSPI} observer - Observer to be added.
+ * @returns {void}
+ */
+ResizeObserverController.prototype.addObserver = function (observer) {
+    if (!~this.observers_.indexOf(observer)) {
+        this.observers_.push(observer);
+    }
+
+    // Add listeners if they haven't been added yet.
+    if (!this.connected_) {
+        this.connect_();
+    }
+};
+
+/**
+ * Removes observer from observers list.
+ *
+ * @param {ResizeObserverSPI} observer - Observer to be removed.
+ * @returns {void}
+ */
+ResizeObserverController.prototype.removeObserver = function (observer) {
+    var observers = this.observers_;
+    var index = observers.indexOf(observer);
+
+    // Remove observer if it's present in registry.
+    if (~index) {
+        observers.splice(index, 1);
+    }
+
+    // Remove listeners if controller has no connected observers.
+    if (!observers.length && this.connected_) {
+        this.disconnect_();
+    }
+};
+
+/**
+ * Invokes the update of observers. It will continue running updates insofar
+ * it detects changes.
+ *
+ * @returns {void}
+ */
+ResizeObserverController.prototype.refresh = function () {
+    var changesDetected = this.updateObservers_();
+
+    // Continue running updates if changes have been detected as there might
+    // be future ones caused by CSS transitions.
+    if (changesDetected) {
+        this.refresh();
+    }
+};
+
+/**
+ * Updates every observer from observers list and notifies them of queued
+ * entries.
+ *
+ * @private
+ * @returns {boolean} Returns "true" if any observer has detected changes in
+ *  dimensions of it's elements.
+ */
+ResizeObserverController.prototype.updateObservers_ = function () {
+    // Collect observers that have active observations.
+    var activeObservers = this.observers_.filter(function (observer) {
+        return observer.gatherActive(), observer.hasActive();
+    });
+
+    // Deliver notifications in a separate cycle in order to avoid any
+    // collisions between observers, e.g. when multiple instances of
+    // ResizeObserver are tracking the same element and the callback of one
+    // of them changes content dimensions of the observed target. Sometimes
+    // this may result in notifications being blocked for the rest of observers.
+    activeObservers.forEach(function (observer) {
+        return observer.broadcastActive();
+    });
+
+    return activeObservers.length > 0;
+};
+
+/**
+ * Initializes DOM listeners.
+ *
+ * @private
+ * @returns {void}
+ */
+ResizeObserverController.prototype.connect_ = function () {
+    // Do nothing if running in a non-browser environment or if listeners
+    // have been already added.
+    if (!isBrowser || this.connected_) {
+        return;
+    }
+
+    // Subscription to the "Transitionend" event is used as a workaround for
+    // delayed transitions. This way it's possible to capture at least the
+    // final state of an element.
+    document.addEventListener('transitionend', this.onTransitionEnd_);
+
+    window.addEventListener('resize', this.refresh);
+
+    if (mutationObserverSupported) {
+        this.mutationsObserver_ = new MutationObserver(this.refresh);
+
+        this.mutationsObserver_.observe(document, {
+            attributes: true,
+            childList: true,
+            characterData: true,
+            subtree: true
+        });
+    } else {
+        document.addEventListener('DOMSubtreeModified', this.refresh);
+
+        this.mutationEventsAdded_ = true;
+    }
+
+    this.connected_ = true;
+};
+
+/**
+ * Removes DOM listeners.
+ *
+ * @private
+ * @returns {void}
+ */
+ResizeObserverController.prototype.disconnect_ = function () {
+    // Do nothing if running in a non-browser environment or if listeners
+    // have been already removed.
+    if (!isBrowser || !this.connected_) {
+        return;
+    }
+
+    document.removeEventListener('transitionend', this.onTransitionEnd_);
+    window.removeEventListener('resize', this.refresh);
+
+    if (this.mutationsObserver_) {
+        this.mutationsObserver_.disconnect();
+    }
+
+    if (this.mutationEventsAdded_) {
+        document.removeEventListener('DOMSubtreeModified', this.refresh);
+    }
+
+    this.mutationsObserver_ = null;
+    this.mutationEventsAdded_ = false;
+    this.connected_ = false;
+};
+
+/**
+ * "Transitionend" event handler.
+ *
+ * @private
+ * @param {TransitionEvent} event
+ * @returns {void}
+ */
+ResizeObserverController.prototype.onTransitionEnd_ = function (ref) {
+    var propertyName = ref.propertyName;
+
+    // Detect whether transition may affect dimensions of an element.
+    var isReflowProperty = transitionKeys.some(function (key) {
+        return !!~propertyName.indexOf(key);
+    });
+
+    if (isReflowProperty) {
+        this.refresh();
+    }
+};
+
+/**
+ * Returns instance of the ResizeObserverController.
+ *
+ * @returns {ResizeObserverController}
+ */
+ResizeObserverController.getInstance = function () {
+    if (!this.instance_) {
+        this.instance_ = new ResizeObserverController();
+    }
+
+    return this.instance_;
+};
+
+/**
+ * Holds reference to the controller's instance.
+ *
+ * @private {ResizeObserverController}
+ */
+ResizeObserverController.instance_ = null;
+
+/**
+ * Defines non-writable/enumerable properties of the provided target object.
+ *
+ * @param {Object} target - Object for which to define properties.
+ * @param {Object} props - Properties to be defined.
+ * @returns {Object} Target object.
+ */
+var defineConfigurable = function defineConfigurable(target, props) {
+    for (var i = 0, list = Object.keys(props); i < list.length; i += 1) {
+        var key = list[i];
+
+        Object.defineProperty(target, key, {
+            value: props[key],
+            enumerable: false,
+            writable: false,
+            configurable: true
+        });
+    }
+
+    return target;
+};
+
+// Placeholder of an empty content rectangle.
+var emptyRect = createRectInit(0, 0, 0, 0);
+
+/**
+ * Converts provided string to a number.
+ *
+ * @param {number|string} value
+ * @returns {number}
+ */
+function toFloat(value) {
+    return parseFloat(value) || 0;
+}
+
+/**
+ * Extracts borders size from provided styles.
+ *
+ * @param {CSSStyleDeclaration} styles
+ * @param {...string} positions - Borders positions (top, right, ...)
+ * @returns {number}
+ */
+function getBordersSize(styles) {
+    var positions = Array.prototype.slice.call(arguments, 1);
+
+    return positions.reduce(function (size, position) {
+        var value = styles['border-' + position + '-width'];
+
+        return size + toFloat(value);
+    }, 0);
+}
+
+/**
+ * Extracts paddings sizes from provided styles.
+ *
+ * @param {CSSStyleDeclaration} styles
+ * @returns {Object} Paddings box.
+ */
+function getPaddings(styles) {
+    var positions = ['top', 'right', 'bottom', 'left'];
+    var paddings = {};
+
+    for (var i = 0, list = positions; i < list.length; i += 1) {
+        var position = list[i];
+
+        var value = styles['padding-' + position];
+
+        paddings[position] = toFloat(value);
+    }
+
+    return paddings;
+}
+
+/**
+ * Calculates content rectangle of provided SVG element.
+ *
+ * @param {SVGGraphicsElement} target - Element content rectangle of which needs
+ *      to be calculated.
+ * @returns {DOMRectInit}
+ */
+function getSVGContentRect(target) {
+    var bbox = target.getBBox();
+
+    return createRectInit(0, 0, bbox.width, bbox.height);
+}
+
+/**
+ * Calculates content rectangle of provided HTMLElement.
+ *
+ * @param {HTMLElement} target - Element for which to calculate the content rectangle.
+ * @returns {DOMRectInit}
+ */
+function getHTMLElementContentRect(target) {
+    // Client width & height properties can't be
+    // used exclusively as they provide rounded values.
+    var clientWidth = target.clientWidth;
+    var clientHeight = target.clientHeight;
+
+    // By this condition we can catch all non-replaced inline, hidden and
+    // detached elements. Though elements with width & height properties less
+    // than 0.5 will be discarded as well.
+    //
+    // Without it we would need to implement separate methods for each of
+    // those cases and it's not possible to perform a precise and performance
+    // effective test for hidden elements. E.g. even jQuery's ':visible' filter
+    // gives wrong results for elements with width & height less than 0.5.
+    if (!clientWidth && !clientHeight) {
+        return emptyRect;
+    }
+
+    var styles = getComputedStyle(target);
+    var paddings = getPaddings(styles);
+    var horizPad = paddings.left + paddings.right;
+    var vertPad = paddings.top + paddings.bottom;
+
+    // Computed styles of width & height are being used because they are the
+    // only dimensions available to JS that contain non-rounded values. It could
+    // be possible to utilize the getBoundingClientRect if only it's data wasn't
+    // affected by CSS transformations let alone paddings, borders and scroll bars.
+    var width = toFloat(styles.width),
+        height = toFloat(styles.height);
+
+    // Width & height include paddings and borders when the 'border-box' box
+    // model is applied (except for IE).
+    if (styles.boxSizing === 'border-box') {
+        // Following conditions are required to handle Internet Explorer which
+        // doesn't include paddings and borders to computed CSS dimensions.
+        //
+        // We can say that if CSS dimensions + paddings are equal to the "client"
+        // properties then it's either IE, and thus we don't need to subtract
+        // anything, or an element merely doesn't have paddings/borders styles.
+        if (Math.round(width + horizPad) !== clientWidth) {
+            width -= getBordersSize(styles, 'left', 'right') + horizPad;
+        }
+
+        if (Math.round(height + vertPad) !== clientHeight) {
+            height -= getBordersSize(styles, 'top', 'bottom') + vertPad;
+        }
+    }
+
+    // Following steps can't be applied to the document's root element as its
+    // client[Width/Height] properties represent viewport area of the window.
+    // Besides, it's as well not necessary as the <html> itself neither has
+    // rendered scroll bars nor it can be clipped.
+    if (!isDocumentElement(target)) {
+        // In some browsers (only in Firefox, actually) CSS width & height
+        // include scroll bars size which can be removed at this step as scroll
+        // bars are the only difference between rounded dimensions + paddings
+        // and "client" properties, though that is not always true in Chrome.
+        var vertScrollbar = Math.round(width + horizPad) - clientWidth;
+        var horizScrollbar = Math.round(height + vertPad) - clientHeight;
+
+        // Chrome has a rather weird rounding of "client" properties.
+        // E.g. for an element with content width of 314.2px it sometimes gives
+        // the client width of 315px and for the width of 314.7px it may give
+        // 314px. And it doesn't happen all the time. So just ignore this delta
+        // as a non-relevant.
+        if (Math.abs(vertScrollbar) !== 1) {
+            width -= vertScrollbar;
+        }
+
+        if (Math.abs(horizScrollbar) !== 1) {
+            height -= horizScrollbar;
+        }
+    }
+
+    return createRectInit(paddings.left, paddings.top, width, height);
+}
+
+/**
+ * Checks whether provided element is an instance of the SVGGraphicsElement.
+ *
+ * @param {Element} target - Element to be checked.
+ * @returns {boolean}
+ */
+var isSVGGraphicsElement = function () {
+    // Some browsers, namely IE and Edge, don't have the SVGGraphicsElement
+    // interface.
+    if (typeof SVGGraphicsElement != 'undefined') {
+        return function (target) {
+            return target instanceof SVGGraphicsElement;
+        };
+    }
+
+    // If it's so, then check that element is at least an instance of the
+    // SVGElement and that it has the "getBBox" method.
+    // eslint-disable-next-line no-extra-parens
+    return function (target) {
+        return target instanceof SVGElement && typeof target.getBBox === 'function';
+    };
+}();
+
+/**
+ * Checks whether provided element is a document element (<html>).
+ *
+ * @param {Element} target - Element to be checked.
+ * @returns {boolean}
+ */
+function isDocumentElement(target) {
+    return target === document.documentElement;
+}
+
+/**
+ * Calculates an appropriate content rectangle for provided html or svg element.
+ *
+ * @param {Element} target - Element content rectangle of which needs to be calculated.
+ * @returns {DOMRectInit}
+ */
+function getContentRect(target) {
+    if (!isBrowser) {
+        return emptyRect;
+    }
+
+    if (isSVGGraphicsElement(target)) {
+        return getSVGContentRect(target);
+    }
+
+    return getHTMLElementContentRect(target);
+}
+
+/**
+ * Creates rectangle with an interface of the DOMRectReadOnly.
+ * Spec: https://drafts.fxtf.org/geometry/#domrectreadonly
+ *
+ * @param {DOMRectInit} rectInit - Object with rectangle's x/y coordinates and dimensions.
+ * @returns {DOMRectReadOnly}
+ */
+function createReadOnlyRect(ref) {
+    var x = ref.x;
+    var y = ref.y;
+    var width = ref.width;
+    var height = ref.height;
+
+    // If DOMRectReadOnly is available use it as a prototype for the rectangle.
+    var Constr = typeof DOMRectReadOnly != 'undefined' ? DOMRectReadOnly : Object;
+    var rect = Object.create(Constr.prototype);
+
+    // Rectangle's properties are not writable and non-enumerable.
+    defineConfigurable(rect, {
+        x: x, y: y, width: width, height: height,
+        top: y,
+        right: x + width,
+        bottom: height + y,
+        left: x
+    });
+
+    return rect;
+}
+
+/**
+ * Creates DOMRectInit object based on the provided dimensions and the x/y coordinates.
+ * Spec: https://drafts.fxtf.org/geometry/#dictdef-domrectinit
+ *
+ * @param {number} x - X coordinate.
+ * @param {number} y - Y coordinate.
+ * @param {number} width - Rectangle's width.
+ * @param {number} height - Rectangle's height.
+ * @returns {DOMRectInit}
+ */
+function createRectInit(x, y, width, height) {
+    return { x: x, y: y, width: width, height: height };
+}
+
+/**
+ * Class that is responsible for computations of the content rectangle of
+ * provided DOM element and for keeping track of it's changes.
+ */
+var ResizeObservation = function ResizeObservation(target) {
+    /**
+     * Broadcasted width of content rectangle.
+     *
+     * @type {number}
+     */
+    this.broadcastWidth = 0;
+
+    /**
+     * Broadcasted height of content rectangle.
+     *
+     * @type {number}
+     */
+    this.broadcastHeight = 0;
+
+    /**
+     * Reference to the last observed content rectangle.
+     *
+     * @private {DOMRectInit}
+     */
+    this.contentRect_ = createRectInit(0, 0, 0, 0);
+
+    /**
+     * Reference to the observed element.
+     *
+     * @type {Element}
+     */
+    this.target = target;
+};
+
+/**
+ * Updates content rectangle and tells whether it's width or height properties
+ * have changed since the last broadcast.
+ *
+ * @returns {boolean}
+ */
+ResizeObservation.prototype.isActive = function () {
+    var rect = getContentRect(this.target);
+
+    this.contentRect_ = rect;
+
+    return rect.width !== this.broadcastWidth || rect.height !== this.broadcastHeight;
+};
+
+/**
+ * Updates 'broadcastWidth' and 'broadcastHeight' properties with a data
+ * from the corresponding properties of the last observed content rectangle.
+ *
+ * @returns {DOMRectInit} Last observed content rectangle.
+ */
+ResizeObservation.prototype.broadcastRect = function () {
+    var rect = this.contentRect_;
+
+    this.broadcastWidth = rect.width;
+    this.broadcastHeight = rect.height;
+
+    return rect;
+};
+
+var ResizeObserverEntry = function ResizeObserverEntry(target, rectInit) {
+    var contentRect = createReadOnlyRect(rectInit);
+
+    // According to the specification following properties are not writable
+    // and are also not enumerable in the native implementation.
+    //
+    // Property accessors are not being used as they'd require to define a
+    // private WeakMap storage which may cause memory leaks in browsers that
+    // don't support this type of collections.
+    defineConfigurable(this, { target: target, contentRect: contentRect });
+};
+
+var ResizeObserverSPI = function ResizeObserverSPI(callback, controller, callbackCtx) {
+    if (typeof callback !== 'function') {
+        throw new TypeError('The callback provided as parameter 1 is not a function.');
+    }
+
+    /**
+     * Collection of resize observations that have detected changes in dimensions
+     * of elements.
+     *
+     * @private {Array<ResizeObservation>}
+     */
+    this.activeObservations_ = [];
+
+    /**
+     * Registry of the ResizeObservation instances.
+     *
+     * @private {Map<Element, ResizeObservation>}
+     */
+    this.observations_ = new MapShim();
+
+    /**
+     * Reference to the callback function.
+     *
+     * @private {ResizeObserverCallback}
+     */
+    this.callback_ = callback;
+
+    /**
+     * Reference to the associated ResizeObserverController.
+     *
+     * @private {ResizeObserverController}
+     */
+    this.controller_ = controller;
+
+    /**
+     * Public ResizeObserver instance which will be passed to the callback
+     * function and used as a value of it's "this" binding.
+     *
+     * @private {ResizeObserver}
+     */
+    this.callbackCtx_ = callbackCtx;
+};
+
+/**
+ * Starts observing provided element.
+ *
+ * @param {Element} target - Element to be observed.
+ * @returns {void}
+ */
+ResizeObserverSPI.prototype.observe = function (target) {
+    if (!arguments.length) {
+        throw new TypeError('1 argument required, but only 0 present.');
+    }
+
+    // Do nothing if current environment doesn't have the Element interface.
+    if (typeof Element === 'undefined' || !(Element instanceof Object)) {
+        return;
+    }
+
+    if (!(target instanceof Element)) {
+        throw new TypeError('parameter 1 is not of type "Element".');
+    }
+
+    var observations = this.observations_;
+
+    // Do nothing if element is already being observed.
+    if (observations.has(target)) {
+        return;
+    }
+
+    observations.set(target, new ResizeObservation(target));
+
+    this.controller_.addObserver(this);
+
+    // Force the update of observations.
+    this.controller_.refresh();
+};
+
+/**
+ * Stops observing provided element.
+ *
+ * @param {Element} target - Element to stop observing.
+ * @returns {void}
+ */
+ResizeObserverSPI.prototype.unobserve = function (target) {
+    if (!arguments.length) {
+        throw new TypeError('1 argument required, but only 0 present.');
+    }
+
+    // Do nothing if current environment doesn't have the Element interface.
+    if (typeof Element === 'undefined' || !(Element instanceof Object)) {
+        return;
+    }
+
+    if (!(target instanceof Element)) {
+        throw new TypeError('parameter 1 is not of type "Element".');
+    }
+
+    var observations = this.observations_;
+
+    // Do nothing if element is not being observed.
+    if (!observations.has(target)) {
+        return;
+    }
+
+    observations.delete(target);
+
+    if (!observations.size) {
+        this.controller_.removeObserver(this);
+    }
+};
+
+/**
+ * Stops observing all elements.
+ *
+ * @returns {void}
+ */
+ResizeObserverSPI.prototype.disconnect = function () {
+    this.clearActive();
+    this.observations_.clear();
+    this.controller_.removeObserver(this);
+};
+
+/**
+ * Collects observation instances the associated element of which has changed
+ * it's content rectangle.
+ *
+ * @returns {void}
+ */
+ResizeObserverSPI.prototype.gatherActive = function () {
+    var this$1 = this;
+
+    this.clearActive();
+
+    this.observations_.forEach(function (observation) {
+        if (observation.isActive()) {
+            this$1.activeObservations_.push(observation);
+        }
+    });
+};
+
+/**
+ * Invokes initial callback function with a list of ResizeObserverEntry
+ * instances collected from active resize observations.
+ *
+ * @returns {void}
+ */
+ResizeObserverSPI.prototype.broadcastActive = function () {
+    // Do nothing if observer doesn't have active observations.
+    if (!this.hasActive()) {
+        return;
+    }
+
+    var ctx = this.callbackCtx_;
+
+    // Create ResizeObserverEntry instance for every active observation.
+    var entries = this.activeObservations_.map(function (observation) {
+        return new ResizeObserverEntry(observation.target, observation.broadcastRect());
+    });
+
+    this.callback_.call(ctx, entries, ctx);
+    this.clearActive();
+};
+
+/**
+ * Clears the collection of active observations.
+ *
+ * @returns {void}
+ */
+ResizeObserverSPI.prototype.clearActive = function () {
+    this.activeObservations_.splice(0);
+};
+
+/**
+ * Tells whether observer has active observations.
+ *
+ * @returns {boolean}
+ */
+ResizeObserverSPI.prototype.hasActive = function () {
+    return this.activeObservations_.length > 0;
+};
+
+// Registry of internal observers. If WeakMap is not available use current shim
+// for the Map collection as it has all required methods and because WeakMap
+// can't be fully polyfilled anyway.
+var observers = typeof WeakMap != 'undefined' ? new WeakMap() : new MapShim();
+
+/**
+ * ResizeObserver API. Encapsulates the ResizeObserver SPI implementation
+ * exposing only those methods and properties that are defined in the spec.
+ */
+var ResizeObserver$1 = function ResizeObserver$1(callback) {
+    if (!(this instanceof ResizeObserver$1)) {
+        throw new TypeError('Cannot call a class as a function');
+    }
+
+    if (!arguments.length) {
+        throw new TypeError('1 argument required, but only 0 present.');
+    }
+
+    var controller = ResizeObserverController.getInstance();
+    var observer = new ResizeObserverSPI(callback, controller, this);
+
+    observers.set(this, observer);
+};
+
+// Expose public methods of ResizeObserver.
+['observe', 'unobserve', 'disconnect'].forEach(function (method) {
+    ResizeObserver$1.prototype[method] = function () {
+        return (ref = observers.get(this))[method].apply(ref, arguments);
+        var ref;
+    };
+});
+
+var index = function () {
+    // Export existing implementation if available.
+    if (typeof ResizeObserver != 'undefined') {
+        // eslint-disable-next-line no-undef
+        return ResizeObserver;
+    }
+
+    return ResizeObserver$1;
+}();
+
+exports.default = index;
+
+/***/ }),
+/* 168 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22490,7 +24032,7 @@ module.exports = function (module) {
 };
 
 /***/ }),
-/* 166 */
+/* 169 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
@@ -22516,214 +24058,220 @@ var map = {
 	"./be.js": 21,
 	"./bg": 22,
 	"./bg.js": 22,
-	"./bn": 23,
-	"./bn.js": 23,
-	"./bo": 24,
-	"./bo.js": 24,
-	"./br": 25,
-	"./br.js": 25,
-	"./bs": 26,
-	"./bs.js": 26,
-	"./ca": 27,
-	"./ca.js": 27,
-	"./cs": 28,
-	"./cs.js": 28,
-	"./cv": 29,
-	"./cv.js": 29,
-	"./cy": 30,
-	"./cy.js": 30,
-	"./da": 31,
-	"./da.js": 31,
-	"./de": 32,
-	"./de-at": 33,
-	"./de-at.js": 33,
-	"./de-ch": 34,
-	"./de-ch.js": 34,
-	"./de.js": 32,
-	"./dv": 35,
-	"./dv.js": 35,
-	"./el": 36,
-	"./el.js": 36,
-	"./en-au": 37,
-	"./en-au.js": 37,
-	"./en-ca": 38,
-	"./en-ca.js": 38,
-	"./en-gb": 39,
-	"./en-gb.js": 39,
-	"./en-ie": 40,
-	"./en-ie.js": 40,
-	"./en-nz": 41,
-	"./en-nz.js": 41,
-	"./eo": 42,
-	"./eo.js": 42,
-	"./es": 43,
-	"./es-do": 44,
-	"./es-do.js": 44,
-	"./es.js": 43,
-	"./et": 45,
-	"./et.js": 45,
-	"./eu": 46,
-	"./eu.js": 46,
-	"./fa": 47,
-	"./fa.js": 47,
-	"./fi": 48,
-	"./fi.js": 48,
-	"./fo": 49,
-	"./fo.js": 49,
-	"./fr": 50,
-	"./fr-ca": 51,
-	"./fr-ca.js": 51,
-	"./fr-ch": 52,
-	"./fr-ch.js": 52,
-	"./fr.js": 50,
-	"./fy": 53,
-	"./fy.js": 53,
-	"./gd": 54,
-	"./gd.js": 54,
-	"./gl": 55,
-	"./gl.js": 55,
-	"./gom-latn": 56,
-	"./gom-latn.js": 56,
-	"./he": 57,
-	"./he.js": 57,
-	"./hi": 58,
-	"./hi.js": 58,
-	"./hr": 59,
-	"./hr.js": 59,
-	"./hu": 60,
-	"./hu.js": 60,
-	"./hy-am": 61,
-	"./hy-am.js": 61,
-	"./id": 62,
-	"./id.js": 62,
-	"./is": 63,
-	"./is.js": 63,
-	"./it": 64,
-	"./it.js": 64,
-	"./ja": 65,
-	"./ja.js": 65,
-	"./jv": 66,
-	"./jv.js": 66,
-	"./ka": 67,
-	"./ka.js": 67,
-	"./kk": 68,
-	"./kk.js": 68,
-	"./km": 69,
-	"./km.js": 69,
-	"./kn": 70,
-	"./kn.js": 70,
-	"./ko": 71,
-	"./ko.js": 71,
-	"./ky": 72,
-	"./ky.js": 72,
-	"./lb": 73,
-	"./lb.js": 73,
-	"./lo": 74,
-	"./lo.js": 74,
-	"./lt": 75,
-	"./lt.js": 75,
-	"./lv": 76,
-	"./lv.js": 76,
-	"./me": 77,
-	"./me.js": 77,
-	"./mi": 78,
-	"./mi.js": 78,
-	"./mk": 79,
-	"./mk.js": 79,
-	"./ml": 80,
-	"./ml.js": 80,
-	"./mr": 81,
-	"./mr.js": 81,
-	"./ms": 82,
-	"./ms-my": 83,
-	"./ms-my.js": 83,
-	"./ms.js": 82,
-	"./my": 84,
-	"./my.js": 84,
-	"./nb": 85,
-	"./nb.js": 85,
-	"./ne": 86,
-	"./ne.js": 86,
-	"./nl": 87,
-	"./nl-be": 88,
-	"./nl-be.js": 88,
-	"./nl.js": 87,
-	"./nn": 89,
-	"./nn.js": 89,
-	"./pa-in": 90,
-	"./pa-in.js": 90,
-	"./pl": 91,
-	"./pl.js": 91,
-	"./pt": 92,
-	"./pt-br": 93,
-	"./pt-br.js": 93,
-	"./pt.js": 92,
-	"./ro": 94,
-	"./ro.js": 94,
-	"./ru": 95,
-	"./ru.js": 95,
-	"./sd": 96,
-	"./sd.js": 96,
-	"./se": 97,
-	"./se.js": 97,
-	"./si": 98,
-	"./si.js": 98,
-	"./sk": 99,
-	"./sk.js": 99,
-	"./sl": 100,
-	"./sl.js": 100,
-	"./sq": 101,
-	"./sq.js": 101,
-	"./sr": 102,
-	"./sr-cyrl": 103,
-	"./sr-cyrl.js": 103,
-	"./sr.js": 102,
-	"./ss": 104,
-	"./ss.js": 104,
-	"./sv": 105,
-	"./sv.js": 105,
-	"./sw": 106,
-	"./sw.js": 106,
-	"./ta": 107,
-	"./ta.js": 107,
-	"./te": 108,
-	"./te.js": 108,
-	"./tet": 109,
-	"./tet.js": 109,
-	"./th": 110,
-	"./th.js": 110,
-	"./tl-ph": 111,
-	"./tl-ph.js": 111,
-	"./tlh": 112,
-	"./tlh.js": 112,
-	"./tr": 113,
-	"./tr.js": 113,
-	"./tzl": 114,
-	"./tzl.js": 114,
-	"./tzm": 115,
-	"./tzm-latn": 116,
-	"./tzm-latn.js": 116,
-	"./tzm.js": 115,
-	"./uk": 117,
-	"./uk.js": 117,
-	"./ur": 118,
-	"./ur.js": 118,
-	"./uz": 119,
-	"./uz-latn": 120,
-	"./uz-latn.js": 120,
-	"./uz.js": 119,
-	"./vi": 121,
-	"./vi.js": 121,
-	"./x-pseudo": 122,
-	"./x-pseudo.js": 122,
-	"./yo": 123,
-	"./yo.js": 123,
-	"./zh-cn": 124,
-	"./zh-cn.js": 124,
-	"./zh-hk": 125,
-	"./zh-hk.js": 125,
-	"./zh-tw": 126,
-	"./zh-tw.js": 126
+	"./bm": 23,
+	"./bm.js": 23,
+	"./bn": 24,
+	"./bn.js": 24,
+	"./bo": 25,
+	"./bo.js": 25,
+	"./br": 26,
+	"./br.js": 26,
+	"./bs": 27,
+	"./bs.js": 27,
+	"./ca": 28,
+	"./ca.js": 28,
+	"./cs": 29,
+	"./cs.js": 29,
+	"./cv": 30,
+	"./cv.js": 30,
+	"./cy": 31,
+	"./cy.js": 31,
+	"./da": 32,
+	"./da.js": 32,
+	"./de": 33,
+	"./de-at": 34,
+	"./de-at.js": 34,
+	"./de-ch": 35,
+	"./de-ch.js": 35,
+	"./de.js": 33,
+	"./dv": 36,
+	"./dv.js": 36,
+	"./el": 37,
+	"./el.js": 37,
+	"./en-au": 38,
+	"./en-au.js": 38,
+	"./en-ca": 39,
+	"./en-ca.js": 39,
+	"./en-gb": 40,
+	"./en-gb.js": 40,
+	"./en-ie": 41,
+	"./en-ie.js": 41,
+	"./en-nz": 42,
+	"./en-nz.js": 42,
+	"./eo": 43,
+	"./eo.js": 43,
+	"./es": 44,
+	"./es-do": 45,
+	"./es-do.js": 45,
+	"./es-us": 46,
+	"./es-us.js": 46,
+	"./es.js": 44,
+	"./et": 47,
+	"./et.js": 47,
+	"./eu": 48,
+	"./eu.js": 48,
+	"./fa": 49,
+	"./fa.js": 49,
+	"./fi": 50,
+	"./fi.js": 50,
+	"./fo": 51,
+	"./fo.js": 51,
+	"./fr": 52,
+	"./fr-ca": 53,
+	"./fr-ca.js": 53,
+	"./fr-ch": 54,
+	"./fr-ch.js": 54,
+	"./fr.js": 52,
+	"./fy": 55,
+	"./fy.js": 55,
+	"./gd": 56,
+	"./gd.js": 56,
+	"./gl": 57,
+	"./gl.js": 57,
+	"./gom-latn": 58,
+	"./gom-latn.js": 58,
+	"./gu": 59,
+	"./gu.js": 59,
+	"./he": 60,
+	"./he.js": 60,
+	"./hi": 61,
+	"./hi.js": 61,
+	"./hr": 62,
+	"./hr.js": 62,
+	"./hu": 63,
+	"./hu.js": 63,
+	"./hy-am": 64,
+	"./hy-am.js": 64,
+	"./id": 65,
+	"./id.js": 65,
+	"./is": 66,
+	"./is.js": 66,
+	"./it": 67,
+	"./it.js": 67,
+	"./ja": 68,
+	"./ja.js": 68,
+	"./jv": 69,
+	"./jv.js": 69,
+	"./ka": 70,
+	"./ka.js": 70,
+	"./kk": 71,
+	"./kk.js": 71,
+	"./km": 72,
+	"./km.js": 72,
+	"./kn": 73,
+	"./kn.js": 73,
+	"./ko": 74,
+	"./ko.js": 74,
+	"./ky": 75,
+	"./ky.js": 75,
+	"./lb": 76,
+	"./lb.js": 76,
+	"./lo": 77,
+	"./lo.js": 77,
+	"./lt": 78,
+	"./lt.js": 78,
+	"./lv": 79,
+	"./lv.js": 79,
+	"./me": 80,
+	"./me.js": 80,
+	"./mi": 81,
+	"./mi.js": 81,
+	"./mk": 82,
+	"./mk.js": 82,
+	"./ml": 83,
+	"./ml.js": 83,
+	"./mr": 84,
+	"./mr.js": 84,
+	"./ms": 85,
+	"./ms-my": 86,
+	"./ms-my.js": 86,
+	"./ms.js": 85,
+	"./my": 87,
+	"./my.js": 87,
+	"./nb": 88,
+	"./nb.js": 88,
+	"./ne": 89,
+	"./ne.js": 89,
+	"./nl": 90,
+	"./nl-be": 91,
+	"./nl-be.js": 91,
+	"./nl.js": 90,
+	"./nn": 92,
+	"./nn.js": 92,
+	"./pa-in": 93,
+	"./pa-in.js": 93,
+	"./pl": 94,
+	"./pl.js": 94,
+	"./pt": 95,
+	"./pt-br": 96,
+	"./pt-br.js": 96,
+	"./pt.js": 95,
+	"./ro": 97,
+	"./ro.js": 97,
+	"./ru": 98,
+	"./ru.js": 98,
+	"./sd": 99,
+	"./sd.js": 99,
+	"./se": 100,
+	"./se.js": 100,
+	"./si": 101,
+	"./si.js": 101,
+	"./sk": 102,
+	"./sk.js": 102,
+	"./sl": 103,
+	"./sl.js": 103,
+	"./sq": 104,
+	"./sq.js": 104,
+	"./sr": 105,
+	"./sr-cyrl": 106,
+	"./sr-cyrl.js": 106,
+	"./sr.js": 105,
+	"./ss": 107,
+	"./ss.js": 107,
+	"./sv": 108,
+	"./sv.js": 108,
+	"./sw": 109,
+	"./sw.js": 109,
+	"./ta": 110,
+	"./ta.js": 110,
+	"./te": 111,
+	"./te.js": 111,
+	"./tet": 112,
+	"./tet.js": 112,
+	"./th": 113,
+	"./th.js": 113,
+	"./tl-ph": 114,
+	"./tl-ph.js": 114,
+	"./tlh": 115,
+	"./tlh.js": 115,
+	"./tr": 116,
+	"./tr.js": 116,
+	"./tzl": 117,
+	"./tzl.js": 117,
+	"./tzm": 118,
+	"./tzm-latn": 119,
+	"./tzm-latn.js": 119,
+	"./tzm.js": 118,
+	"./uk": 120,
+	"./uk.js": 120,
+	"./ur": 121,
+	"./ur.js": 121,
+	"./uz": 122,
+	"./uz-latn": 123,
+	"./uz-latn.js": 123,
+	"./uz.js": 122,
+	"./vi": 124,
+	"./vi.js": 124,
+	"./x-pseudo": 125,
+	"./x-pseudo.js": 125,
+	"./yo": 126,
+	"./yo.js": 126,
+	"./zh-cn": 127,
+	"./zh-cn.js": 127,
+	"./zh-hk": 128,
+	"./zh-hk.js": 128,
+	"./zh-tw": 129,
+	"./zh-tw.js": 129
 };
 function webpackContext(req) {
 	return __webpack_require__(webpackContextResolve(req));
@@ -22739,10 +24287,10 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = 166;
+webpackContext.id = 169;
 
 /***/ }),
-/* 167 */
+/* 170 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25129,14 +26677,14 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         }, c, g ? e : b, g, null);
       };
     });
-  }), a.jQuery = a.$ = p, "function" == "function" && __webpack_require__(127) && __webpack_require__(127).jQuery && !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
+  }), a.jQuery = a.$ = p, "function" == "function" && __webpack_require__(130) && __webpack_require__(130).jQuery && !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
     return p;
   }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 })(window);
 
 /***/ }),
-/* 168 */
+/* 171 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26211,1116 +27759,29 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 })($);
 
 /***/ }),
-/* 169 */
+/* 172 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-/**
- * There are no events for this application
- * But this is an example of directory and file structure for events
- * Seperation of concerns are key in functional paradigms!
-*/
-var ResizeObserver = __webpack_require__(170).default;
-var $bgEle = void 0,
-    $container = void 0;
-
-var changeSize = function changeSize() {
-    $bgEle.forEach(function (ele) {
-        ele.style.width = $container.offsetWidth + "px";
-        ele.style.height = $container.offsetHeight + "px";
-    });
-};
-var observeSizeChanges = function observeSizeChanges() {
-    $bgEle = document.querySelectorAll(".background");
-    $container = document.querySelector(".container");
-    changeSize();
-    new ResizeObserver(changeSize).observe($container);
-};
-exports.default = {
-    load: function load(state, actions, element) {
-        setTimeout(observeSizeChanges, 100);
-        if (localStorage.chrome_id) {
-            actions.initialize({
-                chrome_id: localStorage.chrome_id,
-                callback: function callback() {
-                    if (chrome.extension) {
-                        var bgPage = chrome.extension.getBackgroundPage();
-                        actions.setNotificationCount(bgPage.countData);
-                        bgPage.updateNotification(0);
-                        var manifest = chrome.runtime.getManifest();
-                        var version = manifest.version;
-                        actions.setVersion(version);
-                    }
-                    actions.onTabChange({
-                        stateKey: "notificationTabs",
-                        tab_id: "notLinks"
-                    });
-                    actions.fetchGroups();
-                    actions.detectSite();
-                }
-            });
-            if (new Date().getDate() == 31) {
-                if (!localStorage.counter || parseInt(localStorage.counter) <= 4) {
-                    document.querySelector("body").classList.add("halloween");
-                    if (!localStorage.counter) {
-                        localStorage.counter = 0;
-                    }
-                    localStorage.counter = parseInt(localStorage.counter) + 1;
-                }
-            }
-        } else {
-            state.mainNav.active = "settings";
-            state.settingsTabs.active = "profile";
-            return state;
-        }
-    }
-};
+window._gaq = window._gaq || [];
+_gaq.push(["_setAccount", "UA-19390409-5"]);
+_gaq.push(["_trackPageview"]);
+if (localStorage.chrome_id) {
+    _gaq.push(["_setCustomVar", 1, "chrome_id", localStorage.chrome_id]);
+}
+(function () {
+    var ga = document.createElement("script");
+    ga.type = "text/javascript";
+    ga.async = true;
+    ga.src = "https://ssl.google-analytics.com/ga.js";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(ga, s);
+})();
 
 /***/ }),
-/* 170 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-/**
- * A collection of shims that provide minimal functionality of the ES6 collections.
- *
- * These implementations are not meant to be used outside of the ResizeObserver
- * modules as they cover only a limited range of use cases.
- */
-/* eslint-disable require-jsdoc, valid-jsdoc */
-var MapShim = function () {
-    if (typeof Map != 'undefined') {
-        return Map;
-    }
-
-    /**
-     * Returns index in provided array that matches the specified key.
-     *
-     * @param {Array<Array>} arr
-     * @param {*} key
-     * @returns {number}
-     */
-    function getIndex(arr, key) {
-        var result = -1;
-
-        arr.some(function (entry, index) {
-            if (entry[0] === key) {
-                result = index;
-
-                return true;
-            }
-
-            return false;
-        });
-
-        return result;
-    }
-
-    return function () {
-        function anonymous() {
-            this.__entries__ = [];
-        }
-
-        var prototypeAccessors = { size: {} };
-
-        /**
-         * @returns {boolean}
-         */
-        prototypeAccessors.size.get = function () {
-            return this.__entries__.length;
-        };
-
-        /**
-         * @param {*} key
-         * @returns {*}
-         */
-        anonymous.prototype.get = function (key) {
-            var index = getIndex(this.__entries__, key);
-            var entry = this.__entries__[index];
-
-            return entry && entry[1];
-        };
-
-        /**
-         * @param {*} key
-         * @param {*} value
-         * @returns {void}
-         */
-        anonymous.prototype.set = function (key, value) {
-            var index = getIndex(this.__entries__, key);
-
-            if (~index) {
-                this.__entries__[index][1] = value;
-            } else {
-                this.__entries__.push([key, value]);
-            }
-        };
-
-        /**
-         * @param {*} key
-         * @returns {void}
-         */
-        anonymous.prototype.delete = function (key) {
-            var entries = this.__entries__;
-            var index = getIndex(entries, key);
-
-            if (~index) {
-                entries.splice(index, 1);
-            }
-        };
-
-        /**
-         * @param {*} key
-         * @returns {void}
-         */
-        anonymous.prototype.has = function (key) {
-            return !!~getIndex(this.__entries__, key);
-        };
-
-        /**
-         * @returns {void}
-         */
-        anonymous.prototype.clear = function () {
-            this.__entries__.splice(0);
-        };
-
-        /**
-         * @param {Function} callback
-         * @param {*} [ctx=null]
-         * @returns {void}
-         */
-        anonymous.prototype.forEach = function (callback, ctx) {
-            if (ctx === void 0) ctx = null;
-
-            for (var i = 0, list = this.__entries__; i < list.length; i += 1) {
-                var entry = list[i];
-
-                callback.call(ctx, entry[1], entry[0]);
-            }
-        };
-
-        Object.defineProperties(anonymous.prototype, prototypeAccessors);
-
-        return anonymous;
-    }();
-}();
-
-/**
- * Detects whether window and document objects are available in current environment.
- */
-var isBrowser = typeof window != 'undefined' && typeof document != 'undefined' && window.document === document;
-
-/**
- * A shim for the requestAnimationFrame which falls back to the setTimeout if
- * first one is not supported.
- *
- * @returns {number} Requests' identifier.
- */
-var requestAnimationFrame$1 = function () {
-    if (typeof requestAnimationFrame === 'function') {
-        return requestAnimationFrame;
-    }
-
-    return function (callback) {
-        return setTimeout(function () {
-            return callback(Date.now());
-        }, 1000 / 60);
-    };
-}();
-
-// Defines minimum timeout before adding a trailing call.
-var trailingTimeout = 2;
-
-/**
- * Creates a wrapper function which ensures that provided callback will be
- * invoked only once during the specified delay period.
- *
- * @param {Function} callback - Function to be invoked after the delay period.
- * @param {number} delay - Delay after which to invoke callback.
- * @returns {Function}
- */
-var throttle = function throttle(callback, delay) {
-    var leadingCall = false,
-        trailingCall = false,
-        lastCallTime = 0;
-
-    /**
-     * Invokes the original callback function and schedules new invocation if
-     * the "proxy" was called during current request.
-     *
-     * @returns {void}
-     */
-    function resolvePending() {
-        if (leadingCall) {
-            leadingCall = false;
-
-            callback();
-        }
-
-        if (trailingCall) {
-            proxy();
-        }
-    }
-
-    /**
-     * Callback invoked after the specified delay. It will further postpone
-     * invocation of the original function delegating it to the
-     * requestAnimationFrame.
-     *
-     * @returns {void}
-     */
-    function timeoutCallback() {
-        requestAnimationFrame$1(resolvePending);
-    }
-
-    /**
-     * Schedules invocation of the original function.
-     *
-     * @returns {void}
-     */
-    function proxy() {
-        var timeStamp = Date.now();
-
-        if (leadingCall) {
-            // Reject immediately following calls.
-            if (timeStamp - lastCallTime < trailingTimeout) {
-                return;
-            }
-
-            // Schedule new call to be in invoked when the pending one is resolved.
-            // This is important for "transitions" which never actually start
-            // immediately so there is a chance that we might miss one if change
-            // happens amids the pending invocation.
-            trailingCall = true;
-        } else {
-            leadingCall = true;
-            trailingCall = false;
-
-            setTimeout(timeoutCallback, delay);
-        }
-
-        lastCallTime = timeStamp;
-    }
-
-    return proxy;
-};
-
-// Minimum delay before invoking the update of observers.
-var REFRESH_DELAY = 20;
-
-// A list of substrings of CSS properties used to find transition events that
-// might affect dimensions of observed elements.
-var transitionKeys = ['top', 'right', 'bottom', 'left', 'width', 'height', 'size', 'weight'];
-
-// Detect whether running in IE 11 (facepalm).
-var isIE11 = typeof navigator != 'undefined' && /Trident\/.*rv:11/.test(navigator.userAgent);
-
-// MutationObserver should not be used if running in Internet Explorer 11 as it's
-// implementation is unreliable. Example: https://jsfiddle.net/x2r3jpuz/2/
-//
-// It's a real bummer that there is no other way to check for this issue but to
-// use the UA information.
-var mutationObserverSupported = typeof MutationObserver != 'undefined' && !isIE11;
-
-/**
- * Singleton controller class which handles updates of ResizeObserver instances.
- */
-var ResizeObserverController = function ResizeObserverController() {
-    /**
-     * Indicates whether DOM listeners have been added.
-     *
-     * @private {boolean}
-     */
-    this.connected_ = false;
-
-    /**
-     * Tells that controller has subscribed for Mutation Events.
-     *
-     * @private {boolean}
-     */
-    this.mutationEventsAdded_ = false;
-
-    /**
-     * Keeps reference to the instance of MutationObserver.
-     *
-     * @private {MutationObserver}
-     */
-    this.mutationsObserver_ = null;
-
-    /**
-     * A list of connected observers.
-     *
-     * @private {Array<ResizeObserverSPI>}
-     */
-    this.observers_ = [];
-
-    this.onTransitionEnd_ = this.onTransitionEnd_.bind(this);
-    this.refresh = throttle(this.refresh.bind(this), REFRESH_DELAY);
-};
-
-/**
- * Adds observer to observers list.
- *
- * @param {ResizeObserverSPI} observer - Observer to be added.
- * @returns {void}
- */
-ResizeObserverController.prototype.addObserver = function (observer) {
-    if (!~this.observers_.indexOf(observer)) {
-        this.observers_.push(observer);
-    }
-
-    // Add listeners if they haven't been added yet.
-    if (!this.connected_) {
-        this.connect_();
-    }
-};
-
-/**
- * Removes observer from observers list.
- *
- * @param {ResizeObserverSPI} observer - Observer to be removed.
- * @returns {void}
- */
-ResizeObserverController.prototype.removeObserver = function (observer) {
-    var observers = this.observers_;
-    var index = observers.indexOf(observer);
-
-    // Remove observer if it's present in registry.
-    if (~index) {
-        observers.splice(index, 1);
-    }
-
-    // Remove listeners if controller has no connected observers.
-    if (!observers.length && this.connected_) {
-        this.disconnect_();
-    }
-};
-
-/**
- * Invokes the update of observers. It will continue running updates insofar
- * it detects changes.
- *
- * @returns {void}
- */
-ResizeObserverController.prototype.refresh = function () {
-    var changesDetected = this.updateObservers_();
-
-    // Continue running updates if changes have been detected as there might
-    // be future ones caused by CSS transitions.
-    if (changesDetected) {
-        this.refresh();
-    }
-};
-
-/**
- * Updates every observer from observers list and notifies them of queued
- * entries.
- *
- * @private
- * @returns {boolean} Returns "true" if any observer has detected changes in
- *  dimensions of it's elements.
- */
-ResizeObserverController.prototype.updateObservers_ = function () {
-    // Collect observers that have active observations.
-    var activeObservers = this.observers_.filter(function (observer) {
-        return observer.gatherActive(), observer.hasActive();
-    });
-
-    // Deliver notifications in a separate cycle in order to avoid any
-    // collisions between observers, e.g. when multiple instances of
-    // ResizeObserver are tracking the same element and the callback of one
-    // of them changes content dimensions of the observed target. Sometimes
-    // this may result in notifications being blocked for the rest of observers.
-    activeObservers.forEach(function (observer) {
-        return observer.broadcastActive();
-    });
-
-    return activeObservers.length > 0;
-};
-
-/**
- * Initializes DOM listeners.
- *
- * @private
- * @returns {void}
- */
-ResizeObserverController.prototype.connect_ = function () {
-    // Do nothing if running in a non-browser environment or if listeners
-    // have been already added.
-    if (!isBrowser || this.connected_) {
-        return;
-    }
-
-    // Subscription to the "Transitionend" event is used as a workaround for
-    // delayed transitions. This way it's possible to capture at least the
-    // final state of an element.
-    document.addEventListener('transitionend', this.onTransitionEnd_);
-
-    window.addEventListener('resize', this.refresh);
-
-    if (mutationObserverSupported) {
-        this.mutationsObserver_ = new MutationObserver(this.refresh);
-
-        this.mutationsObserver_.observe(document, {
-            attributes: true,
-            childList: true,
-            characterData: true,
-            subtree: true
-        });
-    } else {
-        document.addEventListener('DOMSubtreeModified', this.refresh);
-
-        this.mutationEventsAdded_ = true;
-    }
-
-    this.connected_ = true;
-};
-
-/**
- * Removes DOM listeners.
- *
- * @private
- * @returns {void}
- */
-ResizeObserverController.prototype.disconnect_ = function () {
-    // Do nothing if running in a non-browser environment or if listeners
-    // have been already removed.
-    if (!isBrowser || !this.connected_) {
-        return;
-    }
-
-    document.removeEventListener('transitionend', this.onTransitionEnd_);
-    window.removeEventListener('resize', this.refresh);
-
-    if (this.mutationsObserver_) {
-        this.mutationsObserver_.disconnect();
-    }
-
-    if (this.mutationEventsAdded_) {
-        document.removeEventListener('DOMSubtreeModified', this.refresh);
-    }
-
-    this.mutationsObserver_ = null;
-    this.mutationEventsAdded_ = false;
-    this.connected_ = false;
-};
-
-/**
- * "Transitionend" event handler.
- *
- * @private
- * @param {TransitionEvent} event
- * @returns {void}
- */
-ResizeObserverController.prototype.onTransitionEnd_ = function (ref) {
-    var propertyName = ref.propertyName;
-
-    // Detect whether transition may affect dimensions of an element.
-    var isReflowProperty = transitionKeys.some(function (key) {
-        return !!~propertyName.indexOf(key);
-    });
-
-    if (isReflowProperty) {
-        this.refresh();
-    }
-};
-
-/**
- * Returns instance of the ResizeObserverController.
- *
- * @returns {ResizeObserverController}
- */
-ResizeObserverController.getInstance = function () {
-    if (!this.instance_) {
-        this.instance_ = new ResizeObserverController();
-    }
-
-    return this.instance_;
-};
-
-/**
- * Holds reference to the controller's instance.
- *
- * @private {ResizeObserverController}
- */
-ResizeObserverController.instance_ = null;
-
-/**
- * Defines non-writable/enumerable properties of the provided target object.
- *
- * @param {Object} target - Object for which to define properties.
- * @param {Object} props - Properties to be defined.
- * @returns {Object} Target object.
- */
-var defineConfigurable = function defineConfigurable(target, props) {
-    for (var i = 0, list = Object.keys(props); i < list.length; i += 1) {
-        var key = list[i];
-
-        Object.defineProperty(target, key, {
-            value: props[key],
-            enumerable: false,
-            writable: false,
-            configurable: true
-        });
-    }
-
-    return target;
-};
-
-// Placeholder of an empty content rectangle.
-var emptyRect = createRectInit(0, 0, 0, 0);
-
-/**
- * Converts provided string to a number.
- *
- * @param {number|string} value
- * @returns {number}
- */
-function toFloat(value) {
-    return parseFloat(value) || 0;
-}
-
-/**
- * Extracts borders size from provided styles.
- *
- * @param {CSSStyleDeclaration} styles
- * @param {...string} positions - Borders positions (top, right, ...)
- * @returns {number}
- */
-function getBordersSize(styles) {
-    var positions = Array.prototype.slice.call(arguments, 1);
-
-    return positions.reduce(function (size, position) {
-        var value = styles['border-' + position + '-width'];
-
-        return size + toFloat(value);
-    }, 0);
-}
-
-/**
- * Extracts paddings sizes from provided styles.
- *
- * @param {CSSStyleDeclaration} styles
- * @returns {Object} Paddings box.
- */
-function getPaddings(styles) {
-    var positions = ['top', 'right', 'bottom', 'left'];
-    var paddings = {};
-
-    for (var i = 0, list = positions; i < list.length; i += 1) {
-        var position = list[i];
-
-        var value = styles['padding-' + position];
-
-        paddings[position] = toFloat(value);
-    }
-
-    return paddings;
-}
-
-/**
- * Calculates content rectangle of provided SVG element.
- *
- * @param {SVGGraphicsElement} target - Element content rectangle of which needs
- *      to be calculated.
- * @returns {DOMRectInit}
- */
-function getSVGContentRect(target) {
-    var bbox = target.getBBox();
-
-    return createRectInit(0, 0, bbox.width, bbox.height);
-}
-
-/**
- * Calculates content rectangle of provided HTMLElement.
- *
- * @param {HTMLElement} target - Element for which to calculate the content rectangle.
- * @returns {DOMRectInit}
- */
-function getHTMLElementContentRect(target) {
-    // Client width & height properties can't be
-    // used exclusively as they provide rounded values.
-    var clientWidth = target.clientWidth;
-    var clientHeight = target.clientHeight;
-
-    // By this condition we can catch all non-replaced inline, hidden and
-    // detached elements. Though elements with width & height properties less
-    // than 0.5 will be discarded as well.
-    //
-    // Without it we would need to implement separate methods for each of
-    // those cases and it's not possible to perform a precise and performance
-    // effective test for hidden elements. E.g. even jQuery's ':visible' filter
-    // gives wrong results for elements with width & height less than 0.5.
-    if (!clientWidth && !clientHeight) {
-        return emptyRect;
-    }
-
-    var styles = getComputedStyle(target);
-    var paddings = getPaddings(styles);
-    var horizPad = paddings.left + paddings.right;
-    var vertPad = paddings.top + paddings.bottom;
-
-    // Computed styles of width & height are being used because they are the
-    // only dimensions available to JS that contain non-rounded values. It could
-    // be possible to utilize the getBoundingClientRect if only it's data wasn't
-    // affected by CSS transformations let alone paddings, borders and scroll bars.
-    var width = toFloat(styles.width),
-        height = toFloat(styles.height);
-
-    // Width & height include paddings and borders when the 'border-box' box
-    // model is applied (except for IE).
-    if (styles.boxSizing === 'border-box') {
-        // Following conditions are required to handle Internet Explorer which
-        // doesn't include paddings and borders to computed CSS dimensions.
-        //
-        // We can say that if CSS dimensions + paddings are equal to the "client"
-        // properties then it's either IE, and thus we don't need to subtract
-        // anything, or an element merely doesn't have paddings/borders styles.
-        if (Math.round(width + horizPad) !== clientWidth) {
-            width -= getBordersSize(styles, 'left', 'right') + horizPad;
-        }
-
-        if (Math.round(height + vertPad) !== clientHeight) {
-            height -= getBordersSize(styles, 'top', 'bottom') + vertPad;
-        }
-    }
-
-    // Following steps can't be applied to the document's root element as its
-    // client[Width/Height] properties represent viewport area of the window.
-    // Besides, it's as well not necessary as the <html> itself neither has
-    // rendered scroll bars nor it can be clipped.
-    if (!isDocumentElement(target)) {
-        // In some browsers (only in Firefox, actually) CSS width & height
-        // include scroll bars size which can be removed at this step as scroll
-        // bars are the only difference between rounded dimensions + paddings
-        // and "client" properties, though that is not always true in Chrome.
-        var vertScrollbar = Math.round(width + horizPad) - clientWidth;
-        var horizScrollbar = Math.round(height + vertPad) - clientHeight;
-
-        // Chrome has a rather weird rounding of "client" properties.
-        // E.g. for an element with content width of 314.2px it sometimes gives
-        // the client width of 315px and for the width of 314.7px it may give
-        // 314px. And it doesn't happen all the time. So just ignore this delta
-        // as a non-relevant.
-        if (Math.abs(vertScrollbar) !== 1) {
-            width -= vertScrollbar;
-        }
-
-        if (Math.abs(horizScrollbar) !== 1) {
-            height -= horizScrollbar;
-        }
-    }
-
-    return createRectInit(paddings.left, paddings.top, width, height);
-}
-
-/**
- * Checks whether provided element is an instance of the SVGGraphicsElement.
- *
- * @param {Element} target - Element to be checked.
- * @returns {boolean}
- */
-var isSVGGraphicsElement = function () {
-    // Some browsers, namely IE and Edge, don't have the SVGGraphicsElement
-    // interface.
-    if (typeof SVGGraphicsElement != 'undefined') {
-        return function (target) {
-            return target instanceof SVGGraphicsElement;
-        };
-    }
-
-    // If it's so, then check that element is at least an instance of the
-    // SVGElement and that it has the "getBBox" method.
-    // eslint-disable-next-line no-extra-parens
-    return function (target) {
-        return target instanceof SVGElement && typeof target.getBBox === 'function';
-    };
-}();
-
-/**
- * Checks whether provided element is a document element (<html>).
- *
- * @param {Element} target - Element to be checked.
- * @returns {boolean}
- */
-function isDocumentElement(target) {
-    return target === document.documentElement;
-}
-
-/**
- * Calculates an appropriate content rectangle for provided html or svg element.
- *
- * @param {Element} target - Element content rectangle of which needs to be calculated.
- * @returns {DOMRectInit}
- */
-function getContentRect(target) {
-    if (!isBrowser) {
-        return emptyRect;
-    }
-
-    if (isSVGGraphicsElement(target)) {
-        return getSVGContentRect(target);
-    }
-
-    return getHTMLElementContentRect(target);
-}
-
-/**
- * Creates rectangle with an interface of the DOMRectReadOnly.
- * Spec: https://drafts.fxtf.org/geometry/#domrectreadonly
- *
- * @param {DOMRectInit} rectInit - Object with rectangle's x/y coordinates and dimensions.
- * @returns {DOMRectReadOnly}
- */
-function createReadOnlyRect(ref) {
-    var x = ref.x;
-    var y = ref.y;
-    var width = ref.width;
-    var height = ref.height;
-
-    // If DOMRectReadOnly is available use it as a prototype for the rectangle.
-    var Constr = typeof DOMRectReadOnly != 'undefined' ? DOMRectReadOnly : Object;
-    var rect = Object.create(Constr.prototype);
-
-    // Rectangle's properties are not writable and non-enumerable.
-    defineConfigurable(rect, {
-        x: x, y: y, width: width, height: height,
-        top: y,
-        right: x + width,
-        bottom: height + y,
-        left: x
-    });
-
-    return rect;
-}
-
-/**
- * Creates DOMRectInit object based on the provided dimensions and the x/y coordinates.
- * Spec: https://drafts.fxtf.org/geometry/#dictdef-domrectinit
- *
- * @param {number} x - X coordinate.
- * @param {number} y - Y coordinate.
- * @param {number} width - Rectangle's width.
- * @param {number} height - Rectangle's height.
- * @returns {DOMRectInit}
- */
-function createRectInit(x, y, width, height) {
-    return { x: x, y: y, width: width, height: height };
-}
-
-/**
- * Class that is responsible for computations of the content rectangle of
- * provided DOM element and for keeping track of it's changes.
- */
-var ResizeObservation = function ResizeObservation(target) {
-    /**
-     * Broadcasted width of content rectangle.
-     *
-     * @type {number}
-     */
-    this.broadcastWidth = 0;
-
-    /**
-     * Broadcasted height of content rectangle.
-     *
-     * @type {number}
-     */
-    this.broadcastHeight = 0;
-
-    /**
-     * Reference to the last observed content rectangle.
-     *
-     * @private {DOMRectInit}
-     */
-    this.contentRect_ = createRectInit(0, 0, 0, 0);
-
-    /**
-     * Reference to the observed element.
-     *
-     * @type {Element}
-     */
-    this.target = target;
-};
-
-/**
- * Updates content rectangle and tells whether it's width or height properties
- * have changed since the last broadcast.
- *
- * @returns {boolean}
- */
-ResizeObservation.prototype.isActive = function () {
-    var rect = getContentRect(this.target);
-
-    this.contentRect_ = rect;
-
-    return rect.width !== this.broadcastWidth || rect.height !== this.broadcastHeight;
-};
-
-/**
- * Updates 'broadcastWidth' and 'broadcastHeight' properties with a data
- * from the corresponding properties of the last observed content rectangle.
- *
- * @returns {DOMRectInit} Last observed content rectangle.
- */
-ResizeObservation.prototype.broadcastRect = function () {
-    var rect = this.contentRect_;
-
-    this.broadcastWidth = rect.width;
-    this.broadcastHeight = rect.height;
-
-    return rect;
-};
-
-var ResizeObserverEntry = function ResizeObserverEntry(target, rectInit) {
-    var contentRect = createReadOnlyRect(rectInit);
-
-    // According to the specification following properties are not writable
-    // and are also not enumerable in the native implementation.
-    //
-    // Property accessors are not being used as they'd require to define a
-    // private WeakMap storage which may cause memory leaks in browsers that
-    // don't support this type of collections.
-    defineConfigurable(this, { target: target, contentRect: contentRect });
-};
-
-var ResizeObserverSPI = function ResizeObserverSPI(callback, controller, callbackCtx) {
-    if (typeof callback !== 'function') {
-        throw new TypeError('The callback provided as parameter 1 is not a function.');
-    }
-
-    /**
-     * Collection of resize observations that have detected changes in dimensions
-     * of elements.
-     *
-     * @private {Array<ResizeObservation>}
-     */
-    this.activeObservations_ = [];
-
-    /**
-     * Registry of the ResizeObservation instances.
-     *
-     * @private {Map<Element, ResizeObservation>}
-     */
-    this.observations_ = new MapShim();
-
-    /**
-     * Reference to the callback function.
-     *
-     * @private {ResizeObserverCallback}
-     */
-    this.callback_ = callback;
-
-    /**
-     * Reference to the associated ResizeObserverController.
-     *
-     * @private {ResizeObserverController}
-     */
-    this.controller_ = controller;
-
-    /**
-     * Public ResizeObserver instance which will be passed to the callback
-     * function and used as a value of it's "this" binding.
-     *
-     * @private {ResizeObserver}
-     */
-    this.callbackCtx_ = callbackCtx;
-};
-
-/**
- * Starts observing provided element.
- *
- * @param {Element} target - Element to be observed.
- * @returns {void}
- */
-ResizeObserverSPI.prototype.observe = function (target) {
-    if (!arguments.length) {
-        throw new TypeError('1 argument required, but only 0 present.');
-    }
-
-    // Do nothing if current environment doesn't have the Element interface.
-    if (typeof Element === 'undefined' || !(Element instanceof Object)) {
-        return;
-    }
-
-    if (!(target instanceof Element)) {
-        throw new TypeError('parameter 1 is not of type "Element".');
-    }
-
-    var observations = this.observations_;
-
-    // Do nothing if element is already being observed.
-    if (observations.has(target)) {
-        return;
-    }
-
-    observations.set(target, new ResizeObservation(target));
-
-    this.controller_.addObserver(this);
-
-    // Force the update of observations.
-    this.controller_.refresh();
-};
-
-/**
- * Stops observing provided element.
- *
- * @param {Element} target - Element to stop observing.
- * @returns {void}
- */
-ResizeObserverSPI.prototype.unobserve = function (target) {
-    if (!arguments.length) {
-        throw new TypeError('1 argument required, but only 0 present.');
-    }
-
-    // Do nothing if current environment doesn't have the Element interface.
-    if (typeof Element === 'undefined' || !(Element instanceof Object)) {
-        return;
-    }
-
-    if (!(target instanceof Element)) {
-        throw new TypeError('parameter 1 is not of type "Element".');
-    }
-
-    var observations = this.observations_;
-
-    // Do nothing if element is not being observed.
-    if (!observations.has(target)) {
-        return;
-    }
-
-    observations.delete(target);
-
-    if (!observations.size) {
-        this.controller_.removeObserver(this);
-    }
-};
-
-/**
- * Stops observing all elements.
- *
- * @returns {void}
- */
-ResizeObserverSPI.prototype.disconnect = function () {
-    this.clearActive();
-    this.observations_.clear();
-    this.controller_.removeObserver(this);
-};
-
-/**
- * Collects observation instances the associated element of which has changed
- * it's content rectangle.
- *
- * @returns {void}
- */
-ResizeObserverSPI.prototype.gatherActive = function () {
-    var this$1 = this;
-
-    this.clearActive();
-
-    this.observations_.forEach(function (observation) {
-        if (observation.isActive()) {
-            this$1.activeObservations_.push(observation);
-        }
-    });
-};
-
-/**
- * Invokes initial callback function with a list of ResizeObserverEntry
- * instances collected from active resize observations.
- *
- * @returns {void}
- */
-ResizeObserverSPI.prototype.broadcastActive = function () {
-    // Do nothing if observer doesn't have active observations.
-    if (!this.hasActive()) {
-        return;
-    }
-
-    var ctx = this.callbackCtx_;
-
-    // Create ResizeObserverEntry instance for every active observation.
-    var entries = this.activeObservations_.map(function (observation) {
-        return new ResizeObserverEntry(observation.target, observation.broadcastRect());
-    });
-
-    this.callback_.call(ctx, entries, ctx);
-    this.clearActive();
-};
-
-/**
- * Clears the collection of active observations.
- *
- * @returns {void}
- */
-ResizeObserverSPI.prototype.clearActive = function () {
-    this.activeObservations_.splice(0);
-};
-
-/**
- * Tells whether observer has active observations.
- *
- * @returns {boolean}
- */
-ResizeObserverSPI.prototype.hasActive = function () {
-    return this.activeObservations_.length > 0;
-};
-
-// Registry of internal observers. If WeakMap is not available use current shim
-// for the Map collection as it has all required methods and because WeakMap
-// can't be fully polyfilled anyway.
-var observers = typeof WeakMap != 'undefined' ? new WeakMap() : new MapShim();
-
-/**
- * ResizeObserver API. Encapsulates the ResizeObserver SPI implementation
- * exposing only those methods and properties that are defined in the spec.
- */
-var ResizeObserver$1 = function ResizeObserver$1(callback) {
-    if (!(this instanceof ResizeObserver$1)) {
-        throw new TypeError('Cannot call a class as a function');
-    }
-
-    if (!arguments.length) {
-        throw new TypeError('1 argument required, but only 0 present.');
-    }
-
-    var controller = ResizeObserverController.getInstance();
-    var observer = new ResizeObserverSPI(callback, controller, this);
-
-    observers.set(this, observer);
-};
-
-// Expose public methods of ResizeObserver.
-['observe', 'unobserve', 'disconnect'].forEach(function (method) {
-    ResizeObserver$1.prototype[method] = function () {
-        return (ref = observers.get(this))[method].apply(ref, arguments);
-        var ref;
-    };
-});
-
-var index = function () {
-    // Export existing implementation if available.
-    if (typeof ResizeObserver != 'undefined') {
-        // eslint-disable-next-line no-undef
-        return ResizeObserver;
-    }
-
-    return ResizeObserver$1;
-}();
-
-exports.default = index;
-
-/***/ }),
-/* 171 */
+/* 173 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27369,56 +27830,16 @@ function log(prevState, action, nextState) {
 }
 
 /***/ }),
-/* 172 */
+/* 174 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 173 */
+/* 175 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 174 */,
-/* 175 */,
-/* 176 */,
-/* 177 */,
-/* 178 */,
-/* 179 */,
-/* 180 */,
-/* 181 */,
-/* 182 */,
-/* 183 */,
-/* 184 */,
-/* 185 */,
-/* 186 */,
-/* 187 */,
-/* 188 */,
-/* 189 */,
-/* 190 */,
-/* 191 */,
-/* 192 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-window._gaq = window._gaq || [];
-_gaq.push(["_setAccount", "UA-19390409-5"]);
-_gaq.push(["_trackPageview"]);
-if (localStorage.chrome_id) {
-    _gaq.push(["_setCustomVar", 1, "chrome_id", localStorage.chrome_id]);
-}
-(function () {
-    var ga = document.createElement("script");
-    ga.type = "text/javascript";
-    ga.async = true;
-    ga.src = "https://ssl.google-analytics.com/ga.js";
-    var s = document.getElementsByTagName("script")[0];
-    s.parentNode.insertBefore(ga, s);
-})();
 
 /***/ })
 /******/ ]);

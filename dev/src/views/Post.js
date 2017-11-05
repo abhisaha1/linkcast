@@ -1,5 +1,6 @@
 import { h } from "hyperapp";
 import DropDown from "./Common/DropDown";
+
 const Post = ({ state, actions }) => {
     let params = {
         title: state.post.title,
@@ -9,12 +10,13 @@ const Post = ({ state, actions }) => {
         group: state.groups.defaultGroup
     };
     const onChange = (e, key) => {
-        params[key] = e.target.value;
+        params[key] = e.target.value.trim();
 
         if (e.target.tagName == "SELECT") {
             let selectedIdx = e.target.options.selectedIndex;
             params[key] = state.groups.data[selectedIdx].group_id;
         }
+        actions.setPost(params);
     };
     const handlePost = e => {
         e.preventDefault();
@@ -32,7 +34,7 @@ const Post = ({ state, actions }) => {
                         type="text"
                         class="form-control"
                         value={state.post.title}
-                        onblur={e => onChange(e, "title")}
+                        onkeyup={e => onChange(e, "title")}
                     />
                 </div>
             </div>
@@ -46,7 +48,7 @@ const Post = ({ state, actions }) => {
                         type="text"
                         class="form-control"
                         value={state.post.url}
-                        onblur={e => onChange(e, "url")}
+                        onkeyup={e => onChange(e, "url")}
                     />
                 </div>
             </div>
@@ -60,7 +62,7 @@ const Post = ({ state, actions }) => {
                         type="text"
                         class="form-control"
                         value={state.post.comments}
-                        onblur={e => onChange(e, "comments")}
+                        onkeyup={e => onChange(e, "comments")}
                     />
                 </div>
             </div>

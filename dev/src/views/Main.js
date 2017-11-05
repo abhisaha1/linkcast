@@ -12,14 +12,21 @@ import ProfileModal from "./Modals/ProfileModal";
 import InviteModal from "./Modals/InviteModal";
 import ForgotPasswordModal from "./Modals/ForgotPasswordModal";
 import EditCommentModal from "./Modals/EditCommentModal";
+import events from "../events";
 
 window.moment = require("moment");
 require("../lib/jquery");
 require("../lib/token-input");
 require("./Track");
-
+let loaded = false;
 const main = (state, actions) => {
+    if (!loaded) {
+        events.load(state, actions);
+        loaded = true;
+    }
     let data = null;
+    const appHeight = document.body.clientHeight;
+    const msgTopSpace = appHeight - 80;
     actions.resetMessage();
     switch (state.mainNav.active) {
         case "notification":
@@ -127,7 +134,11 @@ const main = (state, actions) => {
                 />
             )}
             {state.message != "" && (
-                <div id="msg" class="alert alert-warning">
+                <div
+                    id="msg"
+                    class="alert alert-warning"
+                    style={{ top: msgTopSpace + "px" }}
+                >
                     {state.message}
                 </div>
             )}

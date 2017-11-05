@@ -1,111 +1,105 @@
 import { request } from "./request";
 import { deepFind, escape } from "./common";
 
-export const fetchItems = (state, actions, { stateKey, tab_id, q }) => {
+export const fetchItems = (state, actions) => ({ stateKey, tab_id, q }) => {
     let tab = state[stateKey].tabs[tab_id];
     if (tab_id == "search") {
         tab.data.rows = [];
     }
-
-    return update => {
-        let params = {
-            queryParams: {
-                handle: "tab-" + tab_id,
-                page: 1,
-                chrome_id: state.chrome_id,
-                group: state.groups.defaultGroup,
-                action: "readTracks",
-                count: null
-            }
-        };
-        if (q) {
-            tab.initialized = false;
-            params.queryParams.q = q;
-            state[stateKey].tabs[tab_id].q = q;
-            _gaq.push(["_trackEvent", q, "searched"]);
+    let params = {
+        queryParams: {
+            handle: "tab-" + tab_id,
+            page: 1,
+            chrome_id: state.chrome_id,
+            group: state.groups.defaultGroup,
+            action: "readTracks",
+            count: null
         }
-        if (tab.initialized && tab.data.rows.length > 0) {
-            params.queryParams.lastId = tab.data.rows[0].id;
-        }
-        request(params).then(result => {
-            if (tab.initialized) {
-                result.rows.length > 0 && tab.data.rows.unshift(result.rows);
-            } else {
-                result.page = tab.data.page;
-                tab.data = result;
-                tab.initialized = true;
-            }
-            tab.isFetching = false;
-            state[stateKey].tabs[tab_id] = tab;
-            update(state);
-        });
     };
+    if (q) {
+        tab.initialized = false;
+        params.queryParams.q = q;
+        state[stateKey].tabs[tab_id].q = q;
+        _gaq.push(["_trackEvent", q, "searched"]);
+    }
+    if (tab.initialized && tab.data.rows.length > 0) {
+        params.queryParams.lastId = tab.data.rows[0].id;
+    }
+    request(params).then(result => {
+        if (tab.initialized) {
+            result.rows.length > 0 && tab.data.rows.unshift(result.rows);
+        } else {
+            result.page = tab.data.page;
+            tab.data = result;
+            tab.initialized = true;
+        }
+        tab.isFetching = false;
+        state[stateKey].tabs[tab_id] = tab;
+        actions.updateState(state);
+    });
 };
 
-export const loadMore = (state, actions, e) => {
-    return update => {
-        let modelStr = e.currentTarget.getAttribute("model");
-        let tab = deepFind(state, modelStr);
+export const loadMore = (state, actions) => e => {
+    let modelStr = e.currentTarget.getAttribute("model");
+    let tab = deepFind(state, modelStr);
 
-        if (parseInt(tab.data.pages) < parseInt(tab.data.page)) {
-            // enough.. dont fetch any more. because there is none.
-            return;
+    if (parseInt(tab.data.pages) < parseInt(tab.data.page)) {
+        // enough.. dont fetch any more. because there is none.
+        return;
+    }
+
+    let tabName = modelStr.split(".").pop();
+    tab.loadMore = true;
+    state[modelStr.split(".")[0]].tabs[tabName] = tab;
+    actions.updateState(state);
+    const $preloader = document.querySelector(".preloader");
+    let params = {
+        queryParams: {
+            chrome_id: state.chrome_id,
+            group: state.groups.defaultGroup,
+            action: "readTracks",
+            handle: "tab-" + tabName,
+            page: tab.data.page + 1,
+            count: null
         }
-
-        let tabName = modelStr.split(".").pop();
-        tab.loadMore = true;
+    };
+    if (tabName == "search") {
+        params.queryParams.q = tab.q;
+    }
+    $preloader.classList.remove("invisible");
+    request(params).then(result => {
+        tab.data.page++;
+        tab.data.rows = tab.data.rows.concat(result.rows);
+        tab.loadMore = false;
         state[modelStr.split(".")[0]].tabs[tabName] = tab;
-        update(state);
-        let params = {
-            queryParams: {
-                chrome_id: state.chrome_id,
-                group: state.groups.defaultGroup,
-                action: "readTracks",
-                handle: "tab-" + tabName,
-                page: tab.data.page + 1,
-                count: null
-            }
-        };
-        if (tabName == "search") {
-            params.queryParams.q = tab.q;
+        actions.updateState(state);
+        setTimeout(() => $preloader.classList.add("invisible"), 0);
+    });
+};
+
+export const fetchComments = (state, actions) => ({ item, model, key }) => {
+    let params = {
+        queryParams: {
+            commentsPage: 1,
+            item_id: item.id,
+            chrome_id: state.chrome_id,
+            action: "commentsItem"
         }
-        document.querySelector(".preloader").classList.remove("invisible");
-        request(params).then(result => {
-            document.querySelector(".preloader").classList.add("invisible");
-            tab.data.page++;
-            tab.data.rows = tab.data.rows.concat(result.rows);
-            tab.loadMore = false;
-            state[modelStr.split(".")[0]].tabs[tabName] = tab;
-            update(state);
-        });
     };
+    _gaq.push(["_trackEvent", "clicked", "comments"]);
+    request(params).then(result => {
+        let [root] = model.split(".");
+        item.commentList = result.rows;
+        if (root == "modals") {
+            state[root].notification.data.rows[key] = item;
+        } else {
+            state[root].tabs[state[root].active].data.rows[key] = item;
+        }
+        actions.updateState(state);
+    });
 };
 
-export const fetchComments = (state, actions, { item, model, key }) => {
-    return update => {
-        let params = {
-            queryParams: {
-                commentsPage: 1,
-                item_id: item.id,
-                chrome_id: state.chrome_id,
-                action: "commentsItem"
-            }
-        };
-        _gaq.push(["_trackEvent", "clicked", "comments"]);
-        request(params).then(result => {
-            let [root] = model.split(".");
-            item.commentList = result.rows;
-            if (root == "modals") {
-                state[root].notification.data.rows[key] = item;
-            } else {
-                state[root].tabs[state[root].active].data.rows[key] = item;
-            }
-            update(state);
-        });
-    };
-};
-
-export const handleFavourite = (state, actions, { e, key }) => {
+export const handleFavourite = (state, actions) => ({ e, key }) => {
     let model = e.target.parentElement.closest("[model]").model;
     let item = deepFind(state, model).data.rows[key];
     let favourite = parseInt(item.favourite);
@@ -124,15 +118,13 @@ export const handleFavourite = (state, actions, { e, key }) => {
         }
     };
     _gaq.push(["_trackEvent", "clicked", "favourite"]);
-    return update => {
-        request(params).then(result => {
-            if (result.flag) {
-                update(state);
-            }
-        });
-    };
+    request(params).then(result => {
+        if (result.flag) {
+            actions.updateState(state);
+        }
+    });
 };
-export const handleLike = (state, actions, { e, key }) => {
+export const handleLike = (state, actions) => ({ e, key }) => {
     let model = e.target.parentElement.closest("[model]").model;
     let item = deepFind(state, model).data.rows[key];
     item.liked = parseInt(item.liked) ? 0 : 1;
@@ -151,16 +143,14 @@ export const handleLike = (state, actions, { e, key }) => {
         }
     };
     _gaq.push(["_trackEvent", "clicked", "like"]);
-    return update => {
-        request(params).then(result => {
-            if (result.flag) {
-                update(state);
-            }
-        });
-    };
+    request(params).then(result => {
+        if (result.flag) {
+            actions.updateState(state);
+        }
+    });
 };
 
-export const showComments = (state, actions, { e, key }) => {
+export const showComments = (state, actions) => ({ e, key }) => {
     let model = e.target.parentElement.closest("[model]").model;
     let item = deepFind(state, model).data.rows[key];
     item.showComments = 1;
@@ -172,9 +162,9 @@ export const showComments = (state, actions, { e, key }) => {
     }
     actions.fetchComments({ item: item, model, key });
 
-    return state;
+    actions.updateState(state);
 };
-export const handleShare = (state, actions, { e, key }) => {
+export const handleShare = (state, actions) => ({ e, key }) => {
     let model = e.target.parentElement.closest("[model]").model;
     let item = deepFind(state, model).data.rows[key];
     state.post.title = item.title;
@@ -183,9 +173,9 @@ export const handleShare = (state, actions, { e, key }) => {
     state.mainNav.active = "post";
     state.modals.notification.open = false;
     _gaq.push(["_trackEvent", "clicked", "share"]);
-    return state;
+    actions.updateState(state);
 };
-export const handleDelete = (state, actions, { e, key }) => {
+export const handleDelete = (state, actions) => ({ e, key }) => {
     let model = e.target.parentElement.closest("[model]").model;
     let item = deepFind(state, model).data.rows[key];
     let [root] = model.split(".");
@@ -204,22 +194,20 @@ export const handleDelete = (state, actions, { e, key }) => {
         }
     };
     _gaq.push(["_trackEvent", "clicked", "delete"]);
-    return update => {
-        request(params).then(result => {
-            if (result.flag) {
-                update(state);
-            }
-        });
-    };
+    request(params).then(result => {
+        if (result.flag) {
+            actions.updateState(state);
+        }
+    });
 };
 
-export const handleCommentInput = (state, actions, { e, key }) => {
+export const handleCommentInput = (state, actions) => ({ e, key }) => {
     if (e.keyCode != 13) return;
     let comment = e.target.value;
     // if edit comment then cancel this process
     if (state.editComment.open) {
         actions.saveEditedComment(comment);
-        return state;
+        actions.updateState(state);
     }
     let model = e.target.parentElement.closest("[model]").model;
     let item = deepFind(state, model).data.rows[key];
@@ -239,34 +227,32 @@ export const handleCommentInput = (state, actions, { e, key }) => {
         }
     };
     _gaq.push(["_trackEvent", "clicked", "newComment"]);
-    return update => {
-        request(params).then(result => {
-            if (result.flag == 1) {
-                let newComment = {
-                    color: state.user.data.color,
-                    comment: escape(comment),
-                    created_at: "now",
-                    id: result.id,
-                    item_id: item.id,
-                    nickname: state.user.data.nickname,
-                    user_id: state.user.data.id
-                };
-                if (root == "modals") {
-                    state[root].notification.data.rows[key].commentList.unshift(
-                        newComment
-                    );
-                } else {
-                    state[root].tabs[state[root].active].data.rows[
-                        key
-                    ].commentList.unshift(newComment);
-                }
-                update(state);
+    request(params).then(result => {
+        if (result.flag == 1) {
+            let newComment = {
+                color: state.user.data.color,
+                comment: escape(comment),
+                created_at: "now",
+                id: result.id,
+                item_id: item.id,
+                nickname: state.user.data.nickname,
+                user_id: state.user.data.id
+            };
+            if (root == "modals") {
+                state[root].notification.data.rows[key].commentList.unshift(
+                    newComment
+                );
+            } else {
+                state[root].tabs[state[root].active].data.rows[
+                    key
+                ].commentList.unshift(newComment);
             }
-        });
-    };
+            actions.updateState(state);
+        }
+    });
 };
 
-export const itemClicked = (state, actions, { e, key }) => {
+export const itemClicked = (state, actions) => ({ e, key }) => {
     e.preventDefault();
     let model = e.target.parentElement.closest("[model]").model;
     let item = deepFind(state, model).data.rows[key];
@@ -292,10 +278,10 @@ export const itemClicked = (state, actions, { e, key }) => {
         bgPage.sendClickedStat(params);
     }
     window.open(e.target.href);
-    return state;
+    actions.updateState(state);
 };
 
-export const lazyLoad = (state, actions, { e, image }) => {
+export const lazyLoad = (state, actions) => ({ e, image }) => {
     let ele = document.createElement("img");
     ele.src = image;
     ele.onload = () => {
@@ -303,7 +289,11 @@ export const lazyLoad = (state, actions, { e, image }) => {
     };
 };
 
-export const editComment = (state, actions, { model, itemKey, commentKey }) => {
+export const editComment = (state, actions) => ({
+    model,
+    itemKey,
+    commentKey
+}) => {
     state.editComment.open = true;
     state.editComment.cursor = { model, itemKey, commentKey };
     let item = deepFind(state, model).data.rows[itemKey];
@@ -319,10 +309,10 @@ export const editComment = (state, actions, { model, itemKey, commentKey }) => {
             ];
     }
     state.editComment.data = comment;
-    return state;
+    actions.updateState(state);
 };
 
-export const saveEditedComment = (state, actions, comment) => {
+export const saveEditedComment = (state, actions) => comment => {
     const { model, itemKey, commentKey } = state.editComment.cursor;
     let item = deepFind(state, model).data.rows[itemKey];
     let [root] = model.split(".");
@@ -349,14 +339,12 @@ export const saveEditedComment = (state, actions, comment) => {
         }
     };
     _gaq.push(["_trackEvent", "clicked", "saveEditedComment"]);
-    return update => {
-        actions.cancelCommentEdit();
-        request(params).then(result => {
-            if (result.flag) {
-                update(state);
-            }
-        });
-    };
+    actions.cancelCommentEdit();
+    request(params).then(result => {
+        if (result.flag) {
+            actions.updateState(state);
+        }
+    });
 };
 
 export const deleteComment = (state, actions) => {
@@ -389,19 +377,17 @@ export const deleteComment = (state, actions) => {
         }
     };
     _gaq.push(["_trackEvent", "clicked", "deleteComment"]);
-    return update => {
-        request(params).then(result => {
-            if (result.flag) {
-                actions.cancelCommentEdit();
-                update(state);
-            }
-        });
-    };
+    request(params).then(result => {
+        if (result.flag) {
+            actions.cancelCommentEdit();
+            actions.updateState(state);
+        }
+    });
 };
 
 export const cancelCommentEdit = (state, actions) => {
     state.editComment.open = false;
     state.editComment.data = {};
     state.editComment.cursor = {};
-    return state;
+    actions.updateState(state);
 };

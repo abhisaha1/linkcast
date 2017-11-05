@@ -1,7 +1,8 @@
-export const onTabChange = (state, actions, { stateKey, tab_id }) => {
+export const onTabChange = (state, actions) => ({ stateKey, tab_id }) => {
     if (state[stateKey].tabs[tab_id].isFetching) {
         state[stateKey].tabs[tab_id].isFetching = true;
     }
+    state.message = "";
     state[stateKey].active = tab_id;
     let params = { stateKey, tab_id };
     _gaq.push(["_trackPageview", "/" + state[stateKey].tabs[tab_id].name]);
@@ -55,5 +56,5 @@ export const onTabChange = (state, actions, { stateKey, tab_id }) => {
         //actions.fetchAllGroups(params);
     }
 
-    return state;
+    actions.updateState(state);
 };

@@ -5,7 +5,8 @@ import {
     closeModal,
     setVersion,
     resetMessage,
-    setMessage
+    setMessage,
+    updateState
 } from "./common";
 import {
     fetchNotifications,
@@ -60,7 +61,7 @@ import {
     sendRecoveryEmail,
     forgotPassword
 } from "./user";
-import { doPost, detectSite } from "./post";
+import { doPost, detectSite, setPost } from "./post";
 import {
     showInviteModal,
     setInviteList,
@@ -125,5 +126,7 @@ export default {
     cancelCommentEdit,
     deleteComment,
     saveEditedComment,
-    createNewGroup
+    createNewGroup,
+    setPost,
+    updateState
 };

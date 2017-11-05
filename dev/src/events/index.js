@@ -19,7 +19,7 @@ const observeSizeChanges = () => {
     new ResizeObserver(changeSize).observe($container);
 };
 export default {
-    load: (state, actions, element) => {
+    load: (state, actions) => {
         setTimeout(observeSizeChanges, 100);
         if (localStorage.chrome_id) {
             actions.initialize({
@@ -56,7 +56,7 @@ export default {
         } else {
             state.mainNav.active = "settings";
             state.settingsTabs.active = "profile";
-            return state;
+            actions.updateState(state);
         }
     }
 };
