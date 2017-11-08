@@ -14,16 +14,24 @@ Linkcast is reaching a state of stability. There needs to be more refinement and
 
 ## Install
 Clone the project
-#### ` git clone git@github.com:ajaxtown/linkcast.git` 
+``` 
+git clone git@github.com:ajaxtown/linkcast.git
+```
 
 Step inside the directory
-#### ` cd linkcast`
+```
+cd linkcast
+```
 
 Install all packages/dependencies
-#### ` npm install`
+``` 
+npm install
+```
 
 Run
-#### ` npm run dev`
+``` 
+npm run dev
+```
 
 Navigate to `chrome://extensions/`
 
