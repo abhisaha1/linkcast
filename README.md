@@ -43,22 +43,22 @@ Click `Load Unpacked Extensions` and add the `dev` directory
 
 ## Screenshots
 #### Notification
-![alt text](https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/notification.png)
+<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/notification.png" width="600">
 
 #### Feed
-![alt text](https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/feed.png)
+<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/feed.png" width="600">
 
 #### Groups
-![alt text](https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/groups.png)
+<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/groups.png" width="600">
 
 #### Manage Groups (Admin)
-![alt text](https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/manage.png)
+<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/manage.png" width="600">
 
 #### Profile
-![alt text](https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/profile.png)
+<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/profile.png" width="600">
 
 #### Customize
-![alt text](https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/customize.png)
+<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/customize.png" width="600">
 
 
 ## Contribute
