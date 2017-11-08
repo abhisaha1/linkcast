@@ -108,7 +108,7 @@ var retrieveSiteMeta = function(passed_message, callback) {
 
 var countStore = 0;
 var countData = { links: { rows: [] }, groups: { rows: [] } };
-var endpoint = "http://localhost:8000";
+var endpoint = "http://playground.ajaxtown.com/linkcast/12-staging/index.php";
 
 function checkStorage() {
     if (typeof localStorage.notification === "undefined") {

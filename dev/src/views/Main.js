@@ -20,10 +20,6 @@ require("../lib/token-input");
 require("./Track");
 let loaded = false;
 const main = (state, actions) => {
-    if (!loaded) {
-        events.load(state, actions);
-        loaded = true;
-    }
     let data = null;
     const appHeight = document.body.clientHeight;
     const msgTopSpace = appHeight - 80;

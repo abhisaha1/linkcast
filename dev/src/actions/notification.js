@@ -7,7 +7,7 @@ export const fetchNotifications = (state, actions) => tab_id => {
         queryParams: {
             handle: "tab-" + tab_id,
             page: 1,
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             group: state.groups.defaultGroup,
             action: "readTracks",
             count: null
@@ -36,7 +36,7 @@ export const notificationClicked = (state, actions) => ({ active, index }) => {
     let params = {
         queryParams: {
             handle: "itemId",
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             group: item.group_id,
             action: "readTracks",
             item_id: item.item_id

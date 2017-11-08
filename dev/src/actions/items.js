@@ -10,7 +10,7 @@ export const fetchItems = (state, actions) => ({ stateKey, tab_id, q }) => {
         queryParams: {
             handle: "tab-" + tab_id,
             page: 1,
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             group: state.groups.defaultGroup,
             action: "readTracks",
             count: null
@@ -55,7 +55,7 @@ export const loadMore = (state, actions) => e => {
     const $preloader = document.querySelector(".preloader");
     let params = {
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             group: state.groups.defaultGroup,
             action: "readTracks",
             handle: "tab-" + tabName,
@@ -82,7 +82,7 @@ export const fetchComments = (state, actions) => ({ item, model, key }) => {
         queryParams: {
             commentsPage: 1,
             item_id: item.id,
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             action: "commentsItem"
         }
     };
@@ -112,7 +112,7 @@ export const handleFavourite = (state, actions) => ({ e, key }) => {
     }
     let params = {
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             item_id: item.id,
             action: favourite ? "removeFromFavourite" : "addToFavourite"
         }
@@ -137,7 +137,7 @@ export const handleLike = (state, actions) => ({ e, key }) => {
     }
     let params = {
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             item_id: item.id,
             action: "likeClicked"
         }
@@ -188,7 +188,7 @@ export const handleDelete = (state, actions) => ({ e, key }) => {
 
     let params = {
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             item_id: item.id,
             action: "deleteItem"
         }
@@ -220,7 +220,7 @@ export const handleCommentInput = (state, actions) => ({ e, key }) => {
     let params = {
         method: "POST",
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             item_id: item.id,
             comment: comment,
             action: "insertComment"
@@ -268,7 +268,7 @@ export const itemClicked = (state, actions) => ({ e, key }) => {
         }
     }
     let params = {
-        chrome_id: state.chrome_id,
+        chrome_id: state.user.data.chrome_id,
         item_id: item.id,
         action: "itemClicked"
     };
@@ -332,7 +332,7 @@ export const saveEditedComment = (state, actions) => comment => {
     let params = {
         method: "POST",
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             comment_id: commentId,
             comment: comment,
             action: "updateComment"
@@ -371,7 +371,7 @@ export const deleteComment = (state, actions) => {
     let params = {
         method: "POST",
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             comment_id: commentId,
             action: "deleteComment"
         }

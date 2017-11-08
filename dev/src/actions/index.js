@@ -1,3 +1,4 @@
+import { init } from "./init";
 import {
     navClicked,
     fetchData,
@@ -50,7 +51,7 @@ import {
     saveEditedComment
 } from "./items";
 import {
-    initialize,
+    fetchUserInfo,
     doLogin,
     doRegister,
     saveProfile,
@@ -70,7 +71,7 @@ import {
 } from "./invite";
 
 export default {
-    initialize,
+    fetchUserInfo,
     navClicked,
     fetchNotifications,
     fetchGroups,
@@ -128,5 +129,6 @@ export default {
     saveEditedComment,
     createNewGroup,
     setPost,
-    updateState
+    updateState,
+    init
 };

@@ -49,6 +49,46 @@ const Customize = ({ state, actions }) => {
                         </div>
                     </div>
                 </div>
+                <div class="form-group" id="persist-setting">
+                    <label class="control-label col-sm-3">Allow offline</label>
+                    <div class="col-sm-9">
+                        <div class="btn-group" data-toggle="buttons">
+                            <label
+                                data-val="1"
+                                class={
+                                    "btn btn-default btn-sm " +
+                                    (initialState.offline && "active")
+                                }
+                            >
+                                <Radio
+                                    class="radio"
+                                    type="radio"
+                                    value="1"
+                                    name="offline"
+                                    onclick={e => itemClicked(e, "offline")}
+                                    checked={initialState.offline}
+                                />
+                                On
+                            </label>
+                            <label
+                                data-val="0"
+                                class={
+                                    "btn btn-default btn-sm " +
+                                    (!initialState.offline && "active")
+                                }
+                            >
+                                <Radio
+                                    class="radio"
+                                    type="radio"
+                                    value="0"
+                                    name="offline"
+                                    onclick={e => itemClicked(e, "offline")}
+                                    checked={!initialState.offline}
+                                />Off
+                            </label>
+                        </div>
+                    </div>
+                </div>
                 <div class="form-group" id="rich-notification">
                     <label class="control-label col-sm-3">Notification:</label>
                     <div class="col-sm-9">

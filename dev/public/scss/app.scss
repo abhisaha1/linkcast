@@ -7,7 +7,12 @@ body {
     display: flex;
     justify-content: center;
 }
-
+#app {
+    min-height: 430px;
+    width: 784px;
+    display: flex;
+    justify-content: center;
+}
 .btn:focus,
 .btn:active:focus,
 .btn.active:focus,
@@ -18,7 +23,7 @@ body {
 }
 
 .container {
-    width: 784px;
+    width: 100%;
     margin: 0 auto;
     height: 100%;
     min-height: 430px;

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "NODE_ENV=dev webpack --watch --progress --colors --config webpack/dev.js",
+    "start": "export NODE_ENV=dev & webpack --watch --progress --colors --config webpack/dev.js",
     "build": "node utils/version.js $v & NODE_ENV=production webpack -p --config webpack/prod.js",
     "test": "echo 'FOR TRAVIS CI' && npm run build && rm bundle.css bundle.js && echo 'SUCCESS!'"
   },
@@ -24,6 +24,7 @@
     "babel-preset-es2015": "^6.22.0",
     "babili-webpack-plugin": "^0.1.2",
     "copy-webpack-plugin": "^4.1.1",
+    "cross-env": "^5.1.1",
     "css-loader": "^0.28.0",
     "eslint": "^4.6.1",
     "eslint-config-airbnb-base": "^12.0.0",
@@ -33,6 +34,7 @@
     "html-webpack-plugin": "^2.30.1",
     "imports": "^1.0.0",
     "jszip": "^3.1.4",
+    "lzutf8": "^0.4.7",
     "node-libs-browser": "^2.0.0",
     "node-sass": "^4.5.3",
     "postcss-loader": "^2.0.6",

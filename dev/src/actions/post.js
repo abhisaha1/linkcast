@@ -13,7 +13,7 @@ export const doPost = (state, actions) => data => {
     }
     actions.updateState(state);
     data.action = "insertTrack";
-    data.chrome_id = state.chrome_id;
+    data.chrome_id = state.user.data.chrome_id;
     let params = {
         method: "POST",
         queryParams: data

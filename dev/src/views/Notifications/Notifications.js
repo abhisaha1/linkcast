@@ -38,11 +38,13 @@ const Notifications = props => {
                         key={i}
                         class={"notification-item clearfix " + className}
                         data-id={item.id}
-                        onclick={() =>
+                        onclick={e => {
+                            e.preventDefault();
                             props.actions.notificationClicked({
                                 active: props.active,
                                 index: i
-                            })}
+                            });
+                        }}
                     >
                         <NotificationItem {...item} />
                     </div>

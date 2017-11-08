@@ -1,5 +1,5 @@
 import { request } from "./request";
-import { validateEmail, getRandomToken } from "../actions/common";
+import { validateEmail, getRandomToken, Storage } from "../actions/common";
 
 export const saveProfile = (state, actions) => ({ e, data }) => {
     e.preventDefault();
@@ -7,7 +7,7 @@ export const saveProfile = (state, actions) => ({ e, data }) => {
 
     let params = {
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             nickname: data.nickname,
             color: data.color,
             bio: data.bio,
@@ -29,7 +29,7 @@ export const showProfile = (state, actions) => ({ e, user_id }) => {
     actions.updateState(state);
     let params1 = {
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             target_id: user_id,
             action: "getProfile"
         }
@@ -52,7 +52,7 @@ export const getUserLinks = (state, actions) => ({ e, user_id }) => {
     let newPage = parseInt(state.modals.profile.links.data.page) + 1;
     let params2 = {
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             target_id: user_id,
             action: "getOtherUserTracks",
             page: newPage,
@@ -74,7 +74,7 @@ export const getUserLinks = (state, actions) => ({ e, user_id }) => {
     });
 };
 
-export const initialize = (state, actions) => ({ chrome_id, callback }) => {
+export const fetchUserInfo = (state, actions) => ({ chrome_id, callback }) => {
     let params = {
         queryParams: {
             chrome_id: chrome_id,
@@ -83,7 +83,7 @@ export const initialize = (state, actions) => ({ chrome_id, callback }) => {
     };
     request(params).then(result => {
         if (result.flag == 1) {
-            state.chrome_id = chrome_id;
+            result.data.chrome_id = chrome_id;
             state.user.data = result.data;
             state.user.loggedIn = true;
             state.groups.defaultGroup = localStorage.defaultGroup;
@@ -95,8 +95,13 @@ export const initialize = (state, actions) => ({ chrome_id, callback }) => {
 
 export const saveCustomization = (state, actions) => ({ e, key }) => {
     e.preventDefault();
-    state.user.customize[key] = parseInt(e.target.value);
-    localStorage[key] = parseInt(e.target.value);
+    const value = parseInt(e.target.value);
+    state.user.customize[key] = value;
+    localStorage[key] = value;
+    if (key == "offline") {
+        (!value && actions.__removePersist()) ||
+            (value && actions.__initPersist());
+    }
     actions.updateState(state);
 };
 export const doLogout = (state, actions) => data => {
@@ -120,30 +125,37 @@ export const doLogin = (state, actions) => data => {
         actions.updateState(state);
         request(params).then(result => {
             if (result.flag == 1) {
-                if (!localStorage.defaultGroup) {
-                    localStorage.defaultGroup = 1;
-                }
-                //update localstorage
-                localStorage.nickname = data.nickname;
-                localStorage.loggedIn = true;
-                localStorage.chrome_id = result.data.chrome_id;
+                let lsData = {
+                    defaultGroup: 1,
+                    nickname: data.nickname,
+                    loggedIn: true,
+                    chrome_id: result.chrome_id
+                };
+                Storage.set(lsData); //overwrite
+                Storage.set(
+                    {
+                        sound: 1,
+                        notification: 1,
+                        offline: 0
+                    },
+                    false // dont overwrite
+                );
                 //update the state
                 state.user.data = result.data;
                 state.user.loggedIn = true;
-                actions.fetchGroups();
-                actions.fetchAllGroups();
-                actions.fetchNotifications("notLinks");
+                state.user.customize.sound = parseInt(Storage.get("sound"));
+                state.user.customize.notification = parseInt(
+                    Storage.get("notification")
+                );
+                state.user.customize.offline = parseInt(Storage.get("offline"));
                 if (chrome.storage) {
                     chrome.storage.sync.set({
                         userid: result.data.chrome_id
                     });
                 }
-                _gaq.push([
-                    "_setCustomVar",
-                    1,
-                    "chrome_id",
-                    localStorage.chrome_id
-                ]);
+                actions.updateState(state);
+                actions.fetchGroups();
+                actions.fetchAllGroups();
             } else {
                 state.message = result.msg;
             }
@@ -175,28 +187,7 @@ export const doRegister = (state, actions) => data => {
         actions.updateState(state);
         request(params).then(result => {
             if (result.flag == 1) {
-                //update localstorage
-                localStorage.nickname = data.nickname;
-                localStorage.loggedIn = true;
-                localStorage.chrome_id = result.data.chrome_id;
-                localStorage.defaultGroup = 1;
-                //update the state
-                state.user.data = result.data;
-                state.user.loggedIn = true;
-                state.chrome_id = chrome_id;
-                _gaq.push([
-                    "_setCustomVar",
-                    1,
-                    "chrome_id",
-                    localStorage.chrome_id
-                ]);
-                actions.fetchGroups();
-                actions.fetchAllGroups();
-                if (chrome.storage) {
-                    chrome.storage.sync.set({
-                        userid: response.data.chrome_id
-                    });
-                }
+                actions.doLogin(data);
             }
         });
     }

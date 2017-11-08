@@ -163,6 +163,7 @@ const groupTabs = {
 };
 
 export default {
+    stateVersion: 1.0,
     num: 0,
     mainNav,
     notificationTabs,
@@ -229,7 +230,7 @@ export default {
     },
     groups: {
         loadMore: false,
-        defaultGroup: 0,
+        defaultGroup: 1,
         data: [],
         selected: null
     },
@@ -246,17 +247,18 @@ export default {
             flag: 1
         },
         data: {
-            id: "1",
-            nickname: "Redsnow",
+            id: "0",
+            nickname: "Anonymous",
             last_seen: "2017-09-30 11:25:05",
             color: "hsl(138, 69%, 53%)",
-            bio: "Always give ur 100%, unless you'r donating blood",
-            email: "abhisheksaha11@gmai.com",
-            verified: "1"
+            bio: "",
+            email: "",
+            verified: "0"
         },
         customize: {
             sound: 1,
-            notification: 0,
+            notification: 1,
+            offline: 0,
             theme: "dark"
         },
         loggedIn: false,

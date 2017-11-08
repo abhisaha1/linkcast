@@ -9,7 +9,7 @@ export const showInviteModal = (state, actions) => ({ e, group_id, title }) => {
     actions.updateState(state);
     let params = {
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             group_id: group_id,
             action: "getUsersToInvite"
         }
@@ -91,7 +91,7 @@ export const withdrawInvite = (state, actions) => ({ e, invite_id, index }) => {
 
     let params = {
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             group_id: state.modals.invite.group_id,
             invite_id: invite_id,
             action: "withdrawInvite"
@@ -119,7 +119,7 @@ export const sendInvites = (state, actions) => {
 
     let params = {
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             group_id: state.modals.invite.group_id,
             users: JSON.stringify(data),
             action: "sendInvites"

@@ -3,15 +3,19 @@ import actions from "./actions";
 import state from "./state";
 import view from "./views/Main";
 import logger from "@hyperapp/logger";
+import persist from "./lib/persist";
+import { Storage } from "./actions/common";
 
 const options = {
     state,
     actions,
     view
 };
-if (process.env.NODE_ENV == "dev") {
-    logger()(app)(options);
-    //app(options);
-} else {
-    app(options);
-}
+setTimeout(() => {
+    const appActions = app(persist(options));
+    const workOffline = parseInt(Storage.get("offline") || 0);
+    if (workOffline) {
+        appActions.__initPersist();
+    }
+    appActions.init();
+}, 0);

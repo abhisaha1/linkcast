@@ -5,7 +5,7 @@ import { trigger } from "../lib/utils";
 export const fetchGroups = (state, actions) => callback => {
     let params = {
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             action: "fetchUserGroups"
         }
     };
@@ -26,10 +26,10 @@ export const fetchGroups = (state, actions) => callback => {
 };
 
 // fetch all linkcast groups for a user to join.
-export const fetchAllGroups = (state, actions) => {
+export const fetchAllGroups = (state, actions) => () => {
     let params = {
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             action: "getAllGroups"
         }
     };
@@ -43,7 +43,7 @@ export const fetchAllGroups = (state, actions) => {
 export const fetchGroupUsers = (state, actions) => e => {
     let params = {
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             action: "getGroupUsers",
             group: e.currentTarget.value
         }
@@ -91,7 +91,7 @@ export const leaveGroup = (state, actions) => ({ e, key }) => {
     let params = {
         method: "POST",
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             action: "leaveGroup",
             group_id: group.id
         }
@@ -108,7 +108,7 @@ export const joinGroup = (state, actions) => ({ group, callback }) => {
     let params = {
         method: "POST",
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             action: parseInt(group.is_public)
                 ? "joinPublicGroup"
                 : "joinPrivateGroupRequest",
@@ -133,7 +133,7 @@ export const acceptGroupInvite = (state, actions) => ({
     let params = {
         method: "POST",
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             action: "acceptGroupInvite",
             group_id: activity.group_id,
             activity_id: activity.activity_id
@@ -154,7 +154,7 @@ export const rejectGroupInvite = (state, actions) => ({
     let params = {
         method: "POST",
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             action: "rejectGroupInvite",
             group_id: activity.group_id,
             activity_id: activity.activity_id
@@ -175,7 +175,7 @@ export const approveGroupRequest = (state, actions) => ({
     let params = {
         method: "POST",
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             action: "approveGroupRequest",
             group_id: activity.group_id,
             activity_id: activity.activity_id
@@ -196,7 +196,7 @@ export const rejectGroupRequest = (state, actions) => ({
     let params = {
         method: "POST",
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             action: "rejectGroupRequest",
             group_id: activity.group_id,
             activity_id: activity.activity_id
@@ -214,7 +214,7 @@ export const saveEditedGroup = (state, actions) => data => {
     let params = {
         method: "POST",
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             is_public: data.is_public,
             action: "createEditGroup",
             desc: data.desc,
@@ -234,7 +234,7 @@ export const changePublicRights = (state, actions) => data => {
     let params = {
         method: "POST",
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             action: "changePublicRights",
             user_id: data.user_id,
             group_id: data.group_id,
@@ -255,7 +255,7 @@ export const removeUserFromGroup = (state, actions) => data => {
     let params = {
         method: "POST",
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             action: "removeUserFromGroup",
             user_id: user.id,
             group_id: data.group_id
@@ -281,7 +281,7 @@ export const createNewGroup = (state, actions) => data => {
     let params = {
         method: "POST",
         queryParams: {
-            chrome_id: state.chrome_id,
+            chrome_id: state.user.data.chrome_id,
             is_public: data.is_public,
             action: "createEditGroup",
             desc: data.desc,
