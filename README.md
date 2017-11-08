@@ -10,7 +10,7 @@ Bookmarks doesnt allow you to collaborate and neither does it allow you to expre
 Linkcast is minimal in size has been developed using [Hyperapp](https://github.com/hyperapp/hyperapp) which is a ~1kb library.
 
 ## ToDo's
-Linkcast is reaching a state of stability. There needs to be more refinement and the experience needs to be more personalised.
+Linkcast is reaching a state of stability. There needs to be more refinement and better personalised experience.
 
 ## Install
 Clone the project
@@ -42,16 +42,27 @@ Click `Load Unpacked Extensions` and add the `dev` directory
 | GodOfDevil    | linkcast  | godofdevil@linkcast.com   |
 
 ## Screenshots
+#### Notification
+![alt text](https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/notification.png)
+
+#### Feed
+![alt text](https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/feed.png)
+
+#### Groups
+![alt text](https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/groups.png)
+
+#### Manage Groups (Admin)
+![alt text](https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/manage.png)
+
+#### Profile
+![alt text](https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/profile.png)
+
+#### Customize
+![alt text](https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/customize.png)
 
 
 ## Contribute
-If you have any ideas or would like to contribute, feel free to send PR's or create issues or ask for feature requests. Below is the structure of Linkcast.
-
-`dev` - Main development directory
-`dev/js` - Main files of linkcast
-`dev/public` - Contains css, fonts, icons and images
-
-`dev/js/popup.js` is the main file. Everything starts here.
+If you have any ideas or would like to contribute, feel free to send PR's or create issues or ask for feature requests. 
 
 ## Thanks
 ##### `@fleshsword Todd Cantley` - For designs
