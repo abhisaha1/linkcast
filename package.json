@@ -1,15 +1,12 @@
 {
     "name": "Linkcast",
-    "version": "12.6.6",
+    "version": "12.6.7",
     "description": "",
     "main": "index.js",
     "scripts": {
-        "dev":
-            "export NODE_ENV=dev & webpack --watch --progress --colors --config webpack/dev.js",
-        "build":
-            "node utils/version.js $v & NODE_ENV=production webpack -p --config webpack/prod.js",
-        "test":
-            "echo 'FOR TRAVIS CI' && npm run build && rm bundle.css bundle.js && echo 'SUCCESS!'"
+        "dev": "export NODE_ENV=dev & webpack --watch --progress --colors --config webpack/dev.js",
+        "build": "node utils/version.js $v & NODE_ENV=production webpack -p --config webpack/prod.js",
+        "test": "echo 'FOR TRAVIS CI' && npm run build && rm bundle.css bundle.js && echo 'SUCCESS!'"
     },
     "author": "Abhishek Saha",
     "license": "MIT",

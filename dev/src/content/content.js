@@ -7,7 +7,7 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
         var thumbUrl = "";
 
         if (host == "soundcloud.com") {
-            Soundcloud.thumb(document.location.href);
+            thumbUrl = Soundcloud.thumb(document.location.href);
         } else if (host == "www.youtube.com") {
             //youtube
             thumbUrl = Youtube.thumb(document.location.href, "small");
@@ -61,7 +61,7 @@ var Soundcloud = (function() {
         );
         return window
             .getComputedStyle(node, false)
-            .backgroundImage.slice(4, -1);
+            .backgroundImage.slice(5, -2);
     };
 
     return {

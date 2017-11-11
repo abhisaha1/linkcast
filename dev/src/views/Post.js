@@ -25,6 +25,15 @@ const Post = ({ state, actions }) => {
 
     return (
         <div class="col-sm-12 pt20 form-horizontal">
+            <div class="col-sm-9 col-sm-offset-3">
+                <img
+                    width="100"
+                    src={state.post.thumbnail}
+                    style={{ background: "#FFF" }}
+                />
+                <br />
+                <br />
+            </div>
             <div class="form-group">
                 <label class="control-label col-sm-3 required" for="item-name">
                     Name
@@ -66,7 +75,6 @@ const Post = ({ state, actions }) => {
                     />
                 </div>
             </div>
-            <input type="hidden" id="item-thumb" />
             <div class="form-group">
                 <label for="groups-dd" class="control-label col-sm-3">
                     Select Group

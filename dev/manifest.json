@@ -2,11 +2,9 @@
     "manifest_version": 2,
     "short_name": "Linkcast",
     "name": "Chrome Extension - Linkcast",
-    "description":
-        "Share links, images, blogs and everything on the web in one click without email using linkcast.",
-    "version": "12.6.6",
-    "content_security_policy":
-        "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
+    "description": "Share links, images, blogs and everything on the web with your friends in one click without email using Linkcast.",
+    "version": "12.6.7",
+    "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
     "icons": {
         "16": "public/icons/icon16.png",
         "32": "public/icons/icon32.png",
@@ -18,16 +16,29 @@
         "default_popup": "popup.html"
     },
     "background": {
-        "scripts": ["src/background/background.js"]
+        "scripts": [
+            "src/background/background.js"
+        ]
     },
     "content_scripts": [
         {
-            "matches": ["https://*/*", "http://*/*"],
-            "js": ["src/content/content.js"],
+            "matches": [
+                "https://*/*",
+                "http://*/*"
+            ],
+            "js": [
+                "src/content/content.js"
+            ],
             "run_at": "document_end"
         }
     ],
-    "permissions": ["storage", "tabs", "notifications"],
+    "permissions": [
+        "storage",
+        "tabs",
+        "notifications"
+    ],
     "options_page": "options.html",
-    "web_accessible_resources": ["public/icons/icon128.png"]
+    "web_accessible_resources": [
+        "public/icons/icon128.png"
+    ]
 }

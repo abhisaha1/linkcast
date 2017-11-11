@@ -54,23 +54,23 @@ const plugins = [
             var stats = statsData.toJson();
             if (!stats.errors.length) {
                 //pack the build
-                // pack({
-                //     root: path.join(__dirname, "../"),
-                //     src: path.join(__dirname, "../build/"),
-                //     target: path.join(__dirname, "../linkcast.zip"),
-                //     callback: params => {
-                //         let manifest = path.join(
-                //             __dirname,
-                //             "../dev/manifest.json"
-                //         );
-                //         //publish to chrome
-                //         // publisher.publish({
-                //         //     archive: params.target,
-                //         //     tokens: tokens,
-                //         //     manifestPath: manifest
-                //         // });
-                //     }
-                // });
+                pack({
+                    root: path.join(__dirname, "../"),
+                    src: path.join(__dirname, "../build/"),
+                    target: path.join(__dirname, "../linkcast.zip"),
+                    callback: params => {
+                        let manifest = path.join(
+                            __dirname,
+                            "../dev/manifest.json"
+                        );
+                        //publish to chrome
+                        publisher.publish({
+                            archive: params.target,
+                            tokens: tokens,
+                            manifestPath: manifest
+                        });
+                    }
+                });
             }
         });
     }
@@ -131,8 +131,7 @@ module.exports = function webpackStuff(env) {
                     test: /\.(jpg|jpe|jpeg|svg)(\?.*$|$)/,
                     use: [
                         {
-                            loader:
-                                "file-loader?name=../../../images/[name].[ext]"
+                            loader: "file-loader?name=../images/[name].[ext]"
                         }
                     ]
                 },
@@ -140,8 +139,7 @@ module.exports = function webpackStuff(env) {
                     test: /\.(woff|woff2|eot|ttf)(\?.*$|$)/,
                     use: [
                         {
-                            loader:
-                                "file-loader?name=../../../fonts/[name].[ext]"
+                            loader: "file-loader?name=../fonts/[name].[ext]"
                         }
                     ]
                 }

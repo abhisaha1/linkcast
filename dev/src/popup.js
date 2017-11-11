@@ -24607,9 +24607,12 @@ var itemClicked = exports.itemClicked = function itemClicked(state, actions) {
             }
         }
         var params = {
-            chrome_id: state.user.data.chrome_id,
-            item_id: item.id,
-            action: "itemClicked"
+            method: "POST",
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                item_id: item.id,
+                action: "itemClicked"
+            }
         };
         _gaq.push(["_trackEvent", "clicked", "itemClicked"]);
         if (chrome.extension) {
@@ -26632,6 +26635,17 @@ var Post = function Post(_ref) {
         { "class": "col-sm-12 pt20 form-horizontal" },
         (0, _hyperapp.h)(
             "div",
+            { "class": "col-sm-9 col-sm-offset-3" },
+            (0, _hyperapp.h)("img", {
+                width: "100",
+                src: state.post.thumbnail,
+                style: { background: "#FFF" }
+            }),
+            (0, _hyperapp.h)("br", null),
+            (0, _hyperapp.h)("br", null)
+        ),
+        (0, _hyperapp.h)(
+            "div",
             { "class": "form-group" },
             (0, _hyperapp.h)(
                 "label",
@@ -26695,7 +26709,6 @@ var Post = function Post(_ref) {
                 })
             )
         ),
-        (0, _hyperapp.h)("input", { type: "hidden", id: "item-thumb" }),
         (0, _hyperapp.h)(
             "div",
             { "class": "form-group" },

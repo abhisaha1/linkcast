@@ -286,9 +286,12 @@ export const itemClicked = (state, actions) => ({ e, key }) => {
         }
     }
     let params = {
-        chrome_id: state.user.data.chrome_id,
-        item_id: item.id,
-        action: "itemClicked"
+        method: "POST",
+        queryParams: {
+            chrome_id: state.user.data.chrome_id,
+            item_id: item.id,
+            action: "itemClicked"
+        }
     };
     _gaq.push(["_trackEvent", "clicked", "itemClicked"]);
     if (chrome.extension) {
