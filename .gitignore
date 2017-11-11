@@ -4,6 +4,5 @@ npm-debug.log
 tokens.js
 build
 linkcast.zip
-./dev/src/popup.js.map
-./dev/src/popup.js
+dev/src/popup.js
 *.map
