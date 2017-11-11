@@ -5,6 +5,32 @@ import { getEmoji, getFormatedText, getTitle, checkStorage } from "./Utils";
 class ExtensionBackground {
     constructor() {
         this.events();
+        this.listeners();
+    }
+    events() {
+        window.updateNotification = function(count) {
+            count = count > 99 ? "99+" : count;
+            chrome.browserAction.setBadgeText({ text: count.toString() });
+        };
+        window.retrieveSiteMeta = SiteMeta;
+        window.countData = { links: { rows: [] }, groups: { rows: [] } };
+        window.sendClickedStat = data => request(data);
+        window.nData = {};
+
+        //Start polling
+        setInterval(() => {
+            checkStorage();
+            if (!navigator.onLine) return false;
+            if (chrome && chrome.storage && chrome.storage.sync) {
+                this.checkUpdates();
+            }
+        }, 10000);
+
+        chrome.notifications.onClicked.addListener(t => {
+            if (nData.links.rows.length > 0) {
+                window.open(nData.links.rows[0].url);
+            }
+        });
     }
 
     checkUpdates() {
@@ -107,62 +133,20 @@ class ExtensionBackground {
             });
         });
     }
-    events() {
-        var NEW_NOTIFICATION = false;
-        var countStore = 0;
-        window.updateNotification = function(count) {
-            count = count > 99 ? "99+" : count;
-            chrome.browserAction.setBadgeText({ text: count.toString() });
-        };
-        window.retrieveSiteMeta = SiteMeta;
-        window.countData = { links: { rows: [] }, groups: { rows: [] } };
-        window.sendClickedStat = data => request(data);
-        window.nData = {};
 
-        //Start polling
-        setInterval(() => {
-            checkStorage();
-            if (!navigator.onLine) return false;
-            if (chrome && chrome.storage && chrome.storage.sync) {
-                this.checkUpdates();
-            }
-        }, 10000);
-
-        chrome.notifications.onClicked.addListener(t => {
-            if (nData.links.rows.length > 0) {
-                window.open(nData.links.rows[0].url);
-            }
-        });
-
-        //update the version
-        window.updateVersion = function() {
-            var manifest = chrome.runtime.getManifest();
-            var version = manifest.version;
-            var chrome_id = localStorage.chrome_id;
-            if (chrome_id !== null) {
-                let params = {
-                    method: "POST",
-                    queryParams: {
-                        version: version,
-                        chrome_id: chrome_id,
-                        action: "updateUserVersion"
-                    }
-                };
-                request(params);
-            }
-        };
+    listeners() {
         /**
          * If the extension is installed or updated, update the version
          * in the server
          */
-        chrome.runtime.onInstalled.addListener(function(details) {
-            updateVersion();
+        chrome.runtime.onInstalled.addListener(details => {
+            this.updateVersion();
         });
 
         /**
          * Check for updates every 2 hours
          */
-        setInterval(function() {
+        setInterval(() => {
             if (
                 chrome.runtime &&
                 typeof chrome.runtime.requestUpdateCheck === "function"
@@ -170,6 +154,23 @@ class ExtensionBackground {
                 chrome.runtime.requestUpdateCheck(function() {});
             }
         }, 1000 * 3600 * 2);
+    }
+
+    updateVersion() {
+        var manifest = chrome.runtime.getManifest();
+        var version = manifest.version;
+        var chrome_id = localStorage.chrome_id;
+        if (chrome_id !== null) {
+            let params = {
+                method: "POST",
+                queryParams: {
+                    version: version,
+                    chrome_id: chrome_id,
+                    action: "updateUserVersion"
+                }
+            };
+            request(params);
+        }
     }
 }
 

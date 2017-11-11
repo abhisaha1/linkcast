@@ -2,9 +2,6 @@ body {
   color: rgba(255, 255, 255, .7);
   background-color: #212121;
 }
-#app {
-  background: #000;
-}
 .container {
   /*background: url("../../../images/bg.jpg");*/
   background-size: cover;

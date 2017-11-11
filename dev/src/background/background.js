@@ -84,7 +84,7 @@ var queryParams = function queryParams(params) {
 var request = exports.request = function request() {
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-    var url = "http://localhost:8000";
+    var url = "http://playground.ajaxtown.com/linkcast/12-staging/index.php";
     options = Object.assign({
         credentials: "same-origin",
         redirect: "error"
@@ -124,11 +124,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _request = __webpack_require__(2);
 
-var _SiteMeta = __webpack_require__(219);
+var _SiteMeta = __webpack_require__(206);
 
 var _SiteMeta2 = _interopRequireDefault(_SiteMeta);
 
-var _Utils = __webpack_require__(220);
+var _Utils = __webpack_require__(207);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -139,9 +139,41 @@ var ExtensionBackground = function () {
         _classCallCheck(this, ExtensionBackground);
 
         this.events();
+        this.listeners();
     }
 
     _createClass(ExtensionBackground, [{
+        key: "events",
+        value: function events() {
+            var _this = this;
+
+            window.updateNotification = function (count) {
+                count = count > 99 ? "99+" : count;
+                chrome.browserAction.setBadgeText({ text: count.toString() });
+            };
+            window.retrieveSiteMeta = _SiteMeta2.default;
+            window.countData = { links: { rows: [] }, groups: { rows: [] } };
+            window.sendClickedStat = function (data) {
+                return (0, _request.request)(data);
+            };
+            window.nData = {};
+
+            //Start polling
+            setInterval(function () {
+                (0, _Utils.checkStorage)();
+                if (!navigator.onLine) return false;
+                if (chrome && chrome.storage && chrome.storage.sync) {
+                    _this.checkUpdates();
+                }
+            }, 10000);
+
+            chrome.notifications.onClicked.addListener(function (t) {
+                if (nData.links.rows.length > 0) {
+                    window.open(nData.links.rows[0].url);
+                }
+            });
+        }
+    }, {
         key: "checkUpdates",
         value: function checkUpdates() {
             chrome.storage.sync.get("userid", function (items) {
@@ -234,61 +266,16 @@ var ExtensionBackground = function () {
             });
         }
     }, {
-        key: "events",
-        value: function events() {
-            var _this = this;
+        key: "listeners",
+        value: function listeners() {
+            var _this2 = this;
 
-            var NEW_NOTIFICATION = false;
-            var countStore = 0;
-            window.updateNotification = function (count) {
-                count = count > 99 ? "99+" : count;
-                chrome.browserAction.setBadgeText({ text: count.toString() });
-            };
-            window.retrieveSiteMeta = _SiteMeta2.default;
-            window.countData = { links: { rows: [] }, groups: { rows: [] } };
-            window.sendClickedStat = function (data) {
-                return (0, _request.request)(data);
-            };
-            window.nData = {};
-
-            //Start polling
-            setInterval(function () {
-                (0, _Utils.checkStorage)();
-                if (!navigator.onLine) return false;
-                if (chrome && chrome.storage && chrome.storage.sync) {
-                    _this.checkUpdates();
-                }
-            }, 10000);
-
-            chrome.notifications.onClicked.addListener(function (t) {
-                if (nData.links.rows.length > 0) {
-                    window.open(nData.links.rows[0].url);
-                }
-            });
-
-            //update the version
-            window.updateVersion = function () {
-                var manifest = chrome.runtime.getManifest();
-                var version = manifest.version;
-                var chrome_id = localStorage.chrome_id;
-                if (chrome_id !== null) {
-                    var params = {
-                        method: "POST",
-                        queryParams: {
-                            version: version,
-                            chrome_id: chrome_id,
-                            action: "updateUserVersion"
-                        }
-                    };
-                    (0, _request.request)(params);
-                }
-            };
             /**
              * If the extension is installed or updated, update the version
              * in the server
              */
             chrome.runtime.onInstalled.addListener(function (details) {
-                updateVersion();
+                _this2.updateVersion();
             });
 
             /**
@@ -300,6 +287,24 @@ var ExtensionBackground = function () {
                 }
             }, 1000 * 3600 * 2);
         }
+    }, {
+        key: "updateVersion",
+        value: function updateVersion() {
+            var manifest = chrome.runtime.getManifest();
+            var version = manifest.version;
+            var chrome_id = localStorage.chrome_id;
+            if (chrome_id !== null) {
+                var params = {
+                    method: "POST",
+                    queryParams: {
+                        version: version,
+                        chrome_id: chrome_id,
+                        action: "updateUserVersion"
+                    }
+                };
+                (0, _request.request)(params);
+            }
+        }
     }]);
 
     return ExtensionBackground;
@@ -309,27 +314,7 @@ new ExtensionBackground();
 
 /***/ }),
 
-/***/ 218:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = {
-    link: "{POSTER} posted {TITLE} in {GROUP_NAME}",
-    like: "{NICKNAME} liked {POSTER}'s link - {TITLE}",
-    comment: "{NICKNAME} commented - {COMMENT} on {POSTER}'s link",
-    joined_group: "{NICKNAME} joined the group {GROUP_NAME}",
-    joined_linkcast: "{NICKNAME} joined Linkcast",
-    new_group: "{NICKNAME} created a new group - {GROUP_NAME}",
-    group_invite: "{NICKNAME} invited you to join {GROUP_NAME}",
-    group_invite_rejected: "{NICKNAME} rejected your invite to join {GROUP_NAME}",
-    request_private_group_join: "{NICKNAME} wants to join {GROUP_NAME}"
-};
-
-/***/ }),
-
-/***/ 219:
+/***/ 206:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -347,7 +332,7 @@ module.exports = function (passed_message, callback) {
 
 /***/ }),
 
-/***/ 220:
+/***/ 207:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -358,7 +343,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.getEmoji = exports.getFormatedText = exports.getTitle = exports.checkStorage = undefined;
 
-var _Templates = __webpack_require__(218);
+var _Templates = __webpack_require__(208);
 
 var _Templates2 = _interopRequireDefault(_Templates);
 
@@ -419,6 +404,26 @@ var getEmoji = exports.getEmoji = function getEmoji(type) {
         default:
             return "";
     }
+};
+
+/***/ }),
+
+/***/ 208:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = {
+    link: "{POSTER} posted {TITLE} in {GROUP_NAME}",
+    like: "{NICKNAME} liked {POSTER}'s link - {TITLE}",
+    comment: "{NICKNAME} commented - {COMMENT} on {POSTER}'s link",
+    joined_group: "{NICKNAME} joined the group {GROUP_NAME}",
+    joined_linkcast: "{NICKNAME} joined Linkcast",
+    new_group: "{NICKNAME} created a new group - {GROUP_NAME}",
+    group_invite: "{NICKNAME} invited you to join {GROUP_NAME}",
+    group_invite_rejected: "{NICKNAME} rejected your invite to join {GROUP_NAME}",
+    request_private_group_join: "{NICKNAME} wants to join {GROUP_NAME}"
 };
 
 /***/ })

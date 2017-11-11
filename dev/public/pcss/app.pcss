@@ -1,5 +1,5 @@
 body {
-    font-family: "Open Sans", "Lucida Grande", "Lucida Sans Unicode",
+    font-family: "Libre Franklin", "Lucida Grande", "Lucida Sans Unicode",
         "Lucida Sans", Garuda, Verdana, Tahoma, sans-serif;
     /*"Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Garuda, Verdana, Tahoma, sans-serif;*/
     line-height: 1.6;
@@ -12,7 +12,24 @@ body {
     width: 784px;
     display: flex;
     justify-content: center;
+    transition: 0.5s min-height linear;
 }
+.background {
+    position: absolute;
+    overflow: hidden;
+    width: 784px;
+    height: 430px;
+    transition: 0.5s min-height linear;
+}
+.bg-image {
+    background: url(src../../../images/bg.jpg) #000;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+.inner-image img {
+    opacity: 0.2;
+}
+
 .btn:focus,
 .btn:active:focus,
 .btn.active:focus,
@@ -565,21 +582,7 @@ input.search-box {
     outline: none;
 }
 
-.background {
-    position: absolute;
-    overflow: hidden;
-    top: 8px;
-    width: 784px;
-    height: 430px;
-}
-.bg-image {
-    background: url(src../../../images/bg.jpg) #000;
-    background-size: cover;
-    background-repeat: no-repeat;
-}
-.inner-image img {
-    opacity: 0.2;
-}
+
 
 .progress-bar {
     height: 4px;

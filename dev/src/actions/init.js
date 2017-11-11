@@ -11,7 +11,7 @@ const changeBackgroundSize = () => {
 };
 const observeSizeChanges = () => {
     $bgEle = document.querySelectorAll(".background");
-    $container = document.querySelector(".container");
+    $container = document.querySelector("#app");
     new ResizeObserver(changeBackgroundSize).observe($container);
 };
 

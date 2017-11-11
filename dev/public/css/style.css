@@ -1,4 +1,4 @@
-@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);/*!
+@import url(https://fonts.googleapis.com/css?family=Libre+Franklin:400,600);/*!
  *  Font Awesome 4.7.0 by @davegandy - http://fontawesome.io - @fontawesome
  *  License - http://fontawesome.io/license (Font: SIL OFL 1.1, CSS: MIT License)
  */
@@ -9124,7 +9124,7 @@ button.close {
     }
 }
 body {
-    font-family: "Open Sans", "Lucida Grande", "Lucida Sans Unicode",
+    font-family: "Libre Franklin", "Lucida Grande", "Lucida Sans Unicode",
         "Lucida Sans", Garuda, Verdana, Tahoma, sans-serif;
     /*"Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Garuda, Verdana, Tahoma, sans-serif;*/
     line-height: 1.6;
@@ -9145,6 +9145,24 @@ body {
     -webkit-box-pack: center;
         -ms-flex-pack: center;
             justify-content: center;
+    -webkit-transition: 0.5s min-height linear;
+    transition: 0.5s min-height linear;
+}
+.background {
+    position: absolute;
+    overflow: hidden;
+    width: 784px;
+    height: 430px;
+    -webkit-transition: 0.5s min-height linear;
+    transition: 0.5s min-height linear;
+}
+.bg-image {
+    background: url(src../../../images/bg.jpg) #000;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+.inner-image img {
+    opacity: 0.2;
 }
 .btn:focus,
 .btn:active:focus,
@@ -9645,21 +9663,6 @@ input.search-box {
     padding-left: 8px;
     outline: none;
 }
-.background {
-    position: absolute;
-    overflow: hidden;
-    top: 8px;
-    width: 784px;
-    height: 430px;
-}
-.bg-image {
-    background: url(src../../../images/bg.jpg) #000;
-    background-size: cover;
-    background-repeat: no-repeat;
-}
-.inner-image img {
-    opacity: 0.2;
-}
 .progress-bar {
     height: 4px;
     width: 100%;
@@ -9777,6 +9780,7 @@ div.token-input-dropdown-facebook
     margin-bottom: 1px;
     padding: 8px 16px;
     cursor: pointer;
+    border-bottom: 1px solid #232323;
 }
 .item.left .items-body {
     margin-left: 85px;

@@ -20,4 +20,4 @@ setTimeout(() => {
     }
     appActions.init();
     document.querySelector("#app").style.minHeight = "560px";
-}, 300);
+}, 200);
