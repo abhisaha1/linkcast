@@ -15,7 +15,9 @@ setTimeout(() => {
     const appActions = app(persist(options));
     const workOffline = parseInt(Storage.get("offline") || 0);
     if (workOffline) {
-        appActions.__initPersist();
+        appActions.__removePersist();
+        Storage.set({ offline: 0 });
     }
     appActions.init();
-}, 0);
+    document.querySelector("#app").style.height = "560px";
+}, 100);

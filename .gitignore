@@ -6,3 +6,4 @@ build
 linkcast.zip
 ./dev/src/popup.js.map
 ./dev/src/popup.js
+*.map

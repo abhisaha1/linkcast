@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "src";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 132);
+/******/ 	return __webpack_require__(__webpack_require__.s = 153);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -1906,7 +1906,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             try {
                 oldLocale = globalLocale._abbr;
                 var aliasedRequire = require;
-                __webpack_require__(169)("./" + name);
+                __webpack_require__(187)("./" + name);
                 getSetGlobalLocale(oldLocale);
             } catch (e) {}
         }
@@ -4478,7 +4478,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
     return hooks;
 });
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(168)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(25)(module)))
 
 /***/ }),
 /* 1 */
@@ -4790,14 +4790,6 @@ function h(type, props) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.request = undefined;
-
-var _config = __webpack_require__(135);
-
-var _config2 = _interopRequireDefault(_config);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 var queryParams = function queryParams(params) {
     var esc = encodeURIComponent;
     return Object.keys(params).map(function (k) {
@@ -4808,7 +4800,7 @@ var queryParams = function queryParams(params) {
 var request = exports.request = function request() {
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-    var url = _config2.default.endpoint;
+    var url = "http://localhost:8000";
     options = Object.assign({
         credentials: "same-origin",
         redirect: "error"
@@ -4849,7 +4841,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _hyperapp = __webpack_require__(1);
 
-var _LinkItem = __webpack_require__(7);
+var _LinkItem = __webpack_require__(13);
 
 var _LinkItem2 = _interopRequireDefault(_LinkItem);
 
@@ -4889,6 +4881,546 @@ exports.default = Links;
 
 /***/ }),
 /* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// a duplex stream is just a stream that is both readable and writable.
+// Since JS doesn't have multiple prototypal inheritance, this class
+// prototypally inherits from Readable, and then parasitically from
+// Writable.
+
+
+
+/*<replacement>*/
+
+var processNextTick = __webpack_require__(17);
+/*</replacement>*/
+
+/*<replacement>*/
+var objectKeys = Object.keys || function (obj) {
+  var keys = [];
+  for (var key in obj) {
+    keys.push(key);
+  }return keys;
+};
+/*</replacement>*/
+
+module.exports = Duplex;
+
+/*<replacement>*/
+var util = __webpack_require__(12);
+util.inherits = __webpack_require__(7);
+/*</replacement>*/
+
+var Readable = __webpack_require__(148);
+var Writable = __webpack_require__(23);
+
+util.inherits(Duplex, Readable);
+
+var keys = objectKeys(Writable.prototype);
+for (var v = 0; v < keys.length; v++) {
+  var method = keys[v];
+  if (!Duplex.prototype[method]) Duplex.prototype[method] = Writable.prototype[method];
+}
+
+function Duplex(options) {
+  if (!(this instanceof Duplex)) return new Duplex(options);
+
+  Readable.call(this, options);
+  Writable.call(this, options);
+
+  if (options && options.readable === false) this.readable = false;
+
+  if (options && options.writable === false) this.writable = false;
+
+  this.allowHalfOpen = true;
+  if (options && options.allowHalfOpen === false) this.allowHalfOpen = false;
+
+  this.once('end', onend);
+}
+
+// the no-half-open enforcer
+function onend() {
+  // if we allow half-open state, or if the writable side ended,
+  // then we're ok.
+  if (this.allowHalfOpen || this._writableState.ended) return;
+
+  // no more data can be written.
+  // But allow more writes to happen in this tick.
+  processNextTick(onEndNT, this);
+}
+
+function onEndNT(self) {
+  self.end();
+}
+
+Object.defineProperty(Duplex.prototype, 'destroyed', {
+  get: function get() {
+    if (this._readableState === undefined || this._writableState === undefined) {
+      return false;
+    }
+    return this._readableState.destroyed && this._writableState.destroyed;
+  },
+  set: function set(value) {
+    // we ignore the value if the stream
+    // has not been initialized yet
+    if (this._readableState === undefined || this._writableState === undefined) {
+      return;
+    }
+
+    // backward compatibility, the user is explicitly
+    // managing destroyed
+    this._readableState.destroyed = value;
+    this._writableState.destroyed = value;
+  }
+});
+
+Duplex.prototype._destroy = function (err, cb) {
+  this.push(null);
+  this.end();
+
+  processNextTick(cb, err);
+};
+
+function forEach(xs, f) {
+  for (var i = 0, l = xs.length; i < l; i++) {
+    f(xs[i], i);
+  }
+}
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout() {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+})();
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch (e) {
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch (e) {
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e) {
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e) {
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while (len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) {
+    return [];
+};
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () {
+    return '/';
+};
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function () {
+    return 0;
+};
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var g;
+
+// This works in non-strict mode
+g = function () {
+	return this;
+}();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1, eval)("this");
+} catch (e) {
+	// This works if the window reference is available
+	if ((typeof window === "undefined" ? "undefined" : _typeof(window)) === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor;
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor;
+    var TempCtor = function TempCtor() {};
+    TempCtor.prototype = superCtor.prototype;
+    ctor.prototype = new TempCtor();
+    ctor.prototype.constructor = ctor;
+  };
+}
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Storage = exports.validateEmail = exports.getRandomToken = exports.unescape = exports.escape = exports.deepFind = exports.setVersion = exports.setMessage = exports.resetMessage = exports.updateState = exports.closeModal = exports.onScroll = exports.navClicked = undefined;
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _request = __webpack_require__(2);
+
+var navClicked = exports.navClicked = function navClicked(state, actions) {
+    return function (data) {
+        var id = data.currentTarget.dataset.id;
+        state.nav.main.active = id;
+        actions.updateState(state);
+    };
+};
+
+var onScroll = exports.onScroll = function onScroll(state, actions) {
+    return function (_ref) {
+        var e = _ref.e,
+            callback = _ref.callback;
+
+        var ele = e.currentTarget;
+        var height = ele.clientHeight;
+        var scroll_top = ele.scrollTop;
+        var scrollHeight = ele.scrollHeight;
+
+        if (scroll_top + height >= scrollHeight) {
+            if (typeof callback == "function") callback(e);
+        }
+        e.stopPropagation();
+        e.preventDefault();
+        return false;
+    };
+};
+
+var closeModal = exports.closeModal = function closeModal(state, actions) {
+    return function (name) {
+        state.modals[name].open = false;
+        actions.updateState(state);
+    };
+};
+
+var updateState = exports.updateState = function updateState(state, actions) {
+    return function (newState) {
+        return { newState: newState };
+    };
+};
+var resetMessage = exports.resetMessage = function resetMessage(state, actions) {
+    return function () {
+        setTimeout(function () {
+            if (state.message != "") {
+                state.message = "";
+                actions.updateState(state);
+            }
+        }, 3000);
+    };
+};
+
+var setMessage = exports.setMessage = function setMessage(state, actions) {
+    return function (message) {
+        state.message = message;
+        actions.updateState(state);
+    };
+};
+
+var setVersion = exports.setVersion = function setVersion(state, actions) {
+    return function (version) {
+        state.version = version;
+        actions.updateState(state);
+    };
+};
+
+var deepFind = exports.deepFind = function deepFind(obj, path) {
+    for (var i = 0, path = path.split("."), len = path.length; i < len; i++) {
+        obj = obj[path[i]];
+    }
+    return obj;
+};
+
+var basePropertyOf = function basePropertyOf(object) {
+    return function (key) {
+        return object == null ? undefined : object[key];
+    };
+};
+
+var escape = exports.escape = function escape(str) {
+    /** Used to map characters to HTML entities. */
+    var htmlEscapes = {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    };
+
+    var escapeHtmlChar = basePropertyOf(htmlEscapes);
+    var reUnescapedHtml = /[&<>"']/g;
+    return str.replace(reUnescapedHtml, escapeHtmlChar);
+};
+
+var unescape = exports.unescape = function unescape(str) {
+    /** Used to map HTML entities to characters. */
+    var htmlUnescapes = {
+        "&amp;": "&",
+        "&lt;": "<",
+        "&gt;": ">",
+        "&quot;": '"',
+        "&#39;": "'"
+    };
+    var unescapeHtmlChar = basePropertyOf(htmlUnescapes);
+    var reEscapedHtml = /&(?:amp|lt|gt|quot|#39);/g;
+    return str.replace(reEscapedHtml, unescapeHtmlChar);
+};
+
+var getRandomToken = exports.getRandomToken = function getRandomToken() {
+    // E.g. 8 * 32 = 256 bits token
+    var randomPool = new Uint8Array(32);
+    crypto.getRandomValues(randomPool);
+    var hex = "";
+    for (var i = 0; i < randomPool.length; ++i) {
+        hex += randomPool[i].toString(16);
+    }
+    // E.g. db18458e2782b2b77e36769c569e263a53885a9944dd0a861e5064eac16f1a
+    return hex;
+};
+
+var validateEmail = exports.validateEmail = function validateEmail(email) {
+    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email);
+};
+
+var Storage = exports.Storage = new function () {
+    this.set = function (data) {
+        var overwrite = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
+        if ((typeof data === "undefined" ? "undefined" : _typeof(data)) === "object") {
+            Object.keys(data).map(function (key) {
+                if (!overwrite && localStorage[key]) return;
+                localStorage[key] = data[key];
+            });
+        }
+    };
+    this.get = function (key) {
+        return localStorage[key];
+    };
+    return this;
+}();
+
+/***/ }),
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4961,7 +5493,7 @@ var TabComponent = exports.TabComponent = function TabComponent(_ref) {
 };
 
 /***/ }),
-/* 5 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4991,7 +5523,7 @@ var ScrollHoc = function ScrollHoc(Component) {
 exports.default = ScrollHoc;
 
 /***/ }),
-/* 6 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5071,7 +5603,121 @@ var ModalHoc = function ModalHoc(Component) {
 exports.default = ModalHoc;
 
 /***/ }),
-/* 7 */
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(Buffer) {
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// NOTE: These type checking functions intentionally don't use `instanceof`
+// because it is fragile and can be easily faked with `Object.create()`.
+
+function isArray(arg) {
+  if (Array.isArray) {
+    return Array.isArray(arg);
+  }
+  return objectToString(arg) === '[object Array]';
+}
+exports.isArray = isArray;
+
+function isBoolean(arg) {
+  return typeof arg === 'boolean';
+}
+exports.isBoolean = isBoolean;
+
+function isNull(arg) {
+  return arg === null;
+}
+exports.isNull = isNull;
+
+function isNullOrUndefined(arg) {
+  return arg == null;
+}
+exports.isNullOrUndefined = isNullOrUndefined;
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+exports.isNumber = isNumber;
+
+function isString(arg) {
+  return typeof arg === 'string';
+}
+exports.isString = isString;
+
+function isSymbol(arg) {
+  return (typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) === 'symbol';
+}
+exports.isSymbol = isSymbol;
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+exports.isUndefined = isUndefined;
+
+function isRegExp(re) {
+  return objectToString(re) === '[object RegExp]';
+}
+exports.isRegExp = isRegExp;
+
+function isObject(arg) {
+  return (typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) === 'object' && arg !== null;
+}
+exports.isObject = isObject;
+
+function isDate(d) {
+  return objectToString(d) === '[object Date]';
+}
+exports.isDate = isDate;
+
+function isError(e) {
+  return objectToString(e) === '[object Error]' || e instanceof Error;
+}
+exports.isError = isError;
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+exports.isFunction = isFunction;
+
+function isPrimitive(arg) {
+  return arg === null || typeof arg === 'boolean' || typeof arg === 'number' || typeof arg === 'string' || (typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) === 'symbol' || // ES6 symbol
+  typeof arg === 'undefined';
+}
+exports.isPrimitive = isPrimitive;
+
+exports.isBuffer = Buffer.isBuffer;
+
+function objectToString(o) {
+  return Object.prototype.toString.call(o);
+}
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(16).Buffer))
+
+/***/ }),
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5079,7 +5725,7 @@ exports.default = ModalHoc;
 
 var _hyperapp = __webpack_require__(1);
 
-var _Comments = __webpack_require__(147);
+var _Comments = __webpack_require__(168);
 
 var _Comments2 = _interopRequireDefault(_Comments);
 
@@ -5321,7 +5967,7 @@ var LinkItem = function LinkItem(_ref) {
 module.exports = LinkItem;
 
 /***/ }),
-/* 8 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5366,7 +6012,7 @@ var DropDown = function DropDown(_ref) {
 exports.default = DropDown;
 
 /***/ }),
-/* 9 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5401,356 +6047,2846 @@ var Radio = exports.Radio = function Radio(_ref) {
 };
 
 /***/ }),
-/* 10 */
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+ * @license  MIT
+ */
+/* eslint-disable no-proto */
+
+
+
+var base64 = __webpack_require__(194);
+var ieee754 = __webpack_require__(195);
+var isArray = __webpack_require__(145);
+
+exports.Buffer = Buffer;
+exports.SlowBuffer = SlowBuffer;
+exports.INSPECT_MAX_BYTES = 50;
+
+/**
+ * If `Buffer.TYPED_ARRAY_SUPPORT`:
+ *   === true    Use Uint8Array implementation (fastest)
+ *   === false   Use Object implementation (most compatible, even IE6)
+ *
+ * Browsers that support typed arrays are IE 10+, Firefox 4+, Chrome 7+, Safari 5.1+,
+ * Opera 11.6+, iOS 4.2+.
+ *
+ * Due to various browser bugs, sometimes the Object implementation will be used even
+ * when the browser supports typed arrays.
+ *
+ * Note:
+ *
+ *   - Firefox 4-29 lacks support for adding new properties to `Uint8Array` instances,
+ *     See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438.
+ *
+ *   - Chrome 9-10 is missing the `TypedArray.prototype.subarray` function.
+ *
+ *   - IE10 has a broken `TypedArray.prototype.subarray` function which returns arrays of
+ *     incorrect length in some situations.
+
+ * We detect these buggy browsers and set `Buffer.TYPED_ARRAY_SUPPORT` to `false` so they
+ * get the Object implementation, which is slower but behaves correctly.
+ */
+Buffer.TYPED_ARRAY_SUPPORT = global.TYPED_ARRAY_SUPPORT !== undefined ? global.TYPED_ARRAY_SUPPORT : typedArraySupport();
+
+/*
+ * Export kMaxLength after typed array support is determined.
+ */
+exports.kMaxLength = kMaxLength();
+
+function typedArraySupport() {
+  try {
+    var arr = new Uint8Array(1);
+    arr.__proto__ = { __proto__: Uint8Array.prototype, foo: function foo() {
+        return 42;
+      } };
+    return arr.foo() === 42 && // typed array instances can be augmented
+    typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
+    arr.subarray(1, 1).byteLength === 0; // ie10 has broken `subarray`
+  } catch (e) {
+    return false;
+  }
+}
+
+function kMaxLength() {
+  return Buffer.TYPED_ARRAY_SUPPORT ? 0x7fffffff : 0x3fffffff;
+}
+
+function createBuffer(that, length) {
+  if (kMaxLength() < length) {
+    throw new RangeError('Invalid typed array length');
+  }
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    // Return an augmented `Uint8Array` instance, for best performance
+    that = new Uint8Array(length);
+    that.__proto__ = Buffer.prototype;
+  } else {
+    // Fallback: Return an object instance of the Buffer class
+    if (that === null) {
+      that = new Buffer(length);
+    }
+    that.length = length;
+  }
+
+  return that;
+}
+
+/**
+ * The Buffer constructor returns instances of `Uint8Array` that have their
+ * prototype changed to `Buffer.prototype`. Furthermore, `Buffer` is a subclass of
+ * `Uint8Array`, so the returned instances will have all the node `Buffer` methods
+ * and the `Uint8Array` methods. Square bracket notation works as expected -- it
+ * returns a single octet.
+ *
+ * The `Uint8Array` prototype remains unmodified.
+ */
+
+function Buffer(arg, encodingOrOffset, length) {
+  if (!Buffer.TYPED_ARRAY_SUPPORT && !(this instanceof Buffer)) {
+    return new Buffer(arg, encodingOrOffset, length);
+  }
+
+  // Common case.
+  if (typeof arg === 'number') {
+    if (typeof encodingOrOffset === 'string') {
+      throw new Error('If encoding is specified then the first argument must be a string');
+    }
+    return allocUnsafe(this, arg);
+  }
+  return from(this, arg, encodingOrOffset, length);
+}
+
+Buffer.poolSize = 8192; // not used by this implementation
+
+// TODO: Legacy, not needed anymore. Remove in next major version.
+Buffer._augment = function (arr) {
+  arr.__proto__ = Buffer.prototype;
+  return arr;
+};
+
+function from(that, value, encodingOrOffset, length) {
+  if (typeof value === 'number') {
+    throw new TypeError('"value" argument must not be a number');
+  }
+
+  if (typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer) {
+    return fromArrayBuffer(that, value, encodingOrOffset, length);
+  }
+
+  if (typeof value === 'string') {
+    return fromString(that, value, encodingOrOffset);
+  }
+
+  return fromObject(that, value);
+}
+
+/**
+ * Functionally equivalent to Buffer(arg, encoding) but throws a TypeError
+ * if value is a number.
+ * Buffer.from(str[, encoding])
+ * Buffer.from(array)
+ * Buffer.from(buffer)
+ * Buffer.from(arrayBuffer[, byteOffset[, length]])
+ **/
+Buffer.from = function (value, encodingOrOffset, length) {
+  return from(null, value, encodingOrOffset, length);
+};
+
+if (Buffer.TYPED_ARRAY_SUPPORT) {
+  Buffer.prototype.__proto__ = Uint8Array.prototype;
+  Buffer.__proto__ = Uint8Array;
+  if (typeof Symbol !== 'undefined' && Symbol.species && Buffer[Symbol.species] === Buffer) {
+    // Fix subarray() in ES2016. See: https://github.com/feross/buffer/pull/97
+    Object.defineProperty(Buffer, Symbol.species, {
+      value: null,
+      configurable: true
+    });
+  }
+}
+
+function assertSize(size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('"size" argument must be a number');
+  } else if (size < 0) {
+    throw new RangeError('"size" argument must not be negative');
+  }
+}
+
+function alloc(that, size, fill, encoding) {
+  assertSize(size);
+  if (size <= 0) {
+    return createBuffer(that, size);
+  }
+  if (fill !== undefined) {
+    // Only pay attention to encoding if it's a string. This
+    // prevents accidentally sending in a number that would
+    // be interpretted as a start offset.
+    return typeof encoding === 'string' ? createBuffer(that, size).fill(fill, encoding) : createBuffer(that, size).fill(fill);
+  }
+  return createBuffer(that, size);
+}
+
+/**
+ * Creates a new filled Buffer instance.
+ * alloc(size[, fill[, encoding]])
+ **/
+Buffer.alloc = function (size, fill, encoding) {
+  return alloc(null, size, fill, encoding);
+};
+
+function allocUnsafe(that, size) {
+  assertSize(size);
+  that = createBuffer(that, size < 0 ? 0 : checked(size) | 0);
+  if (!Buffer.TYPED_ARRAY_SUPPORT) {
+    for (var i = 0; i < size; ++i) {
+      that[i] = 0;
+    }
+  }
+  return that;
+}
+
+/**
+ * Equivalent to Buffer(num), by default creates a non-zero-filled Buffer instance.
+ * */
+Buffer.allocUnsafe = function (size) {
+  return allocUnsafe(null, size);
+};
+/**
+ * Equivalent to SlowBuffer(num), by default creates a non-zero-filled Buffer instance.
+ */
+Buffer.allocUnsafeSlow = function (size) {
+  return allocUnsafe(null, size);
+};
+
+function fromString(that, string, encoding) {
+  if (typeof encoding !== 'string' || encoding === '') {
+    encoding = 'utf8';
+  }
+
+  if (!Buffer.isEncoding(encoding)) {
+    throw new TypeError('"encoding" must be a valid string encoding');
+  }
+
+  var length = byteLength(string, encoding) | 0;
+  that = createBuffer(that, length);
+
+  var actual = that.write(string, encoding);
+
+  if (actual !== length) {
+    // Writing a hex string, for example, that contains invalid characters will
+    // cause everything after the first invalid character to be ignored. (e.g.
+    // 'abxxcd' will be treated as 'ab')
+    that = that.slice(0, actual);
+  }
+
+  return that;
+}
+
+function fromArrayLike(that, array) {
+  var length = array.length < 0 ? 0 : checked(array.length) | 0;
+  that = createBuffer(that, length);
+  for (var i = 0; i < length; i += 1) {
+    that[i] = array[i] & 255;
+  }
+  return that;
+}
+
+function fromArrayBuffer(that, array, byteOffset, length) {
+  array.byteLength; // this throws if `array` is not a valid ArrayBuffer
+
+  if (byteOffset < 0 || array.byteLength < byteOffset) {
+    throw new RangeError('\'offset\' is out of bounds');
+  }
+
+  if (array.byteLength < byteOffset + (length || 0)) {
+    throw new RangeError('\'length\' is out of bounds');
+  }
+
+  if (byteOffset === undefined && length === undefined) {
+    array = new Uint8Array(array);
+  } else if (length === undefined) {
+    array = new Uint8Array(array, byteOffset);
+  } else {
+    array = new Uint8Array(array, byteOffset, length);
+  }
+
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    // Return an augmented `Uint8Array` instance, for best performance
+    that = array;
+    that.__proto__ = Buffer.prototype;
+  } else {
+    // Fallback: Return an object instance of the Buffer class
+    that = fromArrayLike(that, array);
+  }
+  return that;
+}
+
+function fromObject(that, obj) {
+  if (Buffer.isBuffer(obj)) {
+    var len = checked(obj.length) | 0;
+    that = createBuffer(that, len);
+
+    if (that.length === 0) {
+      return that;
+    }
+
+    obj.copy(that, 0, 0, len);
+    return that;
+  }
+
+  if (obj) {
+    if (typeof ArrayBuffer !== 'undefined' && obj.buffer instanceof ArrayBuffer || 'length' in obj) {
+      if (typeof obj.length !== 'number' || isnan(obj.length)) {
+        return createBuffer(that, 0);
+      }
+      return fromArrayLike(that, obj);
+    }
+
+    if (obj.type === 'Buffer' && isArray(obj.data)) {
+      return fromArrayLike(that, obj.data);
+    }
+  }
+
+  throw new TypeError('First argument must be a string, Buffer, ArrayBuffer, Array, or array-like object.');
+}
+
+function checked(length) {
+  // Note: cannot use `length < kMaxLength()` here because that fails when
+  // length is NaN (which is otherwise coerced to zero.)
+  if (length >= kMaxLength()) {
+    throw new RangeError('Attempt to allocate Buffer larger than maximum ' + 'size: 0x' + kMaxLength().toString(16) + ' bytes');
+  }
+  return length | 0;
+}
+
+function SlowBuffer(length) {
+  if (+length != length) {
+    // eslint-disable-line eqeqeq
+    length = 0;
+  }
+  return Buffer.alloc(+length);
+}
+
+Buffer.isBuffer = function isBuffer(b) {
+  return !!(b != null && b._isBuffer);
+};
+
+Buffer.compare = function compare(a, b) {
+  if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b)) {
+    throw new TypeError('Arguments must be Buffers');
+  }
+
+  if (a === b) return 0;
+
+  var x = a.length;
+  var y = b.length;
+
+  for (var i = 0, len = Math.min(x, y); i < len; ++i) {
+    if (a[i] !== b[i]) {
+      x = a[i];
+      y = b[i];
+      break;
+    }
+  }
+
+  if (x < y) return -1;
+  if (y < x) return 1;
+  return 0;
+};
+
+Buffer.isEncoding = function isEncoding(encoding) {
+  switch (String(encoding).toLowerCase()) {
+    case 'hex':
+    case 'utf8':
+    case 'utf-8':
+    case 'ascii':
+    case 'latin1':
+    case 'binary':
+    case 'base64':
+    case 'ucs2':
+    case 'ucs-2':
+    case 'utf16le':
+    case 'utf-16le':
+      return true;
+    default:
+      return false;
+  }
+};
+
+Buffer.concat = function concat(list, length) {
+  if (!isArray(list)) {
+    throw new TypeError('"list" argument must be an Array of Buffers');
+  }
+
+  if (list.length === 0) {
+    return Buffer.alloc(0);
+  }
+
+  var i;
+  if (length === undefined) {
+    length = 0;
+    for (i = 0; i < list.length; ++i) {
+      length += list[i].length;
+    }
+  }
+
+  var buffer = Buffer.allocUnsafe(length);
+  var pos = 0;
+  for (i = 0; i < list.length; ++i) {
+    var buf = list[i];
+    if (!Buffer.isBuffer(buf)) {
+      throw new TypeError('"list" argument must be an Array of Buffers');
+    }
+    buf.copy(buffer, pos);
+    pos += buf.length;
+  }
+  return buffer;
+};
+
+function byteLength(string, encoding) {
+  if (Buffer.isBuffer(string)) {
+    return string.length;
+  }
+  if (typeof ArrayBuffer !== 'undefined' && typeof ArrayBuffer.isView === 'function' && (ArrayBuffer.isView(string) || string instanceof ArrayBuffer)) {
+    return string.byteLength;
+  }
+  if (typeof string !== 'string') {
+    string = '' + string;
+  }
+
+  var len = string.length;
+  if (len === 0) return 0;
+
+  // Use a for loop to avoid recursion
+  var loweredCase = false;
+  for (;;) {
+    switch (encoding) {
+      case 'ascii':
+      case 'latin1':
+      case 'binary':
+        return len;
+      case 'utf8':
+      case 'utf-8':
+      case undefined:
+        return utf8ToBytes(string).length;
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return len * 2;
+      case 'hex':
+        return len >>> 1;
+      case 'base64':
+        return base64ToBytes(string).length;
+      default:
+        if (loweredCase) return utf8ToBytes(string).length; // assume utf8
+        encoding = ('' + encoding).toLowerCase();
+        loweredCase = true;
+    }
+  }
+}
+Buffer.byteLength = byteLength;
+
+function slowToString(encoding, start, end) {
+  var loweredCase = false;
+
+  // No need to verify that "this.length <= MAX_UINT32" since it's a read-only
+  // property of a typed array.
+
+  // This behaves neither like String nor Uint8Array in that we set start/end
+  // to their upper/lower bounds if the value passed is out of range.
+  // undefined is handled specially as per ECMA-262 6th Edition,
+  // Section 13.3.3.7 Runtime Semantics: KeyedBindingInitialization.
+  if (start === undefined || start < 0) {
+    start = 0;
+  }
+  // Return early if start > this.length. Done here to prevent potential uint32
+  // coercion fail below.
+  if (start > this.length) {
+    return '';
+  }
+
+  if (end === undefined || end > this.length) {
+    end = this.length;
+  }
+
+  if (end <= 0) {
+    return '';
+  }
+
+  // Force coersion to uint32. This will also coerce falsey/NaN values to 0.
+  end >>>= 0;
+  start >>>= 0;
+
+  if (end <= start) {
+    return '';
+  }
+
+  if (!encoding) encoding = 'utf8';
+
+  while (true) {
+    switch (encoding) {
+      case 'hex':
+        return hexSlice(this, start, end);
+
+      case 'utf8':
+      case 'utf-8':
+        return utf8Slice(this, start, end);
+
+      case 'ascii':
+        return asciiSlice(this, start, end);
+
+      case 'latin1':
+      case 'binary':
+        return latin1Slice(this, start, end);
+
+      case 'base64':
+        return base64Slice(this, start, end);
+
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return utf16leSlice(this, start, end);
+
+      default:
+        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding);
+        encoding = (encoding + '').toLowerCase();
+        loweredCase = true;
+    }
+  }
+}
+
+// The property is used by `Buffer.isBuffer` and `is-buffer` (in Safari 5-7) to detect
+// Buffer instances.
+Buffer.prototype._isBuffer = true;
+
+function swap(b, n, m) {
+  var i = b[n];
+  b[n] = b[m];
+  b[m] = i;
+}
+
+Buffer.prototype.swap16 = function swap16() {
+  var len = this.length;
+  if (len % 2 !== 0) {
+    throw new RangeError('Buffer size must be a multiple of 16-bits');
+  }
+  for (var i = 0; i < len; i += 2) {
+    swap(this, i, i + 1);
+  }
+  return this;
+};
+
+Buffer.prototype.swap32 = function swap32() {
+  var len = this.length;
+  if (len % 4 !== 0) {
+    throw new RangeError('Buffer size must be a multiple of 32-bits');
+  }
+  for (var i = 0; i < len; i += 4) {
+    swap(this, i, i + 3);
+    swap(this, i + 1, i + 2);
+  }
+  return this;
+};
+
+Buffer.prototype.swap64 = function swap64() {
+  var len = this.length;
+  if (len % 8 !== 0) {
+    throw new RangeError('Buffer size must be a multiple of 64-bits');
+  }
+  for (var i = 0; i < len; i += 8) {
+    swap(this, i, i + 7);
+    swap(this, i + 1, i + 6);
+    swap(this, i + 2, i + 5);
+    swap(this, i + 3, i + 4);
+  }
+  return this;
+};
+
+Buffer.prototype.toString = function toString() {
+  var length = this.length | 0;
+  if (length === 0) return '';
+  if (arguments.length === 0) return utf8Slice(this, 0, length);
+  return slowToString.apply(this, arguments);
+};
+
+Buffer.prototype.equals = function equals(b) {
+  if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer');
+  if (this === b) return true;
+  return Buffer.compare(this, b) === 0;
+};
+
+Buffer.prototype.inspect = function inspect() {
+  var str = '';
+  var max = exports.INSPECT_MAX_BYTES;
+  if (this.length > 0) {
+    str = this.toString('hex', 0, max).match(/.{2}/g).join(' ');
+    if (this.length > max) str += ' ... ';
+  }
+  return '<Buffer ' + str + '>';
+};
+
+Buffer.prototype.compare = function compare(target, start, end, thisStart, thisEnd) {
+  if (!Buffer.isBuffer(target)) {
+    throw new TypeError('Argument must be a Buffer');
+  }
+
+  if (start === undefined) {
+    start = 0;
+  }
+  if (end === undefined) {
+    end = target ? target.length : 0;
+  }
+  if (thisStart === undefined) {
+    thisStart = 0;
+  }
+  if (thisEnd === undefined) {
+    thisEnd = this.length;
+  }
+
+  if (start < 0 || end > target.length || thisStart < 0 || thisEnd > this.length) {
+    throw new RangeError('out of range index');
+  }
+
+  if (thisStart >= thisEnd && start >= end) {
+    return 0;
+  }
+  if (thisStart >= thisEnd) {
+    return -1;
+  }
+  if (start >= end) {
+    return 1;
+  }
+
+  start >>>= 0;
+  end >>>= 0;
+  thisStart >>>= 0;
+  thisEnd >>>= 0;
+
+  if (this === target) return 0;
+
+  var x = thisEnd - thisStart;
+  var y = end - start;
+  var len = Math.min(x, y);
+
+  var thisCopy = this.slice(thisStart, thisEnd);
+  var targetCopy = target.slice(start, end);
+
+  for (var i = 0; i < len; ++i) {
+    if (thisCopy[i] !== targetCopy[i]) {
+      x = thisCopy[i];
+      y = targetCopy[i];
+      break;
+    }
+  }
+
+  if (x < y) return -1;
+  if (y < x) return 1;
+  return 0;
+};
+
+// Finds either the first index of `val` in `buffer` at offset >= `byteOffset`,
+// OR the last index of `val` in `buffer` at offset <= `byteOffset`.
+//
+// Arguments:
+// - buffer - a Buffer to search
+// - val - a string, Buffer, or number
+// - byteOffset - an index into `buffer`; will be clamped to an int32
+// - encoding - an optional encoding, relevant is val is a string
+// - dir - true for indexOf, false for lastIndexOf
+function bidirectionalIndexOf(buffer, val, byteOffset, encoding, dir) {
+  // Empty buffer means no match
+  if (buffer.length === 0) return -1;
+
+  // Normalize byteOffset
+  if (typeof byteOffset === 'string') {
+    encoding = byteOffset;
+    byteOffset = 0;
+  } else if (byteOffset > 0x7fffffff) {
+    byteOffset = 0x7fffffff;
+  } else if (byteOffset < -0x80000000) {
+    byteOffset = -0x80000000;
+  }
+  byteOffset = +byteOffset; // Coerce to Number.
+  if (isNaN(byteOffset)) {
+    // byteOffset: it it's undefined, null, NaN, "foo", etc, search whole buffer
+    byteOffset = dir ? 0 : buffer.length - 1;
+  }
+
+  // Normalize byteOffset: negative offsets start from the end of the buffer
+  if (byteOffset < 0) byteOffset = buffer.length + byteOffset;
+  if (byteOffset >= buffer.length) {
+    if (dir) return -1;else byteOffset = buffer.length - 1;
+  } else if (byteOffset < 0) {
+    if (dir) byteOffset = 0;else return -1;
+  }
+
+  // Normalize val
+  if (typeof val === 'string') {
+    val = Buffer.from(val, encoding);
+  }
+
+  // Finally, search either indexOf (if dir is true) or lastIndexOf
+  if (Buffer.isBuffer(val)) {
+    // Special case: looking for empty string/buffer always fails
+    if (val.length === 0) {
+      return -1;
+    }
+    return arrayIndexOf(buffer, val, byteOffset, encoding, dir);
+  } else if (typeof val === 'number') {
+    val = val & 0xFF; // Search for a byte value [0-255]
+    if (Buffer.TYPED_ARRAY_SUPPORT && typeof Uint8Array.prototype.indexOf === 'function') {
+      if (dir) {
+        return Uint8Array.prototype.indexOf.call(buffer, val, byteOffset);
+      } else {
+        return Uint8Array.prototype.lastIndexOf.call(buffer, val, byteOffset);
+      }
+    }
+    return arrayIndexOf(buffer, [val], byteOffset, encoding, dir);
+  }
+
+  throw new TypeError('val must be string, number or Buffer');
+}
+
+function arrayIndexOf(arr, val, byteOffset, encoding, dir) {
+  var indexSize = 1;
+  var arrLength = arr.length;
+  var valLength = val.length;
+
+  if (encoding !== undefined) {
+    encoding = String(encoding).toLowerCase();
+    if (encoding === 'ucs2' || encoding === 'ucs-2' || encoding === 'utf16le' || encoding === 'utf-16le') {
+      if (arr.length < 2 || val.length < 2) {
+        return -1;
+      }
+      indexSize = 2;
+      arrLength /= 2;
+      valLength /= 2;
+      byteOffset /= 2;
+    }
+  }
+
+  function read(buf, i) {
+    if (indexSize === 1) {
+      return buf[i];
+    } else {
+      return buf.readUInt16BE(i * indexSize);
+    }
+  }
+
+  var i;
+  if (dir) {
+    var foundIndex = -1;
+    for (i = byteOffset; i < arrLength; i++) {
+      if (read(arr, i) === read(val, foundIndex === -1 ? 0 : i - foundIndex)) {
+        if (foundIndex === -1) foundIndex = i;
+        if (i - foundIndex + 1 === valLength) return foundIndex * indexSize;
+      } else {
+        if (foundIndex !== -1) i -= i - foundIndex;
+        foundIndex = -1;
+      }
+    }
+  } else {
+    if (byteOffset + valLength > arrLength) byteOffset = arrLength - valLength;
+    for (i = byteOffset; i >= 0; i--) {
+      var found = true;
+      for (var j = 0; j < valLength; j++) {
+        if (read(arr, i + j) !== read(val, j)) {
+          found = false;
+          break;
+        }
+      }
+      if (found) return i;
+    }
+  }
+
+  return -1;
+}
+
+Buffer.prototype.includes = function includes(val, byteOffset, encoding) {
+  return this.indexOf(val, byteOffset, encoding) !== -1;
+};
+
+Buffer.prototype.indexOf = function indexOf(val, byteOffset, encoding) {
+  return bidirectionalIndexOf(this, val, byteOffset, encoding, true);
+};
+
+Buffer.prototype.lastIndexOf = function lastIndexOf(val, byteOffset, encoding) {
+  return bidirectionalIndexOf(this, val, byteOffset, encoding, false);
+};
+
+function hexWrite(buf, string, offset, length) {
+  offset = Number(offset) || 0;
+  var remaining = buf.length - offset;
+  if (!length) {
+    length = remaining;
+  } else {
+    length = Number(length);
+    if (length > remaining) {
+      length = remaining;
+    }
+  }
+
+  // must be an even number of digits
+  var strLen = string.length;
+  if (strLen % 2 !== 0) throw new TypeError('Invalid hex string');
+
+  if (length > strLen / 2) {
+    length = strLen / 2;
+  }
+  for (var i = 0; i < length; ++i) {
+    var parsed = parseInt(string.substr(i * 2, 2), 16);
+    if (isNaN(parsed)) return i;
+    buf[offset + i] = parsed;
+  }
+  return i;
+}
+
+function utf8Write(buf, string, offset, length) {
+  return blitBuffer(utf8ToBytes(string, buf.length - offset), buf, offset, length);
+}
+
+function asciiWrite(buf, string, offset, length) {
+  return blitBuffer(asciiToBytes(string), buf, offset, length);
+}
+
+function latin1Write(buf, string, offset, length) {
+  return asciiWrite(buf, string, offset, length);
+}
+
+function base64Write(buf, string, offset, length) {
+  return blitBuffer(base64ToBytes(string), buf, offset, length);
+}
+
+function ucs2Write(buf, string, offset, length) {
+  return blitBuffer(utf16leToBytes(string, buf.length - offset), buf, offset, length);
+}
+
+Buffer.prototype.write = function write(string, offset, length, encoding) {
+  // Buffer#write(string)
+  if (offset === undefined) {
+    encoding = 'utf8';
+    length = this.length;
+    offset = 0;
+    // Buffer#write(string, encoding)
+  } else if (length === undefined && typeof offset === 'string') {
+    encoding = offset;
+    length = this.length;
+    offset = 0;
+    // Buffer#write(string, offset[, length][, encoding])
+  } else if (isFinite(offset)) {
+    offset = offset | 0;
+    if (isFinite(length)) {
+      length = length | 0;
+      if (encoding === undefined) encoding = 'utf8';
+    } else {
+      encoding = length;
+      length = undefined;
+    }
+    // legacy write(string, encoding, offset, length) - remove in v0.13
+  } else {
+    throw new Error('Buffer.write(string, encoding, offset[, length]) is no longer supported');
+  }
+
+  var remaining = this.length - offset;
+  if (length === undefined || length > remaining) length = remaining;
+
+  if (string.length > 0 && (length < 0 || offset < 0) || offset > this.length) {
+    throw new RangeError('Attempt to write outside buffer bounds');
+  }
+
+  if (!encoding) encoding = 'utf8';
+
+  var loweredCase = false;
+  for (;;) {
+    switch (encoding) {
+      case 'hex':
+        return hexWrite(this, string, offset, length);
+
+      case 'utf8':
+      case 'utf-8':
+        return utf8Write(this, string, offset, length);
+
+      case 'ascii':
+        return asciiWrite(this, string, offset, length);
+
+      case 'latin1':
+      case 'binary':
+        return latin1Write(this, string, offset, length);
+
+      case 'base64':
+        // Warning: maxLength not taken into account in base64Write
+        return base64Write(this, string, offset, length);
+
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return ucs2Write(this, string, offset, length);
+
+      default:
+        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding);
+        encoding = ('' + encoding).toLowerCase();
+        loweredCase = true;
+    }
+  }
+};
+
+Buffer.prototype.toJSON = function toJSON() {
+  return {
+    type: 'Buffer',
+    data: Array.prototype.slice.call(this._arr || this, 0)
+  };
+};
+
+function base64Slice(buf, start, end) {
+  if (start === 0 && end === buf.length) {
+    return base64.fromByteArray(buf);
+  } else {
+    return base64.fromByteArray(buf.slice(start, end));
+  }
+}
+
+function utf8Slice(buf, start, end) {
+  end = Math.min(buf.length, end);
+  var res = [];
+
+  var i = start;
+  while (i < end) {
+    var firstByte = buf[i];
+    var codePoint = null;
+    var bytesPerSequence = firstByte > 0xEF ? 4 : firstByte > 0xDF ? 3 : firstByte > 0xBF ? 2 : 1;
+
+    if (i + bytesPerSequence <= end) {
+      var secondByte, thirdByte, fourthByte, tempCodePoint;
+
+      switch (bytesPerSequence) {
+        case 1:
+          if (firstByte < 0x80) {
+            codePoint = firstByte;
+          }
+          break;
+        case 2:
+          secondByte = buf[i + 1];
+          if ((secondByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0x1F) << 0x6 | secondByte & 0x3F;
+            if (tempCodePoint > 0x7F) {
+              codePoint = tempCodePoint;
+            }
+          }
+          break;
+        case 3:
+          secondByte = buf[i + 1];
+          thirdByte = buf[i + 2];
+          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0xF) << 0xC | (secondByte & 0x3F) << 0x6 | thirdByte & 0x3F;
+            if (tempCodePoint > 0x7FF && (tempCodePoint < 0xD800 || tempCodePoint > 0xDFFF)) {
+              codePoint = tempCodePoint;
+            }
+          }
+          break;
+        case 4:
+          secondByte = buf[i + 1];
+          thirdByte = buf[i + 2];
+          fourthByte = buf[i + 3];
+          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80 && (fourthByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0xF) << 0x12 | (secondByte & 0x3F) << 0xC | (thirdByte & 0x3F) << 0x6 | fourthByte & 0x3F;
+            if (tempCodePoint > 0xFFFF && tempCodePoint < 0x110000) {
+              codePoint = tempCodePoint;
+            }
+          }
+      }
+    }
+
+    if (codePoint === null) {
+      // we did not generate a valid codePoint so insert a
+      // replacement char (U+FFFD) and advance only 1 byte
+      codePoint = 0xFFFD;
+      bytesPerSequence = 1;
+    } else if (codePoint > 0xFFFF) {
+      // encode to utf16 (surrogate pair dance)
+      codePoint -= 0x10000;
+      res.push(codePoint >>> 10 & 0x3FF | 0xD800);
+      codePoint = 0xDC00 | codePoint & 0x3FF;
+    }
+
+    res.push(codePoint);
+    i += bytesPerSequence;
+  }
+
+  return decodeCodePointsArray(res);
+}
+
+// Based on http://stackoverflow.com/a/22747272/680742, the browser with
+// the lowest limit is Chrome, with 0x10000 args.
+// We go 1 magnitude less, for safety
+var MAX_ARGUMENTS_LENGTH = 0x1000;
+
+function decodeCodePointsArray(codePoints) {
+  var len = codePoints.length;
+  if (len <= MAX_ARGUMENTS_LENGTH) {
+    return String.fromCharCode.apply(String, codePoints); // avoid extra slice()
+  }
+
+  // Decode in chunks to avoid "call stack size exceeded".
+  var res = '';
+  var i = 0;
+  while (i < len) {
+    res += String.fromCharCode.apply(String, codePoints.slice(i, i += MAX_ARGUMENTS_LENGTH));
+  }
+  return res;
+}
+
+function asciiSlice(buf, start, end) {
+  var ret = '';
+  end = Math.min(buf.length, end);
+
+  for (var i = start; i < end; ++i) {
+    ret += String.fromCharCode(buf[i] & 0x7F);
+  }
+  return ret;
+}
+
+function latin1Slice(buf, start, end) {
+  var ret = '';
+  end = Math.min(buf.length, end);
+
+  for (var i = start; i < end; ++i) {
+    ret += String.fromCharCode(buf[i]);
+  }
+  return ret;
+}
+
+function hexSlice(buf, start, end) {
+  var len = buf.length;
+
+  if (!start || start < 0) start = 0;
+  if (!end || end < 0 || end > len) end = len;
+
+  var out = '';
+  for (var i = start; i < end; ++i) {
+    out += toHex(buf[i]);
+  }
+  return out;
+}
+
+function utf16leSlice(buf, start, end) {
+  var bytes = buf.slice(start, end);
+  var res = '';
+  for (var i = 0; i < bytes.length; i += 2) {
+    res += String.fromCharCode(bytes[i] + bytes[i + 1] * 256);
+  }
+  return res;
+}
+
+Buffer.prototype.slice = function slice(start, end) {
+  var len = this.length;
+  start = ~~start;
+  end = end === undefined ? len : ~~end;
+
+  if (start < 0) {
+    start += len;
+    if (start < 0) start = 0;
+  } else if (start > len) {
+    start = len;
+  }
+
+  if (end < 0) {
+    end += len;
+    if (end < 0) end = 0;
+  } else if (end > len) {
+    end = len;
+  }
+
+  if (end < start) end = start;
+
+  var newBuf;
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    newBuf = this.subarray(start, end);
+    newBuf.__proto__ = Buffer.prototype;
+  } else {
+    var sliceLen = end - start;
+    newBuf = new Buffer(sliceLen, undefined);
+    for (var i = 0; i < sliceLen; ++i) {
+      newBuf[i] = this[i + start];
+    }
+  }
+
+  return newBuf;
+};
+
+/*
+ * Need to make sure that buffer isn't trying to write out of bounds.
+ */
+function checkOffset(offset, ext, length) {
+  if (offset % 1 !== 0 || offset < 0) throw new RangeError('offset is not uint');
+  if (offset + ext > length) throw new RangeError('Trying to access beyond buffer length');
+}
+
+Buffer.prototype.readUIntLE = function readUIntLE(offset, byteLength, noAssert) {
+  offset = offset | 0;
+  byteLength = byteLength | 0;
+  if (!noAssert) checkOffset(offset, byteLength, this.length);
+
+  var val = this[offset];
+  var mul = 1;
+  var i = 0;
+  while (++i < byteLength && (mul *= 0x100)) {
+    val += this[offset + i] * mul;
+  }
+
+  return val;
+};
+
+Buffer.prototype.readUIntBE = function readUIntBE(offset, byteLength, noAssert) {
+  offset = offset | 0;
+  byteLength = byteLength | 0;
+  if (!noAssert) {
+    checkOffset(offset, byteLength, this.length);
+  }
+
+  var val = this[offset + --byteLength];
+  var mul = 1;
+  while (byteLength > 0 && (mul *= 0x100)) {
+    val += this[offset + --byteLength] * mul;
+  }
+
+  return val;
+};
+
+Buffer.prototype.readUInt8 = function readUInt8(offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 1, this.length);
+  return this[offset];
+};
+
+Buffer.prototype.readUInt16LE = function readUInt16LE(offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length);
+  return this[offset] | this[offset + 1] << 8;
+};
+
+Buffer.prototype.readUInt16BE = function readUInt16BE(offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length);
+  return this[offset] << 8 | this[offset + 1];
+};
+
+Buffer.prototype.readUInt32LE = function readUInt32LE(offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length);
+
+  return (this[offset] | this[offset + 1] << 8 | this[offset + 2] << 16) + this[offset + 3] * 0x1000000;
+};
+
+Buffer.prototype.readUInt32BE = function readUInt32BE(offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length);
+
+  return this[offset] * 0x1000000 + (this[offset + 1] << 16 | this[offset + 2] << 8 | this[offset + 3]);
+};
+
+Buffer.prototype.readIntLE = function readIntLE(offset, byteLength, noAssert) {
+  offset = offset | 0;
+  byteLength = byteLength | 0;
+  if (!noAssert) checkOffset(offset, byteLength, this.length);
+
+  var val = this[offset];
+  var mul = 1;
+  var i = 0;
+  while (++i < byteLength && (mul *= 0x100)) {
+    val += this[offset + i] * mul;
+  }
+  mul *= 0x80;
+
+  if (val >= mul) val -= Math.pow(2, 8 * byteLength);
+
+  return val;
+};
+
+Buffer.prototype.readIntBE = function readIntBE(offset, byteLength, noAssert) {
+  offset = offset | 0;
+  byteLength = byteLength | 0;
+  if (!noAssert) checkOffset(offset, byteLength, this.length);
+
+  var i = byteLength;
+  var mul = 1;
+  var val = this[offset + --i];
+  while (i > 0 && (mul *= 0x100)) {
+    val += this[offset + --i] * mul;
+  }
+  mul *= 0x80;
+
+  if (val >= mul) val -= Math.pow(2, 8 * byteLength);
+
+  return val;
+};
+
+Buffer.prototype.readInt8 = function readInt8(offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 1, this.length);
+  if (!(this[offset] & 0x80)) return this[offset];
+  return (0xff - this[offset] + 1) * -1;
+};
+
+Buffer.prototype.readInt16LE = function readInt16LE(offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length);
+  var val = this[offset] | this[offset + 1] << 8;
+  return val & 0x8000 ? val | 0xFFFF0000 : val;
+};
+
+Buffer.prototype.readInt16BE = function readInt16BE(offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length);
+  var val = this[offset + 1] | this[offset] << 8;
+  return val & 0x8000 ? val | 0xFFFF0000 : val;
+};
+
+Buffer.prototype.readInt32LE = function readInt32LE(offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length);
+
+  return this[offset] | this[offset + 1] << 8 | this[offset + 2] << 16 | this[offset + 3] << 24;
+};
+
+Buffer.prototype.readInt32BE = function readInt32BE(offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length);
+
+  return this[offset] << 24 | this[offset + 1] << 16 | this[offset + 2] << 8 | this[offset + 3];
+};
+
+Buffer.prototype.readFloatLE = function readFloatLE(offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length);
+  return ieee754.read(this, offset, true, 23, 4);
+};
+
+Buffer.prototype.readFloatBE = function readFloatBE(offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length);
+  return ieee754.read(this, offset, false, 23, 4);
+};
+
+Buffer.prototype.readDoubleLE = function readDoubleLE(offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 8, this.length);
+  return ieee754.read(this, offset, true, 52, 8);
+};
+
+Buffer.prototype.readDoubleBE = function readDoubleBE(offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 8, this.length);
+  return ieee754.read(this, offset, false, 52, 8);
+};
+
+function checkInt(buf, value, offset, ext, max, min) {
+  if (!Buffer.isBuffer(buf)) throw new TypeError('"buffer" argument must be a Buffer instance');
+  if (value > max || value < min) throw new RangeError('"value" argument is out of bounds');
+  if (offset + ext > buf.length) throw new RangeError('Index out of range');
+}
+
+Buffer.prototype.writeUIntLE = function writeUIntLE(value, offset, byteLength, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  byteLength = byteLength | 0;
+  if (!noAssert) {
+    var maxBytes = Math.pow(2, 8 * byteLength) - 1;
+    checkInt(this, value, offset, byteLength, maxBytes, 0);
+  }
+
+  var mul = 1;
+  var i = 0;
+  this[offset] = value & 0xFF;
+  while (++i < byteLength && (mul *= 0x100)) {
+    this[offset + i] = value / mul & 0xFF;
+  }
+
+  return offset + byteLength;
+};
+
+Buffer.prototype.writeUIntBE = function writeUIntBE(value, offset, byteLength, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  byteLength = byteLength | 0;
+  if (!noAssert) {
+    var maxBytes = Math.pow(2, 8 * byteLength) - 1;
+    checkInt(this, value, offset, byteLength, maxBytes, 0);
+  }
+
+  var i = byteLength - 1;
+  var mul = 1;
+  this[offset + i] = value & 0xFF;
+  while (--i >= 0 && (mul *= 0x100)) {
+    this[offset + i] = value / mul & 0xFF;
+  }
+
+  return offset + byteLength;
+};
+
+Buffer.prototype.writeUInt8 = function writeUInt8(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0);
+  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value);
+  this[offset] = value & 0xff;
+  return offset + 1;
+};
+
+function objectWriteUInt16(buf, value, offset, littleEndian) {
+  if (value < 0) value = 0xffff + value + 1;
+  for (var i = 0, j = Math.min(buf.length - offset, 2); i < j; ++i) {
+    buf[offset + i] = (value & 0xff << 8 * (littleEndian ? i : 1 - i)) >>> (littleEndian ? i : 1 - i) * 8;
+  }
+}
+
+Buffer.prototype.writeUInt16LE = function writeUInt16LE(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0);
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = value & 0xff;
+    this[offset + 1] = value >>> 8;
+  } else {
+    objectWriteUInt16(this, value, offset, true);
+  }
+  return offset + 2;
+};
+
+Buffer.prototype.writeUInt16BE = function writeUInt16BE(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0);
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = value >>> 8;
+    this[offset + 1] = value & 0xff;
+  } else {
+    objectWriteUInt16(this, value, offset, false);
+  }
+  return offset + 2;
+};
+
+function objectWriteUInt32(buf, value, offset, littleEndian) {
+  if (value < 0) value = 0xffffffff + value + 1;
+  for (var i = 0, j = Math.min(buf.length - offset, 4); i < j; ++i) {
+    buf[offset + i] = value >>> (littleEndian ? i : 3 - i) * 8 & 0xff;
+  }
+}
+
+Buffer.prototype.writeUInt32LE = function writeUInt32LE(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0);
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset + 3] = value >>> 24;
+    this[offset + 2] = value >>> 16;
+    this[offset + 1] = value >>> 8;
+    this[offset] = value & 0xff;
+  } else {
+    objectWriteUInt32(this, value, offset, true);
+  }
+  return offset + 4;
+};
+
+Buffer.prototype.writeUInt32BE = function writeUInt32BE(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0);
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = value >>> 24;
+    this[offset + 1] = value >>> 16;
+    this[offset + 2] = value >>> 8;
+    this[offset + 3] = value & 0xff;
+  } else {
+    objectWriteUInt32(this, value, offset, false);
+  }
+  return offset + 4;
+};
+
+Buffer.prototype.writeIntLE = function writeIntLE(value, offset, byteLength, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) {
+    var limit = Math.pow(2, 8 * byteLength - 1);
+
+    checkInt(this, value, offset, byteLength, limit - 1, -limit);
+  }
+
+  var i = 0;
+  var mul = 1;
+  var sub = 0;
+  this[offset] = value & 0xFF;
+  while (++i < byteLength && (mul *= 0x100)) {
+    if (value < 0 && sub === 0 && this[offset + i - 1] !== 0) {
+      sub = 1;
+    }
+    this[offset + i] = (value / mul >> 0) - sub & 0xFF;
+  }
+
+  return offset + byteLength;
+};
+
+Buffer.prototype.writeIntBE = function writeIntBE(value, offset, byteLength, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) {
+    var limit = Math.pow(2, 8 * byteLength - 1);
+
+    checkInt(this, value, offset, byteLength, limit - 1, -limit);
+  }
+
+  var i = byteLength - 1;
+  var mul = 1;
+  var sub = 0;
+  this[offset + i] = value & 0xFF;
+  while (--i >= 0 && (mul *= 0x100)) {
+    if (value < 0 && sub === 0 && this[offset + i + 1] !== 0) {
+      sub = 1;
+    }
+    this[offset + i] = (value / mul >> 0) - sub & 0xFF;
+  }
+
+  return offset + byteLength;
+};
+
+Buffer.prototype.writeInt8 = function writeInt8(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80);
+  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value);
+  if (value < 0) value = 0xff + value + 1;
+  this[offset] = value & 0xff;
+  return offset + 1;
+};
+
+Buffer.prototype.writeInt16LE = function writeInt16LE(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000);
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = value & 0xff;
+    this[offset + 1] = value >>> 8;
+  } else {
+    objectWriteUInt16(this, value, offset, true);
+  }
+  return offset + 2;
+};
+
+Buffer.prototype.writeInt16BE = function writeInt16BE(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000);
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = value >>> 8;
+    this[offset + 1] = value & 0xff;
+  } else {
+    objectWriteUInt16(this, value, offset, false);
+  }
+  return offset + 2;
+};
+
+Buffer.prototype.writeInt32LE = function writeInt32LE(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000);
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = value & 0xff;
+    this[offset + 1] = value >>> 8;
+    this[offset + 2] = value >>> 16;
+    this[offset + 3] = value >>> 24;
+  } else {
+    objectWriteUInt32(this, value, offset, true);
+  }
+  return offset + 4;
+};
+
+Buffer.prototype.writeInt32BE = function writeInt32BE(value, offset, noAssert) {
+  value = +value;
+  offset = offset | 0;
+  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000);
+  if (value < 0) value = 0xffffffff + value + 1;
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = value >>> 24;
+    this[offset + 1] = value >>> 16;
+    this[offset + 2] = value >>> 8;
+    this[offset + 3] = value & 0xff;
+  } else {
+    objectWriteUInt32(this, value, offset, false);
+  }
+  return offset + 4;
+};
+
+function checkIEEE754(buf, value, offset, ext, max, min) {
+  if (offset + ext > buf.length) throw new RangeError('Index out of range');
+  if (offset < 0) throw new RangeError('Index out of range');
+}
+
+function writeFloat(buf, value, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    checkIEEE754(buf, value, offset, 4, 3.4028234663852886e+38, -3.4028234663852886e+38);
+  }
+  ieee754.write(buf, value, offset, littleEndian, 23, 4);
+  return offset + 4;
+}
+
+Buffer.prototype.writeFloatLE = function writeFloatLE(value, offset, noAssert) {
+  return writeFloat(this, value, offset, true, noAssert);
+};
+
+Buffer.prototype.writeFloatBE = function writeFloatBE(value, offset, noAssert) {
+  return writeFloat(this, value, offset, false, noAssert);
+};
+
+function writeDouble(buf, value, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    checkIEEE754(buf, value, offset, 8, 1.7976931348623157E+308, -1.7976931348623157E+308);
+  }
+  ieee754.write(buf, value, offset, littleEndian, 52, 8);
+  return offset + 8;
+}
+
+Buffer.prototype.writeDoubleLE = function writeDoubleLE(value, offset, noAssert) {
+  return writeDouble(this, value, offset, true, noAssert);
+};
+
+Buffer.prototype.writeDoubleBE = function writeDoubleBE(value, offset, noAssert) {
+  return writeDouble(this, value, offset, false, noAssert);
+};
+
+// copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
+Buffer.prototype.copy = function copy(target, targetStart, start, end) {
+  if (!start) start = 0;
+  if (!end && end !== 0) end = this.length;
+  if (targetStart >= target.length) targetStart = target.length;
+  if (!targetStart) targetStart = 0;
+  if (end > 0 && end < start) end = start;
+
+  // Copy 0 bytes; we're done
+  if (end === start) return 0;
+  if (target.length === 0 || this.length === 0) return 0;
+
+  // Fatal error conditions
+  if (targetStart < 0) {
+    throw new RangeError('targetStart out of bounds');
+  }
+  if (start < 0 || start >= this.length) throw new RangeError('sourceStart out of bounds');
+  if (end < 0) throw new RangeError('sourceEnd out of bounds');
+
+  // Are we oob?
+  if (end > this.length) end = this.length;
+  if (target.length - targetStart < end - start) {
+    end = target.length - targetStart + start;
+  }
+
+  var len = end - start;
+  var i;
+
+  if (this === target && start < targetStart && targetStart < end) {
+    // descending copy from end
+    for (i = len - 1; i >= 0; --i) {
+      target[i + targetStart] = this[i + start];
+    }
+  } else if (len < 1000 || !Buffer.TYPED_ARRAY_SUPPORT) {
+    // ascending copy from start
+    for (i = 0; i < len; ++i) {
+      target[i + targetStart] = this[i + start];
+    }
+  } else {
+    Uint8Array.prototype.set.call(target, this.subarray(start, start + len), targetStart);
+  }
+
+  return len;
+};
+
+// Usage:
+//    buffer.fill(number[, offset[, end]])
+//    buffer.fill(buffer[, offset[, end]])
+//    buffer.fill(string[, offset[, end]][, encoding])
+Buffer.prototype.fill = function fill(val, start, end, encoding) {
+  // Handle string cases:
+  if (typeof val === 'string') {
+    if (typeof start === 'string') {
+      encoding = start;
+      start = 0;
+      end = this.length;
+    } else if (typeof end === 'string') {
+      encoding = end;
+      end = this.length;
+    }
+    if (val.length === 1) {
+      var code = val.charCodeAt(0);
+      if (code < 256) {
+        val = code;
+      }
+    }
+    if (encoding !== undefined && typeof encoding !== 'string') {
+      throw new TypeError('encoding must be a string');
+    }
+    if (typeof encoding === 'string' && !Buffer.isEncoding(encoding)) {
+      throw new TypeError('Unknown encoding: ' + encoding);
+    }
+  } else if (typeof val === 'number') {
+    val = val & 255;
+  }
+
+  // Invalid ranges are not set to a default, so can range check early.
+  if (start < 0 || this.length < start || this.length < end) {
+    throw new RangeError('Out of range index');
+  }
+
+  if (end <= start) {
+    return this;
+  }
+
+  start = start >>> 0;
+  end = end === undefined ? this.length : end >>> 0;
+
+  if (!val) val = 0;
+
+  var i;
+  if (typeof val === 'number') {
+    for (i = start; i < end; ++i) {
+      this[i] = val;
+    }
+  } else {
+    var bytes = Buffer.isBuffer(val) ? val : utf8ToBytes(new Buffer(val, encoding).toString());
+    var len = bytes.length;
+    for (i = 0; i < end - start; ++i) {
+      this[i + start] = bytes[i % len];
+    }
+  }
+
+  return this;
+};
+
+// HELPER FUNCTIONS
+// ================
+
+var INVALID_BASE64_RE = /[^+\/0-9A-Za-z-_]/g;
+
+function base64clean(str) {
+  // Node strips out invalid characters like \n and \t from the string, base64-js does not
+  str = stringtrim(str).replace(INVALID_BASE64_RE, '');
+  // Node converts strings with length < 2 to ''
+  if (str.length < 2) return '';
+  // Node allows for non-padded base64 strings (missing trailing ===), base64-js does not
+  while (str.length % 4 !== 0) {
+    str = str + '=';
+  }
+  return str;
+}
+
+function stringtrim(str) {
+  if (str.trim) return str.trim();
+  return str.replace(/^\s+|\s+$/g, '');
+}
+
+function toHex(n) {
+  if (n < 16) return '0' + n.toString(16);
+  return n.toString(16);
+}
+
+function utf8ToBytes(string, units) {
+  units = units || Infinity;
+  var codePoint;
+  var length = string.length;
+  var leadSurrogate = null;
+  var bytes = [];
+
+  for (var i = 0; i < length; ++i) {
+    codePoint = string.charCodeAt(i);
+
+    // is surrogate component
+    if (codePoint > 0xD7FF && codePoint < 0xE000) {
+      // last char was a lead
+      if (!leadSurrogate) {
+        // no lead yet
+        if (codePoint > 0xDBFF) {
+          // unexpected trail
+          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
+          continue;
+        } else if (i + 1 === length) {
+          // unpaired lead
+          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
+          continue;
+        }
+
+        // valid lead
+        leadSurrogate = codePoint;
+
+        continue;
+      }
+
+      // 2 leads in a row
+      if (codePoint < 0xDC00) {
+        if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
+        leadSurrogate = codePoint;
+        continue;
+      }
+
+      // valid surrogate pair
+      codePoint = (leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00) + 0x10000;
+    } else if (leadSurrogate) {
+      // valid bmp char, but last char was a lead
+      if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
+    }
+
+    leadSurrogate = null;
+
+    // encode utf8
+    if (codePoint < 0x80) {
+      if ((units -= 1) < 0) break;
+      bytes.push(codePoint);
+    } else if (codePoint < 0x800) {
+      if ((units -= 2) < 0) break;
+      bytes.push(codePoint >> 0x6 | 0xC0, codePoint & 0x3F | 0x80);
+    } else if (codePoint < 0x10000) {
+      if ((units -= 3) < 0) break;
+      bytes.push(codePoint >> 0xC | 0xE0, codePoint >> 0x6 & 0x3F | 0x80, codePoint & 0x3F | 0x80);
+    } else if (codePoint < 0x110000) {
+      if ((units -= 4) < 0) break;
+      bytes.push(codePoint >> 0x12 | 0xF0, codePoint >> 0xC & 0x3F | 0x80, codePoint >> 0x6 & 0x3F | 0x80, codePoint & 0x3F | 0x80);
+    } else {
+      throw new Error('Invalid code point');
+    }
+  }
+
+  return bytes;
+}
+
+function asciiToBytes(str) {
+  var byteArray = [];
+  for (var i = 0; i < str.length; ++i) {
+    // Node's code seems to be doing this and not & 0x7F..
+    byteArray.push(str.charCodeAt(i) & 0xFF);
+  }
+  return byteArray;
+}
+
+function utf16leToBytes(str, units) {
+  var c, hi, lo;
+  var byteArray = [];
+  for (var i = 0; i < str.length; ++i) {
+    if ((units -= 2) < 0) break;
+
+    c = str.charCodeAt(i);
+    hi = c >> 8;
+    lo = c % 256;
+    byteArray.push(lo);
+    byteArray.push(hi);
+  }
+
+  return byteArray;
+}
+
+function base64ToBytes(str) {
+  return base64.toByteArray(base64clean(str));
+}
+
+function blitBuffer(src, dst, offset, length) {
+  for (var i = 0; i < length; ++i) {
+    if (i + offset >= dst.length || i >= src.length) break;
+    dst[i + offset] = src[i];
+  }
+  return i;
+}
+
+function isnan(val) {
+  return val !== val; // eslint-disable-line no-self-compare
+}
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(process) {
+
+if (!process.version || process.version.indexOf('v0.') === 0 || process.version.indexOf('v1.') === 0 && process.version.indexOf('v1.8.') !== 0) {
+  module.exports = nextTick;
+} else {
+  module.exports = process.nextTick;
+}
+
+function nextTick(fn, arg1, arg2, arg3) {
+  if (typeof fn !== 'function') {
+    throw new TypeError('"callback" argument must be a function');
+  }
+  var len = arguments.length;
+  var args, i;
+  switch (len) {
+    case 0:
+    case 1:
+      return process.nextTick(fn);
+    case 2:
+      return process.nextTick(function afterTickOne() {
+        fn.call(null, arg1);
+      });
+    case 3:
+      return process.nextTick(function afterTickTwo() {
+        fn.call(null, arg1, arg2);
+      });
+    case 4:
+      return process.nextTick(function afterTickThree() {
+        fn.call(null, arg1, arg2, arg3);
+      });
+    default:
+      args = new Array(len - 1);
+      i = 0;
+      while (i < args.length) {
+        args[i++] = arguments[i];
+      }
+      return process.nextTick(function afterTick() {
+        fn.apply(null, args);
+      });
+  }
+}
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.Storage = exports.validateEmail = exports.getRandomToken = exports.unescape = exports.escape = exports.deepFind = exports.setVersion = exports.setMessage = exports.resetMessage = exports.updateState = exports.closeModal = exports.onScroll = exports.navClicked = undefined;
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _request = __webpack_require__(2);
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-var navClicked = exports.navClicked = function navClicked(state, actions) {
-    return function (data) {
-        var id = data.currentTarget.dataset.id;
-        state.nav.main.active = id;
-        actions.updateState(state);
-    };
+function EventEmitter() {
+  this._events = this._events || {};
+  this._maxListeners = this._maxListeners || undefined;
+}
+module.exports = EventEmitter;
+
+// Backwards-compat with node 0.10.x
+EventEmitter.EventEmitter = EventEmitter;
+
+EventEmitter.prototype._events = undefined;
+EventEmitter.prototype._maxListeners = undefined;
+
+// By default EventEmitters will print a warning if more than 10 listeners are
+// added to it. This is a useful default which helps finding memory leaks.
+EventEmitter.defaultMaxListeners = 10;
+
+// Obviously not all Emitters should be limited to 10. This function allows
+// that to be increased. Set to zero for unlimited.
+EventEmitter.prototype.setMaxListeners = function (n) {
+  if (!isNumber(n) || n < 0 || isNaN(n)) throw TypeError('n must be a positive number');
+  this._maxListeners = n;
+  return this;
 };
 
-var onScroll = exports.onScroll = function onScroll(state, actions) {
-    return function (_ref) {
-        var e = _ref.e,
-            callback = _ref.callback;
+EventEmitter.prototype.emit = function (type) {
+  var er, handler, len, args, i, listeners;
 
-        var ele = e.currentTarget;
-        var height = ele.clientHeight;
-        var scroll_top = ele.scrollTop;
-        var scrollHeight = ele.scrollHeight;
+  if (!this._events) this._events = {};
 
-        if (scroll_top + height >= scrollHeight) {
-            if (typeof callback == "function") callback(e);
-        }
-        e.stopPropagation();
-        e.preventDefault();
-        return false;
-    };
-};
-
-var closeModal = exports.closeModal = function closeModal(state, actions) {
-    return function (name) {
-        state.modals[name].open = false;
-        actions.updateState(state);
-    };
-};
-
-var updateState = exports.updateState = function updateState(state, actions) {
-    return function (newState) {
-        return { newState: newState };
-    };
-};
-var resetMessage = exports.resetMessage = function resetMessage(state, actions) {
-    return function () {
-        setTimeout(function () {
-            if (state.message != "") {
-                state.message = "";
-                actions.updateState(state);
-            }
-        }, 3000);
-    };
-};
-
-var setMessage = exports.setMessage = function setMessage(state, actions) {
-    return function (message) {
-        state.message = message;
-        actions.updateState(state);
-    };
-};
-
-var setVersion = exports.setVersion = function setVersion(state, actions) {
-    return function (version) {
-        state.version = version;
-        actions.updateState(state);
-    };
-};
-
-var deepFind = exports.deepFind = function deepFind(obj, path) {
-    for (var i = 0, path = path.split("."), len = path.length; i < len; i++) {
-        obj = obj[path[i]];
+  // If there is no 'error' event listener then throw.
+  if (type === 'error') {
+    if (!this._events.error || isObject(this._events.error) && !this._events.error.length) {
+      er = arguments[1];
+      if (er instanceof Error) {
+        throw er; // Unhandled 'error' event
+      } else {
+        // At least give some kind of context to the user
+        var err = new Error('Uncaught, unspecified "error" event. (' + er + ')');
+        err.context = er;
+        throw err;
+      }
     }
-    return obj;
-};
+  }
 
-var basePropertyOf = function basePropertyOf(object) {
-    return function (key) {
-        return object == null ? undefined : object[key];
-    };
-};
+  handler = this._events[type];
 
-var escape = exports.escape = function escape(str) {
-    /** Used to map characters to HTML entities. */
-    var htmlEscapes = {
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-    };
+  if (isUndefined(handler)) return false;
 
-    var escapeHtmlChar = basePropertyOf(htmlEscapes);
-    var reUnescapedHtml = /[&<>"']/g;
-    return str.replace(reUnescapedHtml, escapeHtmlChar);
-};
-
-var unescape = exports.unescape = function unescape(str) {
-    /** Used to map HTML entities to characters. */
-    var htmlUnescapes = {
-        "&amp;": "&",
-        "&lt;": "<",
-        "&gt;": ">",
-        "&quot;": '"',
-        "&#39;": "'"
-    };
-    var unescapeHtmlChar = basePropertyOf(htmlUnescapes);
-    var reEscapedHtml = /&(?:amp|lt|gt|quot|#39);/g;
-    return str.replace(reEscapedHtml, unescapeHtmlChar);
-};
-
-var getRandomToken = exports.getRandomToken = function getRandomToken() {
-    // E.g. 8 * 32 = 256 bits token
-    var randomPool = new Uint8Array(32);
-    crypto.getRandomValues(randomPool);
-    var hex = "";
-    for (var i = 0; i < randomPool.length; ++i) {
-        hex += randomPool[i].toString(16);
+  if (isFunction(handler)) {
+    switch (arguments.length) {
+      // fast cases
+      case 1:
+        handler.call(this);
+        break;
+      case 2:
+        handler.call(this, arguments[1]);
+        break;
+      case 3:
+        handler.call(this, arguments[1], arguments[2]);
+        break;
+      // slower
+      default:
+        args = Array.prototype.slice.call(arguments, 1);
+        handler.apply(this, args);
     }
-    // E.g. db18458e2782b2b77e36769c569e263a53885a9944dd0a861e5064eac16f1a
-    return hex;
+  } else if (isObject(handler)) {
+    args = Array.prototype.slice.call(arguments, 1);
+    listeners = handler.slice();
+    len = listeners.length;
+    for (i = 0; i < len; i++) {
+      listeners[i].apply(this, args);
+    }
+  }
+
+  return true;
 };
 
-var validateEmail = exports.validateEmail = function validateEmail(email) {
-    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(email);
+EventEmitter.prototype.addListener = function (type, listener) {
+  var m;
+
+  if (!isFunction(listener)) throw TypeError('listener must be a function');
+
+  if (!this._events) this._events = {};
+
+  // To avoid recursion in the case that type === "newListener"! Before
+  // adding it to the listeners, first emit "newListener".
+  if (this._events.newListener) this.emit('newListener', type, isFunction(listener.listener) ? listener.listener : listener);
+
+  if (!this._events[type])
+    // Optimize the case of one listener. Don't need the extra array object.
+    this._events[type] = listener;else if (isObject(this._events[type]))
+    // If we've already got an array, just append.
+    this._events[type].push(listener);else
+    // Adding the second element, need to change to array.
+    this._events[type] = [this._events[type], listener];
+
+  // Check for listener leak
+  if (isObject(this._events[type]) && !this._events[type].warned) {
+    if (!isUndefined(this._maxListeners)) {
+      m = this._maxListeners;
+    } else {
+      m = EventEmitter.defaultMaxListeners;
+    }
+
+    if (m && m > 0 && this._events[type].length > m) {
+      this._events[type].warned = true;
+      console.error('(node) warning: possible EventEmitter memory ' + 'leak detected. %d listeners added. ' + 'Use emitter.setMaxListeners() to increase limit.', this._events[type].length);
+      if (typeof console.trace === 'function') {
+        // not supported in IE 10
+        console.trace();
+      }
+    }
+  }
+
+  return this;
 };
 
-var Storage = exports.Storage = new function () {
-    this.set = function (data) {
-        var overwrite = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
 
-        if ((typeof data === "undefined" ? "undefined" : _typeof(data)) === "object") {
-            Object.keys(data).map(function (key) {
-                if (!overwrite && localStorage[key]) return;
-                localStorage[key] = data[key];
-            });
-        }
-    };
-    this.get = function (key) {
-        return localStorage[key];
-    };
+EventEmitter.prototype.once = function (type, listener) {
+  if (!isFunction(listener)) throw TypeError('listener must be a function');
+
+  var fired = false;
+
+  function g() {
+    this.removeListener(type, g);
+
+    if (!fired) {
+      fired = true;
+      listener.apply(this, arguments);
+    }
+  }
+
+  g.listener = listener;
+  this.on(type, g);
+
+  return this;
+};
+
+// emits a 'removeListener' event iff the listener was removed
+EventEmitter.prototype.removeListener = function (type, listener) {
+  var list, position, length, i;
+
+  if (!isFunction(listener)) throw TypeError('listener must be a function');
+
+  if (!this._events || !this._events[type]) return this;
+
+  list = this._events[type];
+  length = list.length;
+  position = -1;
+
+  if (list === listener || isFunction(list.listener) && list.listener === listener) {
+    delete this._events[type];
+    if (this._events.removeListener) this.emit('removeListener', type, listener);
+  } else if (isObject(list)) {
+    for (i = length; i-- > 0;) {
+      if (list[i] === listener || list[i].listener && list[i].listener === listener) {
+        position = i;
+        break;
+      }
+    }
+
+    if (position < 0) return this;
+
+    if (list.length === 1) {
+      list.length = 0;
+      delete this._events[type];
+    } else {
+      list.splice(position, 1);
+    }
+
+    if (this._events.removeListener) this.emit('removeListener', type, listener);
+  }
+
+  return this;
+};
+
+EventEmitter.prototype.removeAllListeners = function (type) {
+  var key, listeners;
+
+  if (!this._events) return this;
+
+  // not listening for removeListener, no need to emit
+  if (!this._events.removeListener) {
+    if (arguments.length === 0) this._events = {};else if (this._events[type]) delete this._events[type];
     return this;
-}();
+  }
+
+  // emit removeListener for all listeners on all events
+  if (arguments.length === 0) {
+    for (key in this._events) {
+      if (key === 'removeListener') continue;
+      this.removeAllListeners(key);
+    }
+    this.removeAllListeners('removeListener');
+    this._events = {};
+    return this;
+  }
+
+  listeners = this._events[type];
+
+  if (isFunction(listeners)) {
+    this.removeListener(type, listeners);
+  } else if (listeners) {
+    // LIFO order
+    while (listeners.length) {
+      this.removeListener(type, listeners[listeners.length - 1]);
+    }
+  }
+  delete this._events[type];
+
+  return this;
+};
+
+EventEmitter.prototype.listeners = function (type) {
+  var ret;
+  if (!this._events || !this._events[type]) ret = [];else if (isFunction(this._events[type])) ret = [this._events[type]];else ret = this._events[type].slice();
+  return ret;
+};
+
+EventEmitter.prototype.listenerCount = function (type) {
+  if (this._events) {
+    var evlistener = this._events[type];
+
+    if (isFunction(evlistener)) return 1;else if (evlistener) return evlistener.length;
+  }
+  return 0;
+};
+
+EventEmitter.listenerCount = function (emitter, type) {
+  return emitter.listenerCount(type);
+};
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+
+function isObject(arg) {
+  return (typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) === 'object' && arg !== null;
+}
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
 
 /***/ }),
-/* 11 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-// shim for using process in browser
-var process = module.exports = {};
+exports = module.exports = __webpack_require__(148);
+exports.Stream = exports;
+exports.Readable = exports;
+exports.Writable = __webpack_require__(23);
+exports.Duplex = __webpack_require__(4);
+exports.Transform = __webpack_require__(152);
+exports.PassThrough = __webpack_require__(200);
 
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
+/***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
 
-var cachedSetTimeout;
-var cachedClearTimeout;
+"use strict";
 
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout() {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-})();
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch (e) {
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch (e) {
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e) {
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e) {
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
 
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
+/* eslint-disable node/no-deprecated-api */
+var buffer = __webpack_require__(16);
+var Buffer = buffer.Buffer;
+
+// alternative to using Object.keys for old browsers
+function copyProps(src, dst) {
+  for (var key in src) {
+    dst[key] = src[key];
+  }
+}
+if (Buffer.from && Buffer.alloc && Buffer.allocUnsafe && Buffer.allocUnsafeSlow) {
+  module.exports = buffer;
+} else {
+  // Copy properties from require('buffer')
+  copyProps(buffer, exports);
+  exports.Buffer = SafeBuffer;
+}
+
+function SafeBuffer(arg, encodingOrOffset, length) {
+  return Buffer(arg, encodingOrOffset, length);
+}
+
+// Copy static methods from Buffer
+copyProps(Buffer, SafeBuffer);
+
+SafeBuffer.from = function (arg, encodingOrOffset, length) {
+  if (typeof arg === 'number') {
+    throw new TypeError('Argument must not be a number');
+  }
+  return Buffer(arg, encodingOrOffset, length);
+};
+
+SafeBuffer.alloc = function (size, fill, encoding) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number');
+  }
+  var buf = Buffer(size);
+  if (fill !== undefined) {
+    if (typeof encoding === 'string') {
+      buf.fill(fill, encoding);
     } else {
-        queueIndex = -1;
+      buf.fill(fill);
     }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while (len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
+  } else {
+    buf.fill(0);
+  }
+  return buf;
 };
 
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) {
-    return [];
+SafeBuffer.allocUnsafe = function (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number');
+  }
+  return Buffer(size);
 };
 
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () {
-    return '/';
-};
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function () {
-    return 0;
+SafeBuffer.allocUnsafeSlow = function (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number');
+  }
+  return buffer.SlowBuffer(size);
 };
 
 /***/ }),
-/* 12 */
+/* 23 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(process, setImmediate, global) {// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// A bit simpler than readable streams.
+// Implement an async ._write(chunk, encoding, cb), and it'll handle all
+// the drain event emission and buffering.
+
+
+
+/*<replacement>*/
+
+var processNextTick = __webpack_require__(17);
+/*</replacement>*/
+
+module.exports = Writable;
+
+/* <replacement> */
+function WriteReq(chunk, encoding, cb) {
+  this.chunk = chunk;
+  this.encoding = encoding;
+  this.callback = cb;
+  this.next = null;
+}
+
+// It seems a linked list but it is not
+// there will be only 2 of these for each stream
+function CorkedRequest(state) {
+  var _this = this;
+
+  this.next = null;
+  this.entry = null;
+  this.finish = function () {
+    onCorkedFinish(_this, state);
+  };
+}
+/* </replacement> */
+
+/*<replacement>*/
+var asyncWrite = !process.browser && ['v0.10', 'v0.9.'].indexOf(process.version.slice(0, 5)) > -1 ? setImmediate : processNextTick;
+/*</replacement>*/
+
+/*<replacement>*/
+var Duplex;
+/*</replacement>*/
+
+Writable.WritableState = WritableState;
+
+/*<replacement>*/
+var util = __webpack_require__(12);
+util.inherits = __webpack_require__(7);
+/*</replacement>*/
+
+/*<replacement>*/
+var internalUtil = {
+  deprecate: __webpack_require__(199)
+};
+/*</replacement>*/
+
+/*<replacement>*/
+var Stream = __webpack_require__(149);
+/*</replacement>*/
+
+/*<replacement>*/
+var Buffer = __webpack_require__(22).Buffer;
+var OurUint8Array = global.Uint8Array || function () {};
+function _uint8ArrayToBuffer(chunk) {
+  return Buffer.from(chunk);
+}
+function _isUint8Array(obj) {
+  return Buffer.isBuffer(obj) || obj instanceof OurUint8Array;
+}
+/*</replacement>*/
+
+var destroyImpl = __webpack_require__(150);
+
+util.inherits(Writable, Stream);
+
+function nop() {}
+
+function WritableState(options, stream) {
+  Duplex = Duplex || __webpack_require__(4);
+
+  options = options || {};
+
+  // object stream flag to indicate whether or not this stream
+  // contains buffers or objects.
+  this.objectMode = !!options.objectMode;
+
+  if (stream instanceof Duplex) this.objectMode = this.objectMode || !!options.writableObjectMode;
+
+  // the point at which write() starts returning false
+  // Note: 0 is a valid value, means that we always return false if
+  // the entire buffer is not flushed immediately on write()
+  var hwm = options.highWaterMark;
+  var defaultHwm = this.objectMode ? 16 : 16 * 1024;
+  this.highWaterMark = hwm || hwm === 0 ? hwm : defaultHwm;
+
+  // cast to ints.
+  this.highWaterMark = Math.floor(this.highWaterMark);
+
+  // if _final has been called
+  this.finalCalled = false;
+
+  // drain event flag.
+  this.needDrain = false;
+  // at the start of calling end()
+  this.ending = false;
+  // when end() has been called, and returned
+  this.ended = false;
+  // when 'finish' is emitted
+  this.finished = false;
+
+  // has it been destroyed
+  this.destroyed = false;
+
+  // should we decode strings into buffers before passing to _write?
+  // this is here so that some node-core streams can optimize string
+  // handling at a lower level.
+  var noDecode = options.decodeStrings === false;
+  this.decodeStrings = !noDecode;
+
+  // Crypto is kind of old and crusty.  Historically, its default string
+  // encoding is 'binary' so we have to make this configurable.
+  // Everything else in the universe uses 'utf8', though.
+  this.defaultEncoding = options.defaultEncoding || 'utf8';
+
+  // not an actual buffer we keep track of, but a measurement
+  // of how much we're waiting to get pushed to some underlying
+  // socket or file.
+  this.length = 0;
+
+  // a flag to see when we're in the middle of a write.
+  this.writing = false;
+
+  // when true all writes will be buffered until .uncork() call
+  this.corked = 0;
+
+  // a flag to be able to tell if the onwrite cb is called immediately,
+  // or on a later tick.  We set this to true at first, because any
+  // actions that shouldn't happen until "later" should generally also
+  // not happen before the first write call.
+  this.sync = true;
+
+  // a flag to know if we're processing previously buffered items, which
+  // may call the _write() callback in the same tick, so that we don't
+  // end up in an overlapped onwrite situation.
+  this.bufferProcessing = false;
+
+  // the callback that's passed to _write(chunk,cb)
+  this.onwrite = function (er) {
+    onwrite(stream, er);
+  };
+
+  // the callback that the user supplies to write(chunk,encoding,cb)
+  this.writecb = null;
+
+  // the amount that is being written when _write is called.
+  this.writelen = 0;
+
+  this.bufferedRequest = null;
+  this.lastBufferedRequest = null;
+
+  // number of pending user-supplied write callbacks
+  // this must be 0 before 'finish' can be emitted
+  this.pendingcb = 0;
+
+  // emit prefinish if the only thing we're waiting for is _write cbs
+  // This is relevant for synchronous Transform streams
+  this.prefinished = false;
+
+  // True if the error was already emitted and should not be thrown again
+  this.errorEmitted = false;
+
+  // count buffered requests
+  this.bufferedRequestCount = 0;
+
+  // allocate the first CorkedRequest, there is always
+  // one allocated and free to use, and we maintain at most two
+  this.corkedRequestsFree = new CorkedRequest(this);
+}
+
+WritableState.prototype.getBuffer = function getBuffer() {
+  var current = this.bufferedRequest;
+  var out = [];
+  while (current) {
+    out.push(current);
+    current = current.next;
+  }
+  return out;
+};
+
+(function () {
+  try {
+    Object.defineProperty(WritableState.prototype, 'buffer', {
+      get: internalUtil.deprecate(function () {
+        return this.getBuffer();
+      }, '_writableState.buffer is deprecated. Use _writableState.getBuffer ' + 'instead.', 'DEP0003')
+    });
+  } catch (_) {}
+})();
+
+// Test _writableState for inheritance to account for Duplex streams,
+// whose prototype chain only points to Readable.
+var realHasInstance;
+if (typeof Symbol === 'function' && Symbol.hasInstance && typeof Function.prototype[Symbol.hasInstance] === 'function') {
+  realHasInstance = Function.prototype[Symbol.hasInstance];
+  Object.defineProperty(Writable, Symbol.hasInstance, {
+    value: function value(object) {
+      if (realHasInstance.call(this, object)) return true;
+
+      return object && object._writableState instanceof WritableState;
+    }
+  });
+} else {
+  realHasInstance = function realHasInstance(object) {
+    return object instanceof this;
+  };
+}
+
+function Writable(options) {
+  Duplex = Duplex || __webpack_require__(4);
+
+  // Writable ctor is applied to Duplexes, too.
+  // `realHasInstance` is necessary because using plain `instanceof`
+  // would return false, as no `_writableState` property is attached.
+
+  // Trying to use the custom `instanceof` for Writable here will also break the
+  // Node.js LazyTransform implementation, which has a non-trivial getter for
+  // `_writableState` that would lead to infinite recursion.
+  if (!realHasInstance.call(Writable, this) && !(this instanceof Duplex)) {
+    return new Writable(options);
+  }
+
+  this._writableState = new WritableState(options, this);
+
+  // legacy.
+  this.writable = true;
+
+  if (options) {
+    if (typeof options.write === 'function') this._write = options.write;
+
+    if (typeof options.writev === 'function') this._writev = options.writev;
+
+    if (typeof options.destroy === 'function') this._destroy = options.destroy;
+
+    if (typeof options.final === 'function') this._final = options.final;
+  }
+
+  Stream.call(this);
+}
+
+// Otherwise people can pipe Writable streams, which is just wrong.
+Writable.prototype.pipe = function () {
+  this.emit('error', new Error('Cannot pipe, not readable'));
+};
+
+function writeAfterEnd(stream, cb) {
+  var er = new Error('write after end');
+  // TODO: defer error events consistently everywhere, not just the cb
+  stream.emit('error', er);
+  processNextTick(cb, er);
+}
+
+// Checks that a user-supplied chunk is valid, especially for the particular
+// mode the stream is in. Currently this means that `null` is never accepted
+// and undefined/non-string values are only allowed in object mode.
+function validChunk(stream, state, chunk, cb) {
+  var valid = true;
+  var er = false;
+
+  if (chunk === null) {
+    er = new TypeError('May not write null values to stream');
+  } else if (typeof chunk !== 'string' && chunk !== undefined && !state.objectMode) {
+    er = new TypeError('Invalid non-string/buffer chunk');
+  }
+  if (er) {
+    stream.emit('error', er);
+    processNextTick(cb, er);
+    valid = false;
+  }
+  return valid;
+}
+
+Writable.prototype.write = function (chunk, encoding, cb) {
+  var state = this._writableState;
+  var ret = false;
+  var isBuf = _isUint8Array(chunk) && !state.objectMode;
+
+  if (isBuf && !Buffer.isBuffer(chunk)) {
+    chunk = _uint8ArrayToBuffer(chunk);
+  }
+
+  if (typeof encoding === 'function') {
+    cb = encoding;
+    encoding = null;
+  }
+
+  if (isBuf) encoding = 'buffer';else if (!encoding) encoding = state.defaultEncoding;
+
+  if (typeof cb !== 'function') cb = nop;
+
+  if (state.ended) writeAfterEnd(this, cb);else if (isBuf || validChunk(this, state, chunk, cb)) {
+    state.pendingcb++;
+    ret = writeOrBuffer(this, state, isBuf, chunk, encoding, cb);
+  }
+
+  return ret;
+};
+
+Writable.prototype.cork = function () {
+  var state = this._writableState;
+
+  state.corked++;
+};
+
+Writable.prototype.uncork = function () {
+  var state = this._writableState;
+
+  if (state.corked) {
+    state.corked--;
+
+    if (!state.writing && !state.corked && !state.finished && !state.bufferProcessing && state.bufferedRequest) clearBuffer(this, state);
+  }
+};
+
+Writable.prototype.setDefaultEncoding = function setDefaultEncoding(encoding) {
+  // node::ParseEncoding() requires lower case.
+  if (typeof encoding === 'string') encoding = encoding.toLowerCase();
+  if (!(['hex', 'utf8', 'utf-8', 'ascii', 'binary', 'base64', 'ucs2', 'ucs-2', 'utf16le', 'utf-16le', 'raw'].indexOf((encoding + '').toLowerCase()) > -1)) throw new TypeError('Unknown encoding: ' + encoding);
+  this._writableState.defaultEncoding = encoding;
+  return this;
+};
+
+function decodeChunk(state, chunk, encoding) {
+  if (!state.objectMode && state.decodeStrings !== false && typeof chunk === 'string') {
+    chunk = Buffer.from(chunk, encoding);
+  }
+  return chunk;
+}
+
+// if we're already writing something, then just put this
+// in the queue, and wait our turn.  Otherwise, call _write
+// If we return false, then we need a drain event, so set that flag.
+function writeOrBuffer(stream, state, isBuf, chunk, encoding, cb) {
+  if (!isBuf) {
+    var newChunk = decodeChunk(state, chunk, encoding);
+    if (chunk !== newChunk) {
+      isBuf = true;
+      encoding = 'buffer';
+      chunk = newChunk;
+    }
+  }
+  var len = state.objectMode ? 1 : chunk.length;
+
+  state.length += len;
+
+  var ret = state.length < state.highWaterMark;
+  // we must ensure that previous needDrain will not be reset to false.
+  if (!ret) state.needDrain = true;
+
+  if (state.writing || state.corked) {
+    var last = state.lastBufferedRequest;
+    state.lastBufferedRequest = {
+      chunk: chunk,
+      encoding: encoding,
+      isBuf: isBuf,
+      callback: cb,
+      next: null
+    };
+    if (last) {
+      last.next = state.lastBufferedRequest;
+    } else {
+      state.bufferedRequest = state.lastBufferedRequest;
+    }
+    state.bufferedRequestCount += 1;
+  } else {
+    doWrite(stream, state, false, len, chunk, encoding, cb);
+  }
+
+  return ret;
+}
+
+function doWrite(stream, state, writev, len, chunk, encoding, cb) {
+  state.writelen = len;
+  state.writecb = cb;
+  state.writing = true;
+  state.sync = true;
+  if (writev) stream._writev(chunk, state.onwrite);else stream._write(chunk, encoding, state.onwrite);
+  state.sync = false;
+}
+
+function onwriteError(stream, state, sync, er, cb) {
+  --state.pendingcb;
+
+  if (sync) {
+    // defer the callback if we are being called synchronously
+    // to avoid piling up things on the stack
+    processNextTick(cb, er);
+    // this can emit finish, and it will always happen
+    // after error
+    processNextTick(finishMaybe, stream, state);
+    stream._writableState.errorEmitted = true;
+    stream.emit('error', er);
+  } else {
+    // the caller expect this to happen before if
+    // it is async
+    cb(er);
+    stream._writableState.errorEmitted = true;
+    stream.emit('error', er);
+    // this can emit finish, but finish must
+    // always follow error
+    finishMaybe(stream, state);
+  }
+}
+
+function onwriteStateUpdate(state) {
+  state.writing = false;
+  state.writecb = null;
+  state.length -= state.writelen;
+  state.writelen = 0;
+}
+
+function onwrite(stream, er) {
+  var state = stream._writableState;
+  var sync = state.sync;
+  var cb = state.writecb;
+
+  onwriteStateUpdate(state);
+
+  if (er) onwriteError(stream, state, sync, er, cb);else {
+    // Check if we're actually ready to finish, but don't emit yet
+    var finished = needFinish(state);
+
+    if (!finished && !state.corked && !state.bufferProcessing && state.bufferedRequest) {
+      clearBuffer(stream, state);
+    }
+
+    if (sync) {
+      /*<replacement>*/
+      asyncWrite(afterWrite, stream, state, finished, cb);
+      /*</replacement>*/
+    } else {
+      afterWrite(stream, state, finished, cb);
+    }
+  }
+}
+
+function afterWrite(stream, state, finished, cb) {
+  if (!finished) onwriteDrain(stream, state);
+  state.pendingcb--;
+  cb();
+  finishMaybe(stream, state);
+}
+
+// Must force callback to be called on nextTick, so that we don't
+// emit 'drain' before the write() consumer gets the 'false' return
+// value, and has a chance to attach a 'drain' listener.
+function onwriteDrain(stream, state) {
+  if (state.length === 0 && state.needDrain) {
+    state.needDrain = false;
+    stream.emit('drain');
+  }
+}
+
+// if there's something in the buffer waiting, then process it
+function clearBuffer(stream, state) {
+  state.bufferProcessing = true;
+  var entry = state.bufferedRequest;
+
+  if (stream._writev && entry && entry.next) {
+    // Fast case, write everything using _writev()
+    var l = state.bufferedRequestCount;
+    var buffer = new Array(l);
+    var holder = state.corkedRequestsFree;
+    holder.entry = entry;
+
+    var count = 0;
+    var allBuffers = true;
+    while (entry) {
+      buffer[count] = entry;
+      if (!entry.isBuf) allBuffers = false;
+      entry = entry.next;
+      count += 1;
+    }
+    buffer.allBuffers = allBuffers;
+
+    doWrite(stream, state, true, state.length, buffer, '', holder.finish);
+
+    // doWrite is almost always async, defer these to save a bit of time
+    // as the hot path ends with doWrite
+    state.pendingcb++;
+    state.lastBufferedRequest = null;
+    if (holder.next) {
+      state.corkedRequestsFree = holder.next;
+      holder.next = null;
+    } else {
+      state.corkedRequestsFree = new CorkedRequest(state);
+    }
+  } else {
+    // Slow case, write chunks one-by-one
+    while (entry) {
+      var chunk = entry.chunk;
+      var encoding = entry.encoding;
+      var cb = entry.callback;
+      var len = state.objectMode ? 1 : chunk.length;
+
+      doWrite(stream, state, false, len, chunk, encoding, cb);
+      entry = entry.next;
+      // if we didn't call the onwrite immediately, then
+      // it means that we need to wait until it does.
+      // also, that means that the chunk and cb are currently
+      // being processed, so move the buffer counter past them.
+      if (state.writing) {
+        break;
+      }
+    }
+
+    if (entry === null) state.lastBufferedRequest = null;
+  }
+
+  state.bufferedRequestCount = 0;
+  state.bufferedRequest = entry;
+  state.bufferProcessing = false;
+}
+
+Writable.prototype._write = function (chunk, encoding, cb) {
+  cb(new Error('_write() is not implemented'));
+};
+
+Writable.prototype._writev = null;
+
+Writable.prototype.end = function (chunk, encoding, cb) {
+  var state = this._writableState;
+
+  if (typeof chunk === 'function') {
+    cb = chunk;
+    chunk = null;
+    encoding = null;
+  } else if (typeof encoding === 'function') {
+    cb = encoding;
+    encoding = null;
+  }
+
+  if (chunk !== null && chunk !== undefined) this.write(chunk, encoding);
+
+  // .end() fully uncorks
+  if (state.corked) {
+    state.corked = 1;
+    this.uncork();
+  }
+
+  // ignore unnecessary end() calls.
+  if (!state.ending && !state.finished) endWritable(this, state, cb);
+};
+
+function needFinish(state) {
+  return state.ending && state.length === 0 && state.bufferedRequest === null && !state.finished && !state.writing;
+}
+function callFinal(stream, state) {
+  stream._final(function (err) {
+    state.pendingcb--;
+    if (err) {
+      stream.emit('error', err);
+    }
+    state.prefinished = true;
+    stream.emit('prefinish');
+    finishMaybe(stream, state);
+  });
+}
+function prefinish(stream, state) {
+  if (!state.prefinished && !state.finalCalled) {
+    if (typeof stream._final === 'function') {
+      state.pendingcb++;
+      state.finalCalled = true;
+      processNextTick(callFinal, stream, state);
+    } else {
+      state.prefinished = true;
+      stream.emit('prefinish');
+    }
+  }
+}
+
+function finishMaybe(stream, state) {
+  var need = needFinish(state);
+  if (need) {
+    prefinish(stream, state);
+    if (state.pendingcb === 0) {
+      state.finished = true;
+      stream.emit('finish');
+    }
+  }
+  return need;
+}
+
+function endWritable(stream, state, cb) {
+  state.ending = true;
+  finishMaybe(stream, state);
+  if (cb) {
+    if (state.finished) processNextTick(cb);else stream.once('finish', cb);
+  }
+  state.ended = true;
+  stream.writable = false;
+}
+
+function onCorkedFinish(corkReq, state, err) {
+  var entry = corkReq.entry;
+  corkReq.entry = null;
+  while (entry) {
+    var cb = entry.callback;
+    state.pendingcb--;
+    cb(err);
+    entry = entry.next;
+  }
+  if (state.corkedRequestsFree) {
+    state.corkedRequestsFree.next = corkReq;
+  } else {
+    state.corkedRequestsFree = corkReq;
+  }
+}
+
+Object.defineProperty(Writable.prototype, 'destroyed', {
+  get: function get() {
+    if (this._writableState === undefined) {
+      return false;
+    }
+    return this._writableState.destroyed;
+  },
+  set: function set(value) {
+    // we ignore the value if the stream
+    // has not been initialized yet
+    if (!this._writableState) {
+      return;
+    }
+
+    // backward compatibility, the user is explicitly
+    // managing destroyed
+    this._writableState.destroyed = value;
+  }
+});
+
+Writable.prototype.destroy = destroyImpl.destroy;
+Writable.prototype._undestroy = destroyImpl.undestroy;
+Writable.prototype._destroy = function (err, cb) {
+  this.end();
+  cb(err);
+};
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(146).setImmediate, __webpack_require__(6)))
+
+/***/ }),
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5767,7 +8903,37 @@ var trigger = exports.trigger = function trigger(selected, name) {
 };
 
 /***/ }),
-/* 13 */
+/* 25 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = function (module) {
+	if (!module.webpackPolyfill) {
+		module.deprecate = function () {};
+		module.paths = [];
+		// module.parent = undefined by default
+		if (!module.children) module.children = [];
+		Object.defineProperty(module, "loaded", {
+			enumerable: true,
+			get: function get() {
+				return module.l;
+			}
+		});
+		Object.defineProperty(module, "id", {
+			enumerable: true,
+			get: function get() {
+				return module.i;
+			}
+		});
+		module.webpackPolyfill = 1;
+	}
+	return module;
+};
+
+/***/ }),
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5850,7 +9016,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 14 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5988,7 +9154,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 15 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6056,7 +9222,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 16 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6124,7 +9290,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 17 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6246,7 +9412,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 18 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6315,7 +9481,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 19 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6429,7 +9595,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 20 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6497,7 +9663,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 21 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6613,7 +9779,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 22 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6755,7 +9921,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 23 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6854,7 +10020,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 24 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6923,7 +10089,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 25 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7049,7 +10215,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 26 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7175,7 +10341,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 27 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7292,7 +10458,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 28 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7444,7 +10610,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 29 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7538,7 +10704,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 30 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7733,7 +10899,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 31 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7805,7 +10971,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 32 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7894,7 +11060,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 33 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7963,7 +11129,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 34 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8050,7 +11216,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 35 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8138,7 +11304,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 36 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8225,7 +11391,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 37 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8313,7 +11479,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 38 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8423,7 +11589,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 39 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8496,7 +11662,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 40 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8565,7 +11731,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 41 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8638,7 +11804,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 42 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8711,7 +11877,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 43 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8784,7 +11950,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 44 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8866,7 +12032,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 45 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8967,7 +12133,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 46 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9067,7 +12233,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 47 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9159,7 +12325,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 48 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9248,7 +12414,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 49 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9323,7 +12489,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 50 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9440,7 +12606,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 51 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9553,7 +12719,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 52 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9622,7 +12788,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 53 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9714,7 +12880,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 54 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9797,7 +12963,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 55 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9884,7 +13050,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 56 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9968,7 +13134,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 57 */
+/* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10051,7 +13217,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 58 */
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10137,7 +13303,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 59 */
+/* 72 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10268,7 +13434,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 60 */
+/* 73 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10401,7 +13567,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 61 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10510,7 +13676,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 62 */
+/* 75 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10643,7 +13809,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 63 */
+/* 76 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10797,7 +13963,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 64 */
+/* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10915,7 +14081,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 65 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11020,7 +14186,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 66 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11112,7 +14278,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 67 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11248,7 +14414,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 68 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11327,7 +14493,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 69 */
+/* 82 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11416,7 +14582,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 70 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11508,7 +14674,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 71 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11605,7 +14771,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 72 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11701,7 +14867,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 73 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11768,7 +14934,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 74 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11903,7 +15069,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 75 */
+/* 88 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11995,7 +15161,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 76 */
+/* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12091,7 +15257,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 77 */
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12238,7 +15404,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 78 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12317,7 +15483,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 79 */
+/* 92 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12443,7 +15609,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 80 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12549,7 +15715,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 81 */
+/* 94 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12661,7 +15827,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 82 */
+/* 95 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12734,7 +15900,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 83 */
+/* 96 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12833,7 +15999,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 84 */
+/* 97 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12921,7 +16087,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 85 */
+/* 98 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13109,7 +16275,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 86 */
+/* 99 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13200,7 +16366,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 87 */
+/* 100 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13292,7 +16458,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 88 */
+/* 101 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13397,7 +16563,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 89 */
+/* 102 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13469,7 +16635,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 90 */
+/* 103 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13601,7 +16767,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 91 */
+/* 104 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13698,7 +16864,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 92 */
+/* 105 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13795,7 +16961,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 93 */
+/* 106 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13864,7 +17030,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 94 */
+/* 107 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13997,7 +17163,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 95 */
+/* 108 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14130,7 +17296,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 96 */
+/* 109 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14203,7 +17369,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 97 */
+/* 110 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14273,7 +17439,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 98 */
+/* 111 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14357,7 +17523,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 99 */
+/* 112 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14549,7 +17715,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 100 */
+/* 113 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14635,7 +17801,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 101 */
+/* 114 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14704,7 +17870,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 102 */
+/* 115 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14785,7 +17951,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 103 */
+/* 116 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14955,7 +18121,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 104 */
+/* 117 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15126,7 +18292,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 105 */
+/* 118 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15205,7 +18371,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 106 */
+/* 119 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15316,7 +18482,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 107 */
+/* 120 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15427,7 +18593,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 108 */
+/* 121 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15524,7 +18690,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 109 */
+/* 122 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15599,7 +18765,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 110 */
+/* 123 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15667,7 +18833,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 111 */
+/* 124 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15806,7 +18972,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 112 */
+/* 125 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15904,7 +19070,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 113 */
+/* 126 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15978,7 +19144,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 114 */
+/* 127 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16054,7 +19220,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 115 */
+/* 128 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16125,7 +19291,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 116 */
+/* 129 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16242,7 +19408,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 117 */
+/* 130 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16342,7 +19508,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 118 */
+/* 131 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16443,7 +19609,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 119 */
+/* 132 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16510,7 +19676,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 120 */
+/* 133 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16577,7 +19743,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 121 */
+/* 134 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16732,7 +19898,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 122 */
+/* 135 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16819,7 +19985,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 123 */
+/* 136 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16886,7 +20052,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 124 */
+/* 137 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16953,7 +20119,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 125 */
+/* 138 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17042,7 +20208,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 126 */
+/* 139 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17116,7 +20282,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 127 */
+/* 140 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17185,7 +20351,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 128 */
+/* 141 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17304,7 +20470,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 129 */
+/* 142 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17418,7 +20584,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 130 */
+/* 143 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17531,7 +20697,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 131 */
+/* 144 */
 /***/ (function(module, exports) {
 
 /* WEBPACK VAR INJECTION */(function(__webpack_amd_options__) {/* globals __webpack_amd_options__ */
@@ -17540,16 +20706,1757 @@ module.exports = __webpack_amd_options__;
 /* WEBPACK VAR INJECTION */}.call(exports, {}))
 
 /***/ }),
-/* 132 */
+/* 145 */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(133);
-__webpack_require__(174);
-module.exports = __webpack_require__(175);
+"use strict";
 
+
+var toString = {}.toString;
+
+module.exports = Array.isArray || function (arr) {
+  return toString.call(arr) == '[object Array]';
+};
 
 /***/ }),
-/* 133 */
+/* 146 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var apply = Function.prototype.apply;
+
+// DOM APIs, for completeness
+
+exports.setTimeout = function () {
+  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
+};
+exports.setInterval = function () {
+  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
+};
+exports.clearTimeout = exports.clearInterval = function (timeout) {
+  if (timeout) {
+    timeout.close();
+  }
+};
+
+function Timeout(id, clearFn) {
+  this._id = id;
+  this._clearFn = clearFn;
+}
+Timeout.prototype.unref = Timeout.prototype.ref = function () {};
+Timeout.prototype.close = function () {
+  this._clearFn.call(window, this._id);
+};
+
+// Does not start the time, just sets up the members needed.
+exports.enroll = function (item, msecs) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = msecs;
+};
+
+exports.unenroll = function (item) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = -1;
+};
+
+exports._unrefActive = exports.active = function (item) {
+  clearTimeout(item._idleTimeoutId);
+
+  var msecs = item._idleTimeout;
+  if (msecs >= 0) {
+    item._idleTimeoutId = setTimeout(function onTimeout() {
+      if (item._onTimeout) item._onTimeout();
+    }, msecs);
+  }
+};
+
+// setimmediate attaches itself to the global object
+__webpack_require__(196);
+exports.setImmediate = setImmediate;
+exports.clearImmediate = clearImmediate;
+
+/***/ }),
+/* 147 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+module.exports = Stream;
+
+var EE = __webpack_require__(20).EventEmitter;
+var inherits = __webpack_require__(7);
+
+inherits(Stream, EE);
+Stream.Readable = __webpack_require__(21);
+Stream.Writable = __webpack_require__(201);
+Stream.Duplex = __webpack_require__(202);
+Stream.Transform = __webpack_require__(203);
+Stream.PassThrough = __webpack_require__(204);
+
+// Backwards-compat with node 0.4.x
+Stream.Stream = Stream;
+
+// old-style streams.  Note that the pipe method (the only relevant
+// part of this class) is overridden in the Readable class.
+
+function Stream() {
+  EE.call(this);
+}
+
+Stream.prototype.pipe = function (dest, options) {
+  var source = this;
+
+  function ondata(chunk) {
+    if (dest.writable) {
+      if (false === dest.write(chunk) && source.pause) {
+        source.pause();
+      }
+    }
+  }
+
+  source.on('data', ondata);
+
+  function ondrain() {
+    if (source.readable && source.resume) {
+      source.resume();
+    }
+  }
+
+  dest.on('drain', ondrain);
+
+  // If the 'end' option is not supplied, dest.end() will be called when
+  // source gets the 'end' or 'close' events.  Only dest.end() once.
+  if (!dest._isStdio && (!options || options.end !== false)) {
+    source.on('end', onend);
+    source.on('close', onclose);
+  }
+
+  var didOnEnd = false;
+  function onend() {
+    if (didOnEnd) return;
+    didOnEnd = true;
+
+    dest.end();
+  }
+
+  function onclose() {
+    if (didOnEnd) return;
+    didOnEnd = true;
+
+    if (typeof dest.destroy === 'function') dest.destroy();
+  }
+
+  // don't leave dangling pipes when there are errors.
+  function onerror(er) {
+    cleanup();
+    if (EE.listenerCount(this, 'error') === 0) {
+      throw er; // Unhandled stream error in pipe.
+    }
+  }
+
+  source.on('error', onerror);
+  dest.on('error', onerror);
+
+  // remove all the event listeners that were added.
+  function cleanup() {
+    source.removeListener('data', ondata);
+    dest.removeListener('drain', ondrain);
+
+    source.removeListener('end', onend);
+    source.removeListener('close', onclose);
+
+    source.removeListener('error', onerror);
+    dest.removeListener('error', onerror);
+
+    source.removeListener('end', cleanup);
+    source.removeListener('close', cleanup);
+
+    dest.removeListener('close', cleanup);
+  }
+
+  source.on('end', cleanup);
+  source.on('close', cleanup);
+
+  dest.on('close', cleanup);
+
+  dest.emit('pipe', source);
+
+  // Allow for unix-like usage: A.pipe(B).pipe(C)
+  return dest;
+};
+
+/***/ }),
+/* 148 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+
+/*<replacement>*/
+
+var processNextTick = __webpack_require__(17);
+/*</replacement>*/
+
+module.exports = Readable;
+
+/*<replacement>*/
+var isArray = __webpack_require__(145);
+/*</replacement>*/
+
+/*<replacement>*/
+var Duplex;
+/*</replacement>*/
+
+Readable.ReadableState = ReadableState;
+
+/*<replacement>*/
+var EE = __webpack_require__(20).EventEmitter;
+
+var EElistenerCount = function EElistenerCount(emitter, type) {
+  return emitter.listeners(type).length;
+};
+/*</replacement>*/
+
+/*<replacement>*/
+var Stream = __webpack_require__(149);
+/*</replacement>*/
+
+// TODO(bmeurer): Change this back to const once hole checks are
+// properly optimized away early in Ignition+TurboFan.
+/*<replacement>*/
+var Buffer = __webpack_require__(22).Buffer;
+var OurUint8Array = global.Uint8Array || function () {};
+function _uint8ArrayToBuffer(chunk) {
+  return Buffer.from(chunk);
+}
+function _isUint8Array(obj) {
+  return Buffer.isBuffer(obj) || obj instanceof OurUint8Array;
+}
+/*</replacement>*/
+
+/*<replacement>*/
+var util = __webpack_require__(12);
+util.inherits = __webpack_require__(7);
+/*</replacement>*/
+
+/*<replacement>*/
+var debugUtil = __webpack_require__(197);
+var debug = void 0;
+if (debugUtil && debugUtil.debuglog) {
+  debug = debugUtil.debuglog('stream');
+} else {
+  debug = function debug() {};
+}
+/*</replacement>*/
+
+var BufferList = __webpack_require__(198);
+var destroyImpl = __webpack_require__(150);
+var StringDecoder;
+
+util.inherits(Readable, Stream);
+
+var kProxyEvents = ['error', 'close', 'destroy', 'pause', 'resume'];
+
+function prependListener(emitter, event, fn) {
+  // Sadly this is not cacheable as some libraries bundle their own
+  // event emitter implementation with them.
+  if (typeof emitter.prependListener === 'function') {
+    return emitter.prependListener(event, fn);
+  } else {
+    // This is a hack to make sure that our error handler is attached before any
+    // userland ones.  NEVER DO THIS. This is here only because this code needs
+    // to continue to work with older versions of Node.js that do not include
+    // the prependListener() method. The goal is to eventually remove this hack.
+    if (!emitter._events || !emitter._events[event]) emitter.on(event, fn);else if (isArray(emitter._events[event])) emitter._events[event].unshift(fn);else emitter._events[event] = [fn, emitter._events[event]];
+  }
+}
+
+function ReadableState(options, stream) {
+  Duplex = Duplex || __webpack_require__(4);
+
+  options = options || {};
+
+  // object stream flag. Used to make read(n) ignore n and to
+  // make all the buffer merging and length checks go away
+  this.objectMode = !!options.objectMode;
+
+  if (stream instanceof Duplex) this.objectMode = this.objectMode || !!options.readableObjectMode;
+
+  // the point at which it stops calling _read() to fill the buffer
+  // Note: 0 is a valid value, means "don't call _read preemptively ever"
+  var hwm = options.highWaterMark;
+  var defaultHwm = this.objectMode ? 16 : 16 * 1024;
+  this.highWaterMark = hwm || hwm === 0 ? hwm : defaultHwm;
+
+  // cast to ints.
+  this.highWaterMark = Math.floor(this.highWaterMark);
+
+  // A linked list is used to store data chunks instead of an array because the
+  // linked list can remove elements from the beginning faster than
+  // array.shift()
+  this.buffer = new BufferList();
+  this.length = 0;
+  this.pipes = null;
+  this.pipesCount = 0;
+  this.flowing = null;
+  this.ended = false;
+  this.endEmitted = false;
+  this.reading = false;
+
+  // a flag to be able to tell if the event 'readable'/'data' is emitted
+  // immediately, or on a later tick.  We set this to true at first, because
+  // any actions that shouldn't happen until "later" should generally also
+  // not happen before the first read call.
+  this.sync = true;
+
+  // whenever we return null, then we set a flag to say
+  // that we're awaiting a 'readable' event emission.
+  this.needReadable = false;
+  this.emittedReadable = false;
+  this.readableListening = false;
+  this.resumeScheduled = false;
+
+  // has it been destroyed
+  this.destroyed = false;
+
+  // Crypto is kind of old and crusty.  Historically, its default string
+  // encoding is 'binary' so we have to make this configurable.
+  // Everything else in the universe uses 'utf8', though.
+  this.defaultEncoding = options.defaultEncoding || 'utf8';
+
+  // the number of writers that are awaiting a drain event in .pipe()s
+  this.awaitDrain = 0;
+
+  // if true, a maybeReadMore has been scheduled
+  this.readingMore = false;
+
+  this.decoder = null;
+  this.encoding = null;
+  if (options.encoding) {
+    if (!StringDecoder) StringDecoder = __webpack_require__(151).StringDecoder;
+    this.decoder = new StringDecoder(options.encoding);
+    this.encoding = options.encoding;
+  }
+}
+
+function Readable(options) {
+  Duplex = Duplex || __webpack_require__(4);
+
+  if (!(this instanceof Readable)) return new Readable(options);
+
+  this._readableState = new ReadableState(options, this);
+
+  // legacy
+  this.readable = true;
+
+  if (options) {
+    if (typeof options.read === 'function') this._read = options.read;
+
+    if (typeof options.destroy === 'function') this._destroy = options.destroy;
+  }
+
+  Stream.call(this);
+}
+
+Object.defineProperty(Readable.prototype, 'destroyed', {
+  get: function get() {
+    if (this._readableState === undefined) {
+      return false;
+    }
+    return this._readableState.destroyed;
+  },
+  set: function set(value) {
+    // we ignore the value if the stream
+    // has not been initialized yet
+    if (!this._readableState) {
+      return;
+    }
+
+    // backward compatibility, the user is explicitly
+    // managing destroyed
+    this._readableState.destroyed = value;
+  }
+});
+
+Readable.prototype.destroy = destroyImpl.destroy;
+Readable.prototype._undestroy = destroyImpl.undestroy;
+Readable.prototype._destroy = function (err, cb) {
+  this.push(null);
+  cb(err);
+};
+
+// Manually shove something into the read() buffer.
+// This returns true if the highWaterMark has not been hit yet,
+// similar to how Writable.write() returns true if you should
+// write() some more.
+Readable.prototype.push = function (chunk, encoding) {
+  var state = this._readableState;
+  var skipChunkCheck;
+
+  if (!state.objectMode) {
+    if (typeof chunk === 'string') {
+      encoding = encoding || state.defaultEncoding;
+      if (encoding !== state.encoding) {
+        chunk = Buffer.from(chunk, encoding);
+        encoding = '';
+      }
+      skipChunkCheck = true;
+    }
+  } else {
+    skipChunkCheck = true;
+  }
+
+  return readableAddChunk(this, chunk, encoding, false, skipChunkCheck);
+};
+
+// Unshift should *always* be something directly out of read()
+Readable.prototype.unshift = function (chunk) {
+  return readableAddChunk(this, chunk, null, true, false);
+};
+
+function readableAddChunk(stream, chunk, encoding, addToFront, skipChunkCheck) {
+  var state = stream._readableState;
+  if (chunk === null) {
+    state.reading = false;
+    onEofChunk(stream, state);
+  } else {
+    var er;
+    if (!skipChunkCheck) er = chunkInvalid(state, chunk);
+    if (er) {
+      stream.emit('error', er);
+    } else if (state.objectMode || chunk && chunk.length > 0) {
+      if (typeof chunk !== 'string' && !state.objectMode && Object.getPrototypeOf(chunk) !== Buffer.prototype) {
+        chunk = _uint8ArrayToBuffer(chunk);
+      }
+
+      if (addToFront) {
+        if (state.endEmitted) stream.emit('error', new Error('stream.unshift() after end event'));else addChunk(stream, state, chunk, true);
+      } else if (state.ended) {
+        stream.emit('error', new Error('stream.push() after EOF'));
+      } else {
+        state.reading = false;
+        if (state.decoder && !encoding) {
+          chunk = state.decoder.write(chunk);
+          if (state.objectMode || chunk.length !== 0) addChunk(stream, state, chunk, false);else maybeReadMore(stream, state);
+        } else {
+          addChunk(stream, state, chunk, false);
+        }
+      }
+    } else if (!addToFront) {
+      state.reading = false;
+    }
+  }
+
+  return needMoreData(state);
+}
+
+function addChunk(stream, state, chunk, addToFront) {
+  if (state.flowing && state.length === 0 && !state.sync) {
+    stream.emit('data', chunk);
+    stream.read(0);
+  } else {
+    // update the buffer info.
+    state.length += state.objectMode ? 1 : chunk.length;
+    if (addToFront) state.buffer.unshift(chunk);else state.buffer.push(chunk);
+
+    if (state.needReadable) emitReadable(stream);
+  }
+  maybeReadMore(stream, state);
+}
+
+function chunkInvalid(state, chunk) {
+  var er;
+  if (!_isUint8Array(chunk) && typeof chunk !== 'string' && chunk !== undefined && !state.objectMode) {
+    er = new TypeError('Invalid non-string/buffer chunk');
+  }
+  return er;
+}
+
+// if it's past the high water mark, we can push in some more.
+// Also, if we have no data yet, we can stand some
+// more bytes.  This is to work around cases where hwm=0,
+// such as the repl.  Also, if the push() triggered a
+// readable event, and the user called read(largeNumber) such that
+// needReadable was set, then we ought to push more, so that another
+// 'readable' event will be triggered.
+function needMoreData(state) {
+  return !state.ended && (state.needReadable || state.length < state.highWaterMark || state.length === 0);
+}
+
+Readable.prototype.isPaused = function () {
+  return this._readableState.flowing === false;
+};
+
+// backwards compatibility.
+Readable.prototype.setEncoding = function (enc) {
+  if (!StringDecoder) StringDecoder = __webpack_require__(151).StringDecoder;
+  this._readableState.decoder = new StringDecoder(enc);
+  this._readableState.encoding = enc;
+  return this;
+};
+
+// Don't raise the hwm > 8MB
+var MAX_HWM = 0x800000;
+function computeNewHighWaterMark(n) {
+  if (n >= MAX_HWM) {
+    n = MAX_HWM;
+  } else {
+    // Get the next highest power of 2 to prevent increasing hwm excessively in
+    // tiny amounts
+    n--;
+    n |= n >>> 1;
+    n |= n >>> 2;
+    n |= n >>> 4;
+    n |= n >>> 8;
+    n |= n >>> 16;
+    n++;
+  }
+  return n;
+}
+
+// This function is designed to be inlinable, so please take care when making
+// changes to the function body.
+function howMuchToRead(n, state) {
+  if (n <= 0 || state.length === 0 && state.ended) return 0;
+  if (state.objectMode) return 1;
+  if (n !== n) {
+    // Only flow one buffer at a time
+    if (state.flowing && state.length) return state.buffer.head.data.length;else return state.length;
+  }
+  // If we're asking for more than the current hwm, then raise the hwm.
+  if (n > state.highWaterMark) state.highWaterMark = computeNewHighWaterMark(n);
+  if (n <= state.length) return n;
+  // Don't have enough
+  if (!state.ended) {
+    state.needReadable = true;
+    return 0;
+  }
+  return state.length;
+}
+
+// you can override either this method, or the async _read(n) below.
+Readable.prototype.read = function (n) {
+  debug('read', n);
+  n = parseInt(n, 10);
+  var state = this._readableState;
+  var nOrig = n;
+
+  if (n !== 0) state.emittedReadable = false;
+
+  // if we're doing read(0) to trigger a readable event, but we
+  // already have a bunch of data in the buffer, then just trigger
+  // the 'readable' event and move on.
+  if (n === 0 && state.needReadable && (state.length >= state.highWaterMark || state.ended)) {
+    debug('read: emitReadable', state.length, state.ended);
+    if (state.length === 0 && state.ended) endReadable(this);else emitReadable(this);
+    return null;
+  }
+
+  n = howMuchToRead(n, state);
+
+  // if we've ended, and we're now clear, then finish it up.
+  if (n === 0 && state.ended) {
+    if (state.length === 0) endReadable(this);
+    return null;
+  }
+
+  // All the actual chunk generation logic needs to be
+  // *below* the call to _read.  The reason is that in certain
+  // synthetic stream cases, such as passthrough streams, _read
+  // may be a completely synchronous operation which may change
+  // the state of the read buffer, providing enough data when
+  // before there was *not* enough.
+  //
+  // So, the steps are:
+  // 1. Figure out what the state of things will be after we do
+  // a read from the buffer.
+  //
+  // 2. If that resulting state will trigger a _read, then call _read.
+  // Note that this may be asynchronous, or synchronous.  Yes, it is
+  // deeply ugly to write APIs this way, but that still doesn't mean
+  // that the Readable class should behave improperly, as streams are
+  // designed to be sync/async agnostic.
+  // Take note if the _read call is sync or async (ie, if the read call
+  // has returned yet), so that we know whether or not it's safe to emit
+  // 'readable' etc.
+  //
+  // 3. Actually pull the requested chunks out of the buffer and return.
+
+  // if we need a readable event, then we need to do some reading.
+  var doRead = state.needReadable;
+  debug('need readable', doRead);
+
+  // if we currently have less than the highWaterMark, then also read some
+  if (state.length === 0 || state.length - n < state.highWaterMark) {
+    doRead = true;
+    debug('length less than watermark', doRead);
+  }
+
+  // however, if we've ended, then there's no point, and if we're already
+  // reading, then it's unnecessary.
+  if (state.ended || state.reading) {
+    doRead = false;
+    debug('reading or ended', doRead);
+  } else if (doRead) {
+    debug('do read');
+    state.reading = true;
+    state.sync = true;
+    // if the length is currently zero, then we *need* a readable event.
+    if (state.length === 0) state.needReadable = true;
+    // call internal read method
+    this._read(state.highWaterMark);
+    state.sync = false;
+    // If _read pushed data synchronously, then `reading` will be false,
+    // and we need to re-evaluate how much data we can return to the user.
+    if (!state.reading) n = howMuchToRead(nOrig, state);
+  }
+
+  var ret;
+  if (n > 0) ret = fromList(n, state);else ret = null;
+
+  if (ret === null) {
+    state.needReadable = true;
+    n = 0;
+  } else {
+    state.length -= n;
+  }
+
+  if (state.length === 0) {
+    // If we have nothing in the buffer, then we want to know
+    // as soon as we *do* get something into the buffer.
+    if (!state.ended) state.needReadable = true;
+
+    // If we tried to read() past the EOF, then emit end on the next tick.
+    if (nOrig !== n && state.ended) endReadable(this);
+  }
+
+  if (ret !== null) this.emit('data', ret);
+
+  return ret;
+};
+
+function onEofChunk(stream, state) {
+  if (state.ended) return;
+  if (state.decoder) {
+    var chunk = state.decoder.end();
+    if (chunk && chunk.length) {
+      state.buffer.push(chunk);
+      state.length += state.objectMode ? 1 : chunk.length;
+    }
+  }
+  state.ended = true;
+
+  // emit 'readable' now to make sure it gets picked up.
+  emitReadable(stream);
+}
+
+// Don't emit readable right away in sync mode, because this can trigger
+// another read() call => stack overflow.  This way, it might trigger
+// a nextTick recursion warning, but that's not so bad.
+function emitReadable(stream) {
+  var state = stream._readableState;
+  state.needReadable = false;
+  if (!state.emittedReadable) {
+    debug('emitReadable', state.flowing);
+    state.emittedReadable = true;
+    if (state.sync) processNextTick(emitReadable_, stream);else emitReadable_(stream);
+  }
+}
+
+function emitReadable_(stream) {
+  debug('emit readable');
+  stream.emit('readable');
+  flow(stream);
+}
+
+// at this point, the user has presumably seen the 'readable' event,
+// and called read() to consume some data.  that may have triggered
+// in turn another _read(n) call, in which case reading = true if
+// it's in progress.
+// However, if we're not ended, or reading, and the length < hwm,
+// then go ahead and try to read some more preemptively.
+function maybeReadMore(stream, state) {
+  if (!state.readingMore) {
+    state.readingMore = true;
+    processNextTick(maybeReadMore_, stream, state);
+  }
+}
+
+function maybeReadMore_(stream, state) {
+  var len = state.length;
+  while (!state.reading && !state.flowing && !state.ended && state.length < state.highWaterMark) {
+    debug('maybeReadMore read 0');
+    stream.read(0);
+    if (len === state.length)
+      // didn't get any data, stop spinning.
+      break;else len = state.length;
+  }
+  state.readingMore = false;
+}
+
+// abstract method.  to be overridden in specific implementation classes.
+// call cb(er, data) where data is <= n in length.
+// for virtual (non-string, non-buffer) streams, "length" is somewhat
+// arbitrary, and perhaps not very meaningful.
+Readable.prototype._read = function (n) {
+  this.emit('error', new Error('_read() is not implemented'));
+};
+
+Readable.prototype.pipe = function (dest, pipeOpts) {
+  var src = this;
+  var state = this._readableState;
+
+  switch (state.pipesCount) {
+    case 0:
+      state.pipes = dest;
+      break;
+    case 1:
+      state.pipes = [state.pipes, dest];
+      break;
+    default:
+      state.pipes.push(dest);
+      break;
+  }
+  state.pipesCount += 1;
+  debug('pipe count=%d opts=%j', state.pipesCount, pipeOpts);
+
+  var doEnd = (!pipeOpts || pipeOpts.end !== false) && dest !== process.stdout && dest !== process.stderr;
+
+  var endFn = doEnd ? onend : unpipe;
+  if (state.endEmitted) processNextTick(endFn);else src.once('end', endFn);
+
+  dest.on('unpipe', onunpipe);
+  function onunpipe(readable, unpipeInfo) {
+    debug('onunpipe');
+    if (readable === src) {
+      if (unpipeInfo && unpipeInfo.hasUnpiped === false) {
+        unpipeInfo.hasUnpiped = true;
+        cleanup();
+      }
+    }
+  }
+
+  function onend() {
+    debug('onend');
+    dest.end();
+  }
+
+  // when the dest drains, it reduces the awaitDrain counter
+  // on the source.  This would be more elegant with a .once()
+  // handler in flow(), but adding and removing repeatedly is
+  // too slow.
+  var ondrain = pipeOnDrain(src);
+  dest.on('drain', ondrain);
+
+  var cleanedUp = false;
+  function cleanup() {
+    debug('cleanup');
+    // cleanup event handlers once the pipe is broken
+    dest.removeListener('close', onclose);
+    dest.removeListener('finish', onfinish);
+    dest.removeListener('drain', ondrain);
+    dest.removeListener('error', onerror);
+    dest.removeListener('unpipe', onunpipe);
+    src.removeListener('end', onend);
+    src.removeListener('end', unpipe);
+    src.removeListener('data', ondata);
+
+    cleanedUp = true;
+
+    // if the reader is waiting for a drain event from this
+    // specific writer, then it would cause it to never start
+    // flowing again.
+    // So, if this is awaiting a drain, then we just call it now.
+    // If we don't know, then assume that we are waiting for one.
+    if (state.awaitDrain && (!dest._writableState || dest._writableState.needDrain)) ondrain();
+  }
+
+  // If the user pushes more data while we're writing to dest then we'll end up
+  // in ondata again. However, we only want to increase awaitDrain once because
+  // dest will only emit one 'drain' event for the multiple writes.
+  // => Introduce a guard on increasing awaitDrain.
+  var increasedAwaitDrain = false;
+  src.on('data', ondata);
+  function ondata(chunk) {
+    debug('ondata');
+    increasedAwaitDrain = false;
+    var ret = dest.write(chunk);
+    if (false === ret && !increasedAwaitDrain) {
+      // If the user unpiped during `dest.write()`, it is possible
+      // to get stuck in a permanently paused state if that write
+      // also returned false.
+      // => Check whether `dest` is still a piping destination.
+      if ((state.pipesCount === 1 && state.pipes === dest || state.pipesCount > 1 && indexOf(state.pipes, dest) !== -1) && !cleanedUp) {
+        debug('false write response, pause', src._readableState.awaitDrain);
+        src._readableState.awaitDrain++;
+        increasedAwaitDrain = true;
+      }
+      src.pause();
+    }
+  }
+
+  // if the dest has an error, then stop piping into it.
+  // however, don't suppress the throwing behavior for this.
+  function onerror(er) {
+    debug('onerror', er);
+    unpipe();
+    dest.removeListener('error', onerror);
+    if (EElistenerCount(dest, 'error') === 0) dest.emit('error', er);
+  }
+
+  // Make sure our error handler is attached before userland ones.
+  prependListener(dest, 'error', onerror);
+
+  // Both close and finish should trigger unpipe, but only once.
+  function onclose() {
+    dest.removeListener('finish', onfinish);
+    unpipe();
+  }
+  dest.once('close', onclose);
+  function onfinish() {
+    debug('onfinish');
+    dest.removeListener('close', onclose);
+    unpipe();
+  }
+  dest.once('finish', onfinish);
+
+  function unpipe() {
+    debug('unpipe');
+    src.unpipe(dest);
+  }
+
+  // tell the dest that it's being piped to
+  dest.emit('pipe', src);
+
+  // start the flow if it hasn't been started already.
+  if (!state.flowing) {
+    debug('pipe resume');
+    src.resume();
+  }
+
+  return dest;
+};
+
+function pipeOnDrain(src) {
+  return function () {
+    var state = src._readableState;
+    debug('pipeOnDrain', state.awaitDrain);
+    if (state.awaitDrain) state.awaitDrain--;
+    if (state.awaitDrain === 0 && EElistenerCount(src, 'data')) {
+      state.flowing = true;
+      flow(src);
+    }
+  };
+}
+
+Readable.prototype.unpipe = function (dest) {
+  var state = this._readableState;
+  var unpipeInfo = { hasUnpiped: false };
+
+  // if we're not piping anywhere, then do nothing.
+  if (state.pipesCount === 0) return this;
+
+  // just one destination.  most common case.
+  if (state.pipesCount === 1) {
+    // passed in one, but it's not the right one.
+    if (dest && dest !== state.pipes) return this;
+
+    if (!dest) dest = state.pipes;
+
+    // got a match.
+    state.pipes = null;
+    state.pipesCount = 0;
+    state.flowing = false;
+    if (dest) dest.emit('unpipe', this, unpipeInfo);
+    return this;
+  }
+
+  // slow case. multiple pipe destinations.
+
+  if (!dest) {
+    // remove all.
+    var dests = state.pipes;
+    var len = state.pipesCount;
+    state.pipes = null;
+    state.pipesCount = 0;
+    state.flowing = false;
+
+    for (var i = 0; i < len; i++) {
+      dests[i].emit('unpipe', this, unpipeInfo);
+    }return this;
+  }
+
+  // try to find the right one.
+  var index = indexOf(state.pipes, dest);
+  if (index === -1) return this;
+
+  state.pipes.splice(index, 1);
+  state.pipesCount -= 1;
+  if (state.pipesCount === 1) state.pipes = state.pipes[0];
+
+  dest.emit('unpipe', this, unpipeInfo);
+
+  return this;
+};
+
+// set up data events if they are asked for
+// Ensure readable listeners eventually get something
+Readable.prototype.on = function (ev, fn) {
+  var res = Stream.prototype.on.call(this, ev, fn);
+
+  if (ev === 'data') {
+    // Start flowing on next tick if stream isn't explicitly paused
+    if (this._readableState.flowing !== false) this.resume();
+  } else if (ev === 'readable') {
+    var state = this._readableState;
+    if (!state.endEmitted && !state.readableListening) {
+      state.readableListening = state.needReadable = true;
+      state.emittedReadable = false;
+      if (!state.reading) {
+        processNextTick(nReadingNextTick, this);
+      } else if (state.length) {
+        emitReadable(this);
+      }
+    }
+  }
+
+  return res;
+};
+Readable.prototype.addListener = Readable.prototype.on;
+
+function nReadingNextTick(self) {
+  debug('readable nexttick read 0');
+  self.read(0);
+}
+
+// pause() and resume() are remnants of the legacy readable stream API
+// If the user uses them, then switch into old mode.
+Readable.prototype.resume = function () {
+  var state = this._readableState;
+  if (!state.flowing) {
+    debug('resume');
+    state.flowing = true;
+    resume(this, state);
+  }
+  return this;
+};
+
+function resume(stream, state) {
+  if (!state.resumeScheduled) {
+    state.resumeScheduled = true;
+    processNextTick(resume_, stream, state);
+  }
+}
+
+function resume_(stream, state) {
+  if (!state.reading) {
+    debug('resume read 0');
+    stream.read(0);
+  }
+
+  state.resumeScheduled = false;
+  state.awaitDrain = 0;
+  stream.emit('resume');
+  flow(stream);
+  if (state.flowing && !state.reading) stream.read(0);
+}
+
+Readable.prototype.pause = function () {
+  debug('call pause flowing=%j', this._readableState.flowing);
+  if (false !== this._readableState.flowing) {
+    debug('pause');
+    this._readableState.flowing = false;
+    this.emit('pause');
+  }
+  return this;
+};
+
+function flow(stream) {
+  var state = stream._readableState;
+  debug('flow', state.flowing);
+  while (state.flowing && stream.read() !== null) {}
+}
+
+// wrap an old-style stream as the async data source.
+// This is *not* part of the readable stream interface.
+// It is an ugly unfortunate mess of history.
+Readable.prototype.wrap = function (stream) {
+  var state = this._readableState;
+  var paused = false;
+
+  var self = this;
+  stream.on('end', function () {
+    debug('wrapped end');
+    if (state.decoder && !state.ended) {
+      var chunk = state.decoder.end();
+      if (chunk && chunk.length) self.push(chunk);
+    }
+
+    self.push(null);
+  });
+
+  stream.on('data', function (chunk) {
+    debug('wrapped data');
+    if (state.decoder) chunk = state.decoder.write(chunk);
+
+    // don't skip over falsy values in objectMode
+    if (state.objectMode && (chunk === null || chunk === undefined)) return;else if (!state.objectMode && (!chunk || !chunk.length)) return;
+
+    var ret = self.push(chunk);
+    if (!ret) {
+      paused = true;
+      stream.pause();
+    }
+  });
+
+  // proxy all the other methods.
+  // important when wrapping filters and duplexes.
+  for (var i in stream) {
+    if (this[i] === undefined && typeof stream[i] === 'function') {
+      this[i] = function (method) {
+        return function () {
+          return stream[method].apply(stream, arguments);
+        };
+      }(i);
+    }
+  }
+
+  // proxy certain important events.
+  for (var n = 0; n < kProxyEvents.length; n++) {
+    stream.on(kProxyEvents[n], self.emit.bind(self, kProxyEvents[n]));
+  }
+
+  // when we try to consume some more bytes, simply unpause the
+  // underlying stream.
+  self._read = function (n) {
+    debug('wrapped _read', n);
+    if (paused) {
+      paused = false;
+      stream.resume();
+    }
+  };
+
+  return self;
+};
+
+// exposed for testing purposes only.
+Readable._fromList = fromList;
+
+// Pluck off n bytes from an array of buffers.
+// Length is the combined lengths of all the buffers in the list.
+// This function is designed to be inlinable, so please take care when making
+// changes to the function body.
+function fromList(n, state) {
+  // nothing buffered
+  if (state.length === 0) return null;
+
+  var ret;
+  if (state.objectMode) ret = state.buffer.shift();else if (!n || n >= state.length) {
+    // read it all, truncate the list
+    if (state.decoder) ret = state.buffer.join('');else if (state.buffer.length === 1) ret = state.buffer.head.data;else ret = state.buffer.concat(state.length);
+    state.buffer.clear();
+  } else {
+    // read part of list
+    ret = fromListPartial(n, state.buffer, state.decoder);
+  }
+
+  return ret;
+}
+
+// Extracts only enough buffered data to satisfy the amount requested.
+// This function is designed to be inlinable, so please take care when making
+// changes to the function body.
+function fromListPartial(n, list, hasStrings) {
+  var ret;
+  if (n < list.head.data.length) {
+    // slice is the same for buffers and strings
+    ret = list.head.data.slice(0, n);
+    list.head.data = list.head.data.slice(n);
+  } else if (n === list.head.data.length) {
+    // first chunk is a perfect match
+    ret = list.shift();
+  } else {
+    // result spans more than one buffer
+    ret = hasStrings ? copyFromBufferString(n, list) : copyFromBuffer(n, list);
+  }
+  return ret;
+}
+
+// Copies a specified amount of characters from the list of buffered data
+// chunks.
+// This function is designed to be inlinable, so please take care when making
+// changes to the function body.
+function copyFromBufferString(n, list) {
+  var p = list.head;
+  var c = 1;
+  var ret = p.data;
+  n -= ret.length;
+  while (p = p.next) {
+    var str = p.data;
+    var nb = n > str.length ? str.length : n;
+    if (nb === str.length) ret += str;else ret += str.slice(0, n);
+    n -= nb;
+    if (n === 0) {
+      if (nb === str.length) {
+        ++c;
+        if (p.next) list.head = p.next;else list.head = list.tail = null;
+      } else {
+        list.head = p;
+        p.data = str.slice(nb);
+      }
+      break;
+    }
+    ++c;
+  }
+  list.length -= c;
+  return ret;
+}
+
+// Copies a specified amount of bytes from the list of buffered data chunks.
+// This function is designed to be inlinable, so please take care when making
+// changes to the function body.
+function copyFromBuffer(n, list) {
+  var ret = Buffer.allocUnsafe(n);
+  var p = list.head;
+  var c = 1;
+  p.data.copy(ret);
+  n -= p.data.length;
+  while (p = p.next) {
+    var buf = p.data;
+    var nb = n > buf.length ? buf.length : n;
+    buf.copy(ret, ret.length - n, 0, nb);
+    n -= nb;
+    if (n === 0) {
+      if (nb === buf.length) {
+        ++c;
+        if (p.next) list.head = p.next;else list.head = list.tail = null;
+      } else {
+        list.head = p;
+        p.data = buf.slice(nb);
+      }
+      break;
+    }
+    ++c;
+  }
+  list.length -= c;
+  return ret;
+}
+
+function endReadable(stream) {
+  var state = stream._readableState;
+
+  // If we get here before consuming all the bytes, then that is a
+  // bug in node.  Should never happen.
+  if (state.length > 0) throw new Error('"endReadable()" called on non-empty stream');
+
+  if (!state.endEmitted) {
+    state.ended = true;
+    processNextTick(endReadableNT, state, stream);
+  }
+}
+
+function endReadableNT(state, stream) {
+  // Check that we didn't get one last unshift.
+  if (!state.endEmitted && state.length === 0) {
+    state.endEmitted = true;
+    stream.readable = false;
+    stream.emit('end');
+  }
+}
+
+function forEach(xs, f) {
+  for (var i = 0, l = xs.length; i < l; i++) {
+    f(xs[i], i);
+  }
+}
+
+function indexOf(xs, x) {
+  for (var i = 0, l = xs.length; i < l; i++) {
+    if (xs[i] === x) return i;
+  }
+  return -1;
+}
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6), __webpack_require__(5)))
+
+/***/ }),
+/* 149 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = __webpack_require__(20).EventEmitter;
+
+/***/ }),
+/* 150 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/*<replacement>*/
+
+var processNextTick = __webpack_require__(17);
+/*</replacement>*/
+
+// undocumented cb() API, needed for core, not for public API
+function destroy(err, cb) {
+  var _this = this;
+
+  var readableDestroyed = this._readableState && this._readableState.destroyed;
+  var writableDestroyed = this._writableState && this._writableState.destroyed;
+
+  if (readableDestroyed || writableDestroyed) {
+    if (cb) {
+      cb(err);
+    } else if (err && (!this._writableState || !this._writableState.errorEmitted)) {
+      processNextTick(emitErrorNT, this, err);
+    }
+    return;
+  }
+
+  // we set destroyed to true before firing error callbacks in order
+  // to make it re-entrance safe in case destroy() is called within callbacks
+
+  if (this._readableState) {
+    this._readableState.destroyed = true;
+  }
+
+  // if this is a duplex stream mark the writable part as destroyed as well
+  if (this._writableState) {
+    this._writableState.destroyed = true;
+  }
+
+  this._destroy(err || null, function (err) {
+    if (!cb && err) {
+      processNextTick(emitErrorNT, _this, err);
+      if (_this._writableState) {
+        _this._writableState.errorEmitted = true;
+      }
+    } else if (cb) {
+      cb(err);
+    }
+  });
+}
+
+function undestroy() {
+  if (this._readableState) {
+    this._readableState.destroyed = false;
+    this._readableState.reading = false;
+    this._readableState.ended = false;
+    this._readableState.endEmitted = false;
+  }
+
+  if (this._writableState) {
+    this._writableState.destroyed = false;
+    this._writableState.ended = false;
+    this._writableState.ending = false;
+    this._writableState.finished = false;
+    this._writableState.errorEmitted = false;
+  }
+}
+
+function emitErrorNT(self, err) {
+  self.emit('error', err);
+}
+
+module.exports = {
+  destroy: destroy,
+  undestroy: undestroy
+};
+
+/***/ }),
+/* 151 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var Buffer = __webpack_require__(16).Buffer;
+
+var isBufferEncoding = Buffer.isEncoding || function (encoding) {
+  switch (encoding && encoding.toLowerCase()) {
+    case 'hex':case 'utf8':case 'utf-8':case 'ascii':case 'binary':case 'base64':case 'ucs2':case 'ucs-2':case 'utf16le':case 'utf-16le':case 'raw':
+      return true;
+    default:
+      return false;
+  }
+};
+
+function assertEncoding(encoding) {
+  if (encoding && !isBufferEncoding(encoding)) {
+    throw new Error('Unknown encoding: ' + encoding);
+  }
+}
+
+// StringDecoder provides an interface for efficiently splitting a series of
+// buffers into a series of JS strings without breaking apart multi-byte
+// characters. CESU-8 is handled as part of the UTF-8 encoding.
+//
+// @TODO Handling all encodings inside a single object makes it very difficult
+// to reason about this code, so it should be split up in the future.
+// @TODO There should be a utf8-strict encoding that rejects invalid UTF-8 code
+// points as used by CESU-8.
+var StringDecoder = exports.StringDecoder = function (encoding) {
+  this.encoding = (encoding || 'utf8').toLowerCase().replace(/[-_]/, '');
+  assertEncoding(encoding);
+  switch (this.encoding) {
+    case 'utf8':
+      // CESU-8 represents each of Surrogate Pair by 3-bytes
+      this.surrogateSize = 3;
+      break;
+    case 'ucs2':
+    case 'utf16le':
+      // UTF-16 represents each of Surrogate Pair by 2-bytes
+      this.surrogateSize = 2;
+      this.detectIncompleteChar = utf16DetectIncompleteChar;
+      break;
+    case 'base64':
+      // Base-64 stores 3 bytes in 4 chars, and pads the remainder.
+      this.surrogateSize = 3;
+      this.detectIncompleteChar = base64DetectIncompleteChar;
+      break;
+    default:
+      this.write = passThroughWrite;
+      return;
+  }
+
+  // Enough space to store all bytes of a single character. UTF-8 needs 4
+  // bytes, but CESU-8 may require up to 6 (3 bytes per surrogate).
+  this.charBuffer = new Buffer(6);
+  // Number of bytes received for the current incomplete multi-byte character.
+  this.charReceived = 0;
+  // Number of bytes expected for the current incomplete multi-byte character.
+  this.charLength = 0;
+};
+
+// write decodes the given buffer and returns it as JS string that is
+// guaranteed to not contain any partial multi-byte characters. Any partial
+// character found at the end of the buffer is buffered up, and will be
+// returned when calling write again with the remaining bytes.
+//
+// Note: Converting a Buffer containing an orphan surrogate to a String
+// currently works, but converting a String to a Buffer (via `new Buffer`, or
+// Buffer#write) will replace incomplete surrogates with the unicode
+// replacement character. See https://codereview.chromium.org/121173009/ .
+StringDecoder.prototype.write = function (buffer) {
+  var charStr = '';
+  // if our last write ended with an incomplete multibyte character
+  while (this.charLength) {
+    // determine how many remaining bytes this buffer has to offer for this char
+    var available = buffer.length >= this.charLength - this.charReceived ? this.charLength - this.charReceived : buffer.length;
+
+    // add the new bytes to the char buffer
+    buffer.copy(this.charBuffer, this.charReceived, 0, available);
+    this.charReceived += available;
+
+    if (this.charReceived < this.charLength) {
+      // still not enough chars in this buffer? wait for more ...
+      return '';
+    }
+
+    // remove bytes belonging to the current character from the buffer
+    buffer = buffer.slice(available, buffer.length);
+
+    // get the character that was split
+    charStr = this.charBuffer.slice(0, this.charLength).toString(this.encoding);
+
+    // CESU-8: lead surrogate (D800-DBFF) is also the incomplete character
+    var charCode = charStr.charCodeAt(charStr.length - 1);
+    if (charCode >= 0xD800 && charCode <= 0xDBFF) {
+      this.charLength += this.surrogateSize;
+      charStr = '';
+      continue;
+    }
+    this.charReceived = this.charLength = 0;
+
+    // if there are no more bytes in this buffer, just emit our char
+    if (buffer.length === 0) {
+      return charStr;
+    }
+    break;
+  }
+
+  // determine and set charLength / charReceived
+  this.detectIncompleteChar(buffer);
+
+  var end = buffer.length;
+  if (this.charLength) {
+    // buffer the incomplete character bytes we got
+    buffer.copy(this.charBuffer, 0, buffer.length - this.charReceived, end);
+    end -= this.charReceived;
+  }
+
+  charStr += buffer.toString(this.encoding, 0, end);
+
+  var end = charStr.length - 1;
+  var charCode = charStr.charCodeAt(end);
+  // CESU-8: lead surrogate (D800-DBFF) is also the incomplete character
+  if (charCode >= 0xD800 && charCode <= 0xDBFF) {
+    var size = this.surrogateSize;
+    this.charLength += size;
+    this.charReceived += size;
+    this.charBuffer.copy(this.charBuffer, size, 0, size);
+    buffer.copy(this.charBuffer, 0, 0, size);
+    return charStr.substring(0, end);
+  }
+
+  // or just emit the charStr
+  return charStr;
+};
+
+// detectIncompleteChar determines if there is an incomplete UTF-8 character at
+// the end of the given buffer. If so, it sets this.charLength to the byte
+// length that character, and sets this.charReceived to the number of bytes
+// that are available for this character.
+StringDecoder.prototype.detectIncompleteChar = function (buffer) {
+  // determine how many bytes we have to check at the end of this buffer
+  var i = buffer.length >= 3 ? 3 : buffer.length;
+
+  // Figure out if one of the last i bytes of our buffer announces an
+  // incomplete char.
+  for (; i > 0; i--) {
+    var c = buffer[buffer.length - i];
+
+    // See http://en.wikipedia.org/wiki/UTF-8#Description
+
+    // 110XXXXX
+    if (i == 1 && c >> 5 == 0x06) {
+      this.charLength = 2;
+      break;
+    }
+
+    // 1110XXXX
+    if (i <= 2 && c >> 4 == 0x0E) {
+      this.charLength = 3;
+      break;
+    }
+
+    // 11110XXX
+    if (i <= 3 && c >> 3 == 0x1E) {
+      this.charLength = 4;
+      break;
+    }
+  }
+  this.charReceived = i;
+};
+
+StringDecoder.prototype.end = function (buffer) {
+  var res = '';
+  if (buffer && buffer.length) res = this.write(buffer);
+
+  if (this.charReceived) {
+    var cr = this.charReceived;
+    var buf = this.charBuffer;
+    var enc = this.encoding;
+    res += buf.slice(0, cr).toString(enc);
+  }
+
+  return res;
+};
+
+function passThroughWrite(buffer) {
+  return buffer.toString(this.encoding);
+}
+
+function utf16DetectIncompleteChar(buffer) {
+  this.charReceived = buffer.length % 2;
+  this.charLength = this.charReceived ? 2 : 0;
+}
+
+function base64DetectIncompleteChar(buffer) {
+  this.charReceived = buffer.length % 3;
+  this.charLength = this.charReceived ? 3 : 0;
+}
+
+/***/ }),
+/* 152 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// a transform stream is a readable/writable stream where you do
+// something with the data.  Sometimes it's called a "filter",
+// but that's not a great name for it, since that implies a thing where
+// some bits pass through, and others are simply ignored.  (That would
+// be a valid example of a transform, of course.)
+//
+// While the output is causally related to the input, it's not a
+// necessarily symmetric or synchronous transformation.  For example,
+// a zlib stream might take multiple plain-text writes(), and then
+// emit a single compressed chunk some time in the future.
+//
+// Here's how this works:
+//
+// The Transform stream has all the aspects of the readable and writable
+// stream classes.  When you write(chunk), that calls _write(chunk,cb)
+// internally, and returns false if there's a lot of pending writes
+// buffered up.  When you call read(), that calls _read(n) until
+// there's enough pending readable data buffered up.
+//
+// In a transform stream, the written data is placed in a buffer.  When
+// _read(n) is called, it transforms the queued up data, calling the
+// buffered _write cb's as it consumes chunks.  If consuming a single
+// written chunk would result in multiple output chunks, then the first
+// outputted bit calls the readcb, and subsequent chunks just go into
+// the read buffer, and will cause it to emit 'readable' if necessary.
+//
+// This way, back-pressure is actually determined by the reading side,
+// since _read has to be called to start processing a new chunk.  However,
+// a pathological inflate type of transform can cause excessive buffering
+// here.  For example, imagine a stream where every byte of input is
+// interpreted as an integer from 0-255, and then results in that many
+// bytes of output.  Writing the 4 bytes {ff,ff,ff,ff} would result in
+// 1kb of data being output.  In this case, you could write a very small
+// amount of input, and end up with a very large amount of output.  In
+// such a pathological inflating mechanism, there'd be no way to tell
+// the system to stop doing the transform.  A single 4MB write could
+// cause the system to run out of memory.
+//
+// However, even in such a pathological case, only a single written chunk
+// would be consumed, and then the rest would wait (un-transformed) until
+// the results of the previous transformed chunk were consumed.
+
+
+
+module.exports = Transform;
+
+var Duplex = __webpack_require__(4);
+
+/*<replacement>*/
+var util = __webpack_require__(12);
+util.inherits = __webpack_require__(7);
+/*</replacement>*/
+
+util.inherits(Transform, Duplex);
+
+function TransformState(stream) {
+  this.afterTransform = function (er, data) {
+    return afterTransform(stream, er, data);
+  };
+
+  this.needTransform = false;
+  this.transforming = false;
+  this.writecb = null;
+  this.writechunk = null;
+  this.writeencoding = null;
+}
+
+function afterTransform(stream, er, data) {
+  var ts = stream._transformState;
+  ts.transforming = false;
+
+  var cb = ts.writecb;
+
+  if (!cb) {
+    return stream.emit('error', new Error('write callback called multiple times'));
+  }
+
+  ts.writechunk = null;
+  ts.writecb = null;
+
+  if (data !== null && data !== undefined) stream.push(data);
+
+  cb(er);
+
+  var rs = stream._readableState;
+  rs.reading = false;
+  if (rs.needReadable || rs.length < rs.highWaterMark) {
+    stream._read(rs.highWaterMark);
+  }
+}
+
+function Transform(options) {
+  if (!(this instanceof Transform)) return new Transform(options);
+
+  Duplex.call(this, options);
+
+  this._transformState = new TransformState(this);
+
+  var stream = this;
+
+  // start out asking for a readable event once data is transformed.
+  this._readableState.needReadable = true;
+
+  // we have implemented the _read method, and done the other things
+  // that Readable wants before the first _read call, so unset the
+  // sync guard flag.
+  this._readableState.sync = false;
+
+  if (options) {
+    if (typeof options.transform === 'function') this._transform = options.transform;
+
+    if (typeof options.flush === 'function') this._flush = options.flush;
+  }
+
+  // When the writable side finishes, then flush out anything remaining.
+  this.once('prefinish', function () {
+    if (typeof this._flush === 'function') this._flush(function (er, data) {
+      done(stream, er, data);
+    });else done(stream);
+  });
+}
+
+Transform.prototype.push = function (chunk, encoding) {
+  this._transformState.needTransform = false;
+  return Duplex.prototype.push.call(this, chunk, encoding);
+};
+
+// This is the part where you do stuff!
+// override this function in implementation classes.
+// 'chunk' is an input chunk.
+//
+// Call `push(newChunk)` to pass along transformed output
+// to the readable side.  You may call 'push' zero or more times.
+//
+// Call `cb(err)` when you are done with this chunk.  If you pass
+// an error, then that'll put the hurt on the whole operation.  If you
+// never call cb(), then you'll never get another chunk.
+Transform.prototype._transform = function (chunk, encoding, cb) {
+  throw new Error('_transform() is not implemented');
+};
+
+Transform.prototype._write = function (chunk, encoding, cb) {
+  var ts = this._transformState;
+  ts.writecb = cb;
+  ts.writechunk = chunk;
+  ts.writeencoding = encoding;
+  if (!ts.transforming) {
+    var rs = this._readableState;
+    if (ts.needTransform || rs.needReadable || rs.length < rs.highWaterMark) this._read(rs.highWaterMark);
+  }
+};
+
+// Doesn't matter what the args are here.
+// _transform does all the work.
+// That we got here means that the readable side wants more data.
+Transform.prototype._read = function (n) {
+  var ts = this._transformState;
+
+  if (ts.writechunk !== null && ts.writecb && !ts.transforming) {
+    ts.transforming = true;
+    this._transform(ts.writechunk, ts.writeencoding, ts.afterTransform);
+  } else {
+    // mark that we need a transform, so that any data that comes in
+    // will get processed, now that we've asked for it.
+    ts.needTransform = true;
+  }
+};
+
+Transform.prototype._destroy = function (err, cb) {
+  var _this = this;
+
+  Duplex.prototype._destroy.call(this, err, function (err2) {
+    cb(err2);
+    _this.emit('close');
+  });
+};
+
+function done(stream, er, data) {
+  if (er) return stream.emit('error', er);
+
+  if (data !== null && data !== undefined) stream.push(data);
+
+  // if there's nothing in the write buffer, then that means
+  // that nothing more will ever be provided
+  var ws = stream._writableState;
+  var ts = stream._transformState;
+
+  if (ws.length) throw new Error('Calling transform done when ws.length != 0');
+
+  if (ts.transforming) throw new Error('Calling transform done when still transforming');
+
+  return stream.push(null);
+}
+
+/***/ }),
+/* 153 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17557,27 +22464,27 @@ module.exports = __webpack_require__(175);
 
 var _hyperapp = __webpack_require__(1);
 
-var _actions = __webpack_require__(134);
+var _actions = __webpack_require__(154);
 
 var _actions2 = _interopRequireDefault(_actions);
 
-var _state = __webpack_require__(143);
+var _state = __webpack_require__(164);
 
 var _state2 = _interopRequireDefault(_state);
 
-var _Main = __webpack_require__(144);
+var _Main = __webpack_require__(165);
 
 var _Main2 = _interopRequireDefault(_Main);
 
-var _logger = __webpack_require__(173);
+var _logger = __webpack_require__(191);
 
 var _logger2 = _interopRequireDefault(_logger);
 
-var _persist = __webpack_require__(196);
+var _persist = __webpack_require__(192);
 
 var _persist2 = _interopRequireDefault(_persist);
 
-var _common = __webpack_require__(10);
+var _common = __webpack_require__(8);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -17590,13 +22497,15 @@ setTimeout(function () {
     var appActions = (0, _hyperapp.app)((0, _persist2.default)(options));
     var workOffline = parseInt(_common.Storage.get("offline") || 0);
     if (workOffline) {
-        appActions.__initPersist();
+        appActions.__removePersist();
+        _common.Storage.set({ offline: 0 });
     }
     appActions.init();
-}, 0);
+    document.querySelector("#app").style.height = "560px";
+}, 100);
 
 /***/ }),
-/* 134 */
+/* 154 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17606,23 +22515,23 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _init = __webpack_require__(195);
+var _init = __webpack_require__(155);
 
-var _common = __webpack_require__(10);
+var _common = __webpack_require__(8);
 
-var _notification = __webpack_require__(136);
+var _notification = __webpack_require__(157);
 
-var _group = __webpack_require__(137);
+var _group = __webpack_require__(158);
 
-var _tab = __webpack_require__(138);
+var _tab = __webpack_require__(159);
 
-var _items = __webpack_require__(139);
+var _items = __webpack_require__(160);
 
-var _user = __webpack_require__(140);
+var _user = __webpack_require__(161);
 
-var _post = __webpack_require__(141);
+var _post = __webpack_require__(162);
 
-var _invite = __webpack_require__(142);
+var _invite = __webpack_require__(163);
 
 exports.default = {
     fetchUserInfo: _user.fetchUserInfo,
@@ -17688,3816 +22597,6 @@ exports.default = {
 };
 
 /***/ }),
-/* 135 */
-/***/ (function(module, exports) {
-
-module.exports = {"endpoint":"http://playground.ajaxtown.com/linkcast/12-staging/index.php"}
-
-/***/ }),
-/* 136 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.notificationJoinedGroup = exports.setNotificationCount = exports.notificationClicked = exports.fetchNotifications = undefined;
-
-var _request = __webpack_require__(2);
-
-var fetchNotifications = exports.fetchNotifications = function fetchNotifications(state, actions) {
-    return function (tab_id) {
-        var tab = state.notificationTabs.tabs[tab_id];
-
-        var params = {
-            queryParams: {
-                handle: "tab-" + tab_id,
-                page: 1,
-                chrome_id: state.user.data.chrome_id,
-                group: state.groups.defaultGroup,
-                action: "readTracks",
-                count: null
-            }
-        };
-        if (tab.initialized) {
-            params.queryParams.lastId = tab.data.rows[0].id;
-        }
-        (0, _request.request)(params).then(function (result) {
-            if (tab.initialized) {
-                result.rows.length > 0 && tab.data.rows.unshift(result.rows);
-            } else {
-                result.page = tab.data.page;
-                tab.data = result;
-                tab.initialized = true;
-            }
-            tab.isFetching = false;
-            state.notificationTabs.tabs[tab_id] = tab;
-            actions.updateState(state);
-        });
-    };
-};
-
-var notificationClicked = exports.notificationClicked = function notificationClicked(state, actions) {
-    return function (_ref) {
-        var active = _ref.active,
-            index = _ref.index;
-
-        if (active == "notGroups") return;
-        var item = state.notificationTabs.tabs[active].data.rows[index];
-        var params = {
-            queryParams: {
-                handle: "itemId",
-                chrome_id: state.user.data.chrome_id,
-                group: item.group_id,
-                action: "readTracks",
-                item_id: item.item_id
-            }
-        };
-        (0, _request.request)(params).then(function (result) {
-            state.modals.notification.open = true;
-            state.modals.notification.title = result.rows[0].title;
-            state.modals.notification.data = result;
-            actions.updateState(state);
-        });
-    };
-};
-
-var setNotificationCount = exports.setNotificationCount = function setNotificationCount(state, actions) {
-    return function (data) {
-        state.notificationStatus = data;
-        actions.updateState(state);
-    };
-};
-
-var notificationJoinedGroup = exports.notificationJoinedGroup = function notificationJoinedGroup(state, actions) {
-    return function (index) {
-        state.notificationTabs.tabs.notGroups.data.rows[index].accepted = 1;
-        actions.updateState(state);
-    };
-};
-
-/***/ }),
-/* 137 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.createNewGroup = exports.removeUserFromGroup = exports.changePublicRights = exports.saveEditedGroup = exports.rejectGroupRequest = exports.approveGroupRequest = exports.rejectGroupInvite = exports.acceptGroupInvite = exports.joinGroup = exports.leaveGroup = exports.setDefaultGroup = exports.setGroups = exports.fetchGroupUsers = exports.fetchAllGroups = exports.fetchGroups = undefined;
-
-var _request = __webpack_require__(2);
-
-var _utils = __webpack_require__(12);
-
-// fetch all groups of logged in user
-var fetchGroups = exports.fetchGroups = function fetchGroups(state, actions) {
-    return function (callback) {
-        var params = {
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                action: "fetchUserGroups"
-            }
-        };
-        (0, _request.request)(params).then(function (result) {
-            var groupsData = result.map(function (group) {
-                group.name = group.gname;
-                delete group["gname"];
-                return group;
-            });
-            actions.setGroups({
-                action: "",
-                payload: groupsData
-            });
-            if (typeof callback == "function") {
-                callback();
-            }
-        });
-    };
-};
-
-// fetch all linkcast groups for a user to join.
-var fetchAllGroups = exports.fetchAllGroups = function fetchAllGroups(state, actions) {
-    return function () {
-        var params = {
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                action: "getAllGroups"
-            }
-        };
-        (0, _request.request)(params).then(function (result) {
-            state.allGroups.isFetching = false;
-            state.allGroups.data = result;
-            actions.updateState(state);
-        });
-    };
-};
-
-var fetchGroupUsers = exports.fetchGroupUsers = function fetchGroupUsers(state, actions) {
-    return function (e) {
-        var params = {
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                action: "getGroupUsers",
-                group: e.currentTarget.value
-            }
-        };
-        (0, _request.request)(params).then(function (result) {
-            state.groupUsers.isFetching = false;
-            state.groupUsers.data = result;
-            state.groupUsers.group_id = e.target.value;
-            state.groupUsers.admin_id = state.allGroups.data[e.target.options.selectedIndex].admin;
-            actions.updateState(state);
-        });
-    };
-};
-
-var setGroups = exports.setGroups = function setGroups(state, actions) {
-    return function (data) {
-        state.groups.isFetching = false;
-        data.payload.unshift({
-            group_id: 0,
-            name: "All"
-        });
-        state.groups.data = data.payload;
-        state.groups.selected = data.payload[0] ? data.payload[0].id : null;
-        actions.updateState(state);
-    };
-};
-
-var setDefaultGroup = exports.setDefaultGroup = function setDefaultGroup(state, actions) {
-    return function (index) {
-        state.groups.defaultGroup = parseInt(state.groups.data[index].group_id);
-        localStorage.defaultGroup = state.groups.defaultGroup;
-        state.mainNav.tabs.feed.initialized = false;
-        state.mainNav.tabs.feed.data = {
-            rows: [],
-            page: 1,
-            pages: 0,
-            total: 0
-        };
-        actions.fetchItems({ stateKey: "mainNav", tab_id: "feed" });
-        state.message = "Default group set to " + state.groups.data[index].name;
-
-        actions.updateState(state);
-    };
-};
-
-var leaveGroup = exports.leaveGroup = function leaveGroup(state, actions) {
-    return function (_ref) {
-        var e = _ref.e,
-            key = _ref.key;
-
-        var group = state.allGroups.data[key];
-
-        var params = {
-            method: "POST",
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                action: "leaveGroup",
-                group_id: group.id
-            }
-        };
-        (0, _request.request)(params).then(function (result) {
-            if (result.flag == 1) {
-                actions.fetchAllGroups();
-                actions.fetchGroups();
-                actions.fetchNotifications("notLinks");
-            }
-        });
-    };
-};
-var joinGroup = exports.joinGroup = function joinGroup(state, actions) {
-    return function (_ref2) {
-        var group = _ref2.group,
-            callback = _ref2.callback;
-
-        var params = {
-            method: "POST",
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                action: parseInt(group.is_public) ? "joinPublicGroup" : "joinPrivateGroupRequest",
-                group_id: group.group_id
-            }
-        };
-        (0, _request.request)(params).then(function (result) {
-            if (result.flag == 1) {
-                actions.fetchAllGroups();
-                actions.fetchGroups();
-                actions.fetchNotifications("notLinks");
-                if (typeof callback == "function") callback();
-            }
-        });
-    };
-};
-
-var acceptGroupInvite = exports.acceptGroupInvite = function acceptGroupInvite(state, actions) {
-    return function (_ref3) {
-        var e = _ref3.e,
-            index = _ref3.index,
-            activity = _ref3.activity;
-
-        var params = {
-            method: "POST",
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                action: "acceptGroupInvite",
-                group_id: activity.group_id,
-                activity_id: activity.activity_id
-            }
-        };
-        (0, _request.request)(params).then(function (result) {
-            if (result.flag == 1) {
-                delete state.notificationTabs.tabs.notGroups.data.rows[index];
-                actions.updateState(state);
-            }
-        });
-    };
-};
-var rejectGroupInvite = exports.rejectGroupInvite = function rejectGroupInvite(state, actions) {
-    return function (_ref4) {
-        var e = _ref4.e,
-            index = _ref4.index,
-            activity = _ref4.activity;
-
-        var params = {
-            method: "POST",
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                action: "rejectGroupInvite",
-                group_id: activity.group_id,
-                activity_id: activity.activity_id
-            }
-        };
-        (0, _request.request)(params).then(function (result) {
-            if (result.flag == 1) {
-                delete state.notificationTabs.tabs.notGroups.data.rows[index];
-                actions.updateState(state);
-            }
-        });
-    };
-};
-var approveGroupRequest = exports.approveGroupRequest = function approveGroupRequest(state, actions) {
-    return function (_ref5) {
-        var e = _ref5.e,
-            index = _ref5.index,
-            activity = _ref5.activity;
-
-        var params = {
-            method: "POST",
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                action: "approveGroupRequest",
-                group_id: activity.group_id,
-                activity_id: activity.activity_id
-            }
-        };
-        (0, _request.request)(params).then(function (result) {
-            if (result.flag == 1) {
-                delete state.notificationTabs.tabs.notGroups.data.rows[index];
-                actions.updateState(state);
-            }
-        });
-    };
-};
-var rejectGroupRequest = exports.rejectGroupRequest = function rejectGroupRequest(state, actions) {
-    return function (_ref6) {
-        var e = _ref6.e,
-            index = _ref6.index,
-            activity = _ref6.activity;
-
-        var params = {
-            method: "POST",
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                action: "rejectGroupRequest",
-                group_id: activity.group_id,
-                activity_id: activity.activity_id
-            }
-        };
-        (0, _request.request)(params).then(function (result) {
-            if (result.flag == 1) {
-                delete state.notificationTabs.tabs.notGroups.data.rows[index];
-                actions.updateState(state);
-            }
-        });
-    };
-};
-
-var saveEditedGroup = exports.saveEditedGroup = function saveEditedGroup(state, actions) {
-    return function (data) {
-        var params = {
-            method: "POST",
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                is_public: data.is_public,
-                action: "createEditGroup",
-                desc: data.desc,
-                mode: data.mode,
-                name: data.name,
-                group_id: data.id,
-                group_rights: data.group_rights
-            }
-        };
-
-        (0, _request.request)(params).then(function (result) {
-            state.message = result.msg;
-            actions.updateState(state);
-        });
-    };
-};
-var changePublicRights = exports.changePublicRights = function changePublicRights(state, actions) {
-    return function (data) {
-        var params = {
-            method: "POST",
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                action: "changePublicRights",
-                user_id: data.user_id,
-                group_id: data.group_id,
-                group_rights: data.group_rights
-            }
-        };
-
-        (0, _request.request)(params).then(function (result) {
-            if (result.flag == 1) {
-                state.groupUsers.data[data.index].group_rights = data.group_rights;
-                state.message = result.msg;
-                actions.updateState(state);
-            }
-        });
-    };
-};
-var removeUserFromGroup = exports.removeUserFromGroup = function removeUserFromGroup(state, actions) {
-    return function (data) {
-        var user = state.groupUsers.data[data.index];
-        var params = {
-            method: "POST",
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                action: "removeUserFromGroup",
-                user_id: user.id,
-                group_id: data.group_id
-            }
-        };
-
-        (0, _request.request)(params).then(function (result) {
-            if (result.flag == 1) {
-                delete state.groupUsers.data[data.index];
-                state.message = result.msg;
-                actions.updateState(state);
-            }
-        });
-    };
-};
-
-var createNewGroup = exports.createNewGroup = function createNewGroup(state, actions) {
-    return function (data) {
-        if (data.name.length == 0 || data.desc.length == 0) {
-            state.message = "All fields are mandatory";
-            actions.updateState(state);
-        }
-
-        var user = state.groupUsers.data[data.index];
-        var params = {
-            method: "POST",
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                is_public: data.is_public,
-                action: "createEditGroup",
-                desc: data.desc,
-                mode: data.mode,
-                name: data.name,
-                group_rights: data.group_rights
-            }
-        };
-
-        (0, _request.request)(params).then(function (result) {
-            state.message = result.msg;
-            if (result.flag == 1) {
-                state.groupTabs.active = "manage";
-                actions.fetchAllGroups();
-                actions.fetchGroups(function () {
-                    actions.updateState(state);
-                    document.querySelector(".manage-gdd").value = result.group_id;
-                    (0, _utils.trigger)(".manage-gdd", "change");
-                });
-                return false;
-            }
-            actions.updateState(state);
-        });
-    };
-};
-
-// export const refreshGroup = (state, actions) => {
-
-// }
-
-/***/ }),
-/* 138 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-var onTabChange = exports.onTabChange = function onTabChange(state, actions) {
-    return function (_ref) {
-        var stateKey = _ref.stateKey,
-            tab_id = _ref.tab_id;
-
-        if (state[stateKey].tabs[tab_id].isFetching) {
-            state[stateKey].tabs[tab_id].isFetching = true;
-        }
-        state.message = "";
-        state[stateKey].active = tab_id;
-        var params = { stateKey: stateKey, tab_id: tab_id };
-        _gaq.push(["_trackPageview", "/" + state[stateKey].tabs[tab_id].name]);
-        switch (tab_id) {
-            case "notification":
-                actions.onTabChange({
-                    stateKey: "notificationTabs",
-                    tab_id: state.notificationTabs.active
-                });
-                break;
-            case "notLinks":
-                actions.fetchNotifications(tab_id);
-                break;
-            case "notGroups":
-                actions.fetchNotifications(tab_id);
-                break;
-            case "feed":
-                actions.fetchItems(params);
-                break;
-            case "search":
-                state[stateKey].tabs[tab_id].q = "";
-                state[stateKey].tabs[tab_id].data = {
-                    rows: [],
-                    page: 1,
-                    pages: 0,
-                    total: 0
-                };
-                break;
-            case "links":
-                actions.onTabChange({
-                    stateKey: "linkTabs",
-                    tab_id: state.linkTabs.active
-                });
-                break;
-            case "groups":
-                actions.onTabChange({
-                    stateKey: "groupTabs",
-                    tab_id: state.groupTabs.active
-                });
-                break;
-            case "favourites":
-                actions.fetchItems(params);
-                break;
-            case "sent":
-                actions.fetchItems(params);
-                break;
-            case "public":
-                actions.fetchAllGroups(params);
-                break;
-            case "manage":
-            //actions.fetchAllGroups(params);
-        }
-
-        actions.updateState(state);
-    };
-};
-
-/***/ }),
-/* 139 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.cancelCommentEdit = exports.deleteComment = exports.saveEditedComment = exports.editComment = exports.lazyLoad = exports.itemClicked = exports.handleCommentInput = exports.handleDelete = exports.handleShare = exports.showComments = exports.handleLike = exports.handleFavourite = exports.fetchComments = exports.loadMore = exports.fetchItems = undefined;
-
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
-var _request = __webpack_require__(2);
-
-var _common = __webpack_require__(10);
-
-var fetchItems = exports.fetchItems = function fetchItems(state, actions) {
-    return function (_ref) {
-        var stateKey = _ref.stateKey,
-            tab_id = _ref.tab_id,
-            q = _ref.q;
-
-        var tab = state[stateKey].tabs[tab_id];
-        if (tab_id == "search") {
-            tab.data.rows = [];
-        }
-        var params = {
-            queryParams: {
-                handle: "tab-" + tab_id,
-                page: 1,
-                chrome_id: state.user.data.chrome_id,
-                group: state.groups.defaultGroup,
-                action: "readTracks",
-                count: null
-            }
-        };
-        if (q) {
-            tab.initialized = false;
-            params.queryParams.q = q;
-            state[stateKey].tabs[tab_id].q = q;
-            _gaq.push(["_trackEvent", q, "searched"]);
-        }
-        if (tab.initialized && tab.data.rows.length > 0) {
-            params.queryParams.lastId = tab.data.rows[0].id;
-        }
-        (0, _request.request)(params).then(function (result) {
-            if (tab.initialized) {
-                result.rows.length > 0 && tab.data.rows.unshift(result.rows);
-            } else {
-                result.page = tab.data.page;
-                tab.data = result;
-                tab.initialized = true;
-            }
-            tab.isFetching = false;
-            state[stateKey].tabs[tab_id] = tab;
-            actions.updateState(state);
-        });
-    };
-};
-
-var loadMore = exports.loadMore = function loadMore(state, actions) {
-    return function (e) {
-        var modelStr = e.currentTarget.getAttribute("model");
-        var tab = (0, _common.deepFind)(state, modelStr);
-
-        if (parseInt(tab.data.pages) < parseInt(tab.data.page)) {
-            // enough.. dont fetch any more. because there is none.
-            return;
-        }
-
-        var tabName = modelStr.split(".").pop();
-        tab.loadMore = true;
-        state[modelStr.split(".")[0]].tabs[tabName] = tab;
-        actions.updateState(state);
-        var $preloader = document.querySelector(".preloader");
-        var params = {
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                group: state.groups.defaultGroup,
-                action: "readTracks",
-                handle: "tab-" + tabName,
-                page: tab.data.page + 1,
-                count: null
-            }
-        };
-        if (tabName == "search") {
-            params.queryParams.q = tab.q;
-        }
-        $preloader.classList.remove("invisible");
-        (0, _request.request)(params).then(function (result) {
-            tab.data.page++;
-            tab.data.rows = tab.data.rows.concat(result.rows);
-            tab.loadMore = false;
-            state[modelStr.split(".")[0]].tabs[tabName] = tab;
-            actions.updateState(state);
-            setTimeout(function () {
-                return $preloader.classList.add("invisible");
-            }, 0);
-        });
-    };
-};
-
-var fetchComments = exports.fetchComments = function fetchComments(state, actions) {
-    return function (_ref2) {
-        var item = _ref2.item,
-            model = _ref2.model,
-            key = _ref2.key;
-
-        var params = {
-            queryParams: {
-                commentsPage: 1,
-                item_id: item.id,
-                chrome_id: state.user.data.chrome_id,
-                action: "commentsItem"
-            }
-        };
-        _gaq.push(["_trackEvent", "clicked", "comments"]);
-        (0, _request.request)(params).then(function (result) {
-            var _model$split = model.split("."),
-                _model$split2 = _slicedToArray(_model$split, 1),
-                root = _model$split2[0];
-
-            item.commentList = result.rows;
-            if (root == "modals") {
-                state[root].notification.data.rows[key] = item;
-            } else {
-                state[root].tabs[state[root].active].data.rows[key] = item;
-            }
-            actions.updateState(state);
-        });
-    };
-};
-
-var handleFavourite = exports.handleFavourite = function handleFavourite(state, actions) {
-    return function (_ref3) {
-        var e = _ref3.e,
-            key = _ref3.key;
-
-        var model = e.target.parentElement.closest("[model]").model;
-        var item = (0, _common.deepFind)(state, model).data.rows[key];
-        var favourite = parseInt(item.favourite);
-        item.favourite = favourite ? 0 : 1;
-
-        var _model$split3 = model.split("."),
-            _model$split4 = _slicedToArray(_model$split3, 1),
-            root = _model$split4[0];
-
-        if (root == "modals") {
-            state[root].notification.data.rows[key] = item;
-        } else {
-            state[root].tabs[state[root].active].data.rows[key] = item;
-        }
-        var params = {
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                item_id: item.id,
-                action: favourite ? "removeFromFavourite" : "addToFavourite"
-            }
-        };
-        _gaq.push(["_trackEvent", "clicked", "favourite"]);
-        (0, _request.request)(params).then(function (result) {
-            if (result.flag) {
-                actions.updateState(state);
-            }
-        });
-    };
-};
-var handleLike = exports.handleLike = function handleLike(state, actions) {
-    return function (_ref4) {
-        var e = _ref4.e,
-            key = _ref4.key;
-
-        var model = e.target.parentElement.closest("[model]").model;
-        var item = (0, _common.deepFind)(state, model).data.rows[key];
-        item.liked = parseInt(item.liked) ? 0 : 1;
-        item.likes_count = parseInt(item.likes_count) + (item.liked ? 1 : -1);
-
-        var _model$split5 = model.split("."),
-            _model$split6 = _slicedToArray(_model$split5, 1),
-            root = _model$split6[0];
-
-        if (root == "modals") {
-            state[root].notification.data.rows[key] = item;
-        } else {
-            state[root].tabs[state[root].active].data.rows[key] = item;
-        }
-        var params = {
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                item_id: item.id,
-                action: "likeClicked"
-            }
-        };
-        _gaq.push(["_trackEvent", "clicked", "like"]);
-        (0, _request.request)(params).then(function (result) {
-            if (result.flag) {
-                actions.updateState(state);
-            }
-        });
-    };
-};
-
-var showComments = exports.showComments = function showComments(state, actions) {
-    return function (_ref5) {
-        var e = _ref5.e,
-            key = _ref5.key;
-
-        var model = e.target.parentElement.closest("[model]").model;
-        var item = (0, _common.deepFind)(state, model).data.rows[key];
-        item.showComments = 1;
-
-        var _model$split7 = model.split("."),
-            _model$split8 = _slicedToArray(_model$split7, 1),
-            root = _model$split8[0];
-
-        if (root == "modals") {
-            state[root].notification.data.rows[key] = item;
-        } else {
-            state[root].tabs[state[root].active].data.rows[key] = item;
-        }
-        actions.fetchComments({ item: item, model: model, key: key });
-
-        actions.updateState(state);
-    };
-};
-var handleShare = exports.handleShare = function handleShare(state, actions) {
-    return function (_ref6) {
-        var e = _ref6.e,
-            key = _ref6.key;
-
-        var model = e.target.parentElement.closest("[model]").model;
-        var item = (0, _common.deepFind)(state, model).data.rows[key];
-        state.post.title = item.title;
-        state.post.url = item.url;
-        state.post.thumbnail = item.thumbnail;
-        state.mainNav.active = "post";
-        state.modals.notification.open = false;
-        _gaq.push(["_trackEvent", "clicked", "share"]);
-        actions.updateState(state);
-    };
-};
-var handleDelete = exports.handleDelete = function handleDelete(state, actions) {
-    return function (_ref7) {
-        var e = _ref7.e,
-            key = _ref7.key;
-
-        var model = e.target.parentElement.closest("[model]").model;
-        var item = (0, _common.deepFind)(state, model).data.rows[key];
-
-        var _model$split9 = model.split("."),
-            _model$split10 = _slicedToArray(_model$split9, 1),
-            root = _model$split10[0];
-
-        if (root == "modals") {
-            delete state[root].notification.data.rows[key];
-            state[root].notification.open = false;
-        } else {
-            delete state[root].tabs[state[root].active].data.rows[key];
-        }
-
-        var params = {
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                item_id: item.id,
-                action: "deleteItem"
-            }
-        };
-        _gaq.push(["_trackEvent", "clicked", "delete"]);
-        (0, _request.request)(params).then(function (result) {
-            if (result.flag) {
-                actions.updateState(state);
-            }
-        });
-    };
-};
-
-var handleCommentInput = exports.handleCommentInput = function handleCommentInput(state, actions) {
-    return function (_ref8) {
-        var e = _ref8.e,
-            key = _ref8.key;
-
-        if (e.keyCode != 13) return;
-        var comment = e.target.value;
-        // if edit comment then cancel this process
-        if (state.editComment.open) {
-            actions.saveEditedComment(comment);
-            actions.updateState(state);
-        }
-        var model = e.target.parentElement.closest("[model]").model;
-        var item = (0, _common.deepFind)(state, model).data.rows[key];
-
-        var _model$split11 = model.split("."),
-            _model$split12 = _slicedToArray(_model$split11, 1),
-            root = _model$split12[0];
-
-        if (!item.commentList) {
-            item.commentList = [];
-        }
-        e.target.value = "";
-        var params = {
-            method: "POST",
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                item_id: item.id,
-                comment: comment,
-                action: "insertComment"
-            }
-        };
-        _gaq.push(["_trackEvent", "clicked", "newComment"]);
-        (0, _request.request)(params).then(function (result) {
-            if (result.flag == 1) {
-                var newComment = {
-                    color: state.user.data.color,
-                    comment: (0, _common.escape)(comment),
-                    created_at: "now",
-                    id: result.id,
-                    item_id: item.id,
-                    nickname: state.user.data.nickname,
-                    user_id: state.user.data.id
-                };
-                if (root == "modals") {
-                    state[root].notification.data.rows[key].commentList.unshift(newComment);
-                } else {
-                    state[root].tabs[state[root].active].data.rows[key].commentList.unshift(newComment);
-                }
-                actions.updateState(state);
-            }
-        });
-    };
-};
-
-var itemClicked = exports.itemClicked = function itemClicked(state, actions) {
-    return function (_ref9) {
-        var e = _ref9.e,
-            key = _ref9.key;
-
-        e.preventDefault();
-        var model = e.target.parentElement.closest("[model]").model;
-        var item = (0, _common.deepFind)(state, model).data.rows[key];
-
-        var _model$split13 = model.split("."),
-            _model$split14 = _slicedToArray(_model$split13, 1),
-            root = _model$split14[0];
-
-        if (item.uid != state.user.data.id) {
-            var count = parseInt(item.times_clicked) + 1;
-            if (root == "modals") {
-                state[root].notification.data.rows[key].times_clicked = count;
-            } else {
-                state[root].tabs[state[root].active].data.rows[key].times_clicked = count;
-            }
-        }
-        var params = {
-            chrome_id: state.user.data.chrome_id,
-            item_id: item.id,
-            action: "itemClicked"
-        };
-        _gaq.push(["_trackEvent", "clicked", "itemClicked"]);
-        if (chrome.extension) {
-            var bgPage = chrome.extension.getBackgroundPage();
-            bgPage.sendClickedStat(params);
-        }
-        window.open(e.target.href);
-        actions.updateState(state);
-    };
-};
-
-var lazyLoad = exports.lazyLoad = function lazyLoad(state, actions) {
-    return function (_ref10) {
-        var e = _ref10.e,
-            image = _ref10.image;
-
-        var ele = document.createElement("img");
-        ele.src = image;
-        ele.onload = function () {
-            e.src = image;
-        };
-    };
-};
-
-var editComment = exports.editComment = function editComment(state, actions) {
-    return function (_ref11) {
-        var model = _ref11.model,
-            itemKey = _ref11.itemKey,
-            commentKey = _ref11.commentKey;
-
-        state.editComment.open = true;
-        state.editComment.cursor = { model: model, itemKey: itemKey, commentKey: commentKey };
-        var item = (0, _common.deepFind)(state, model).data.rows[itemKey];
-
-        var _model$split15 = model.split("."),
-            _model$split16 = _slicedToArray(_model$split15, 1),
-            root = _model$split16[0];
-
-        var comment = void 0;
-        if (root == "modals") {
-            comment = state[root].notification.data.rows[itemKey].commentList[commentKey];
-        } else {
-            comment = state[root].tabs[state[root].active].data.rows[itemKey].commentList[commentKey];
-        }
-        state.editComment.data = comment;
-        actions.updateState(state);
-    };
-};
-
-var saveEditedComment = exports.saveEditedComment = function saveEditedComment(state, actions) {
-    return function (comment) {
-        var _state$editComment$cu = state.editComment.cursor,
-            model = _state$editComment$cu.model,
-            itemKey = _state$editComment$cu.itemKey,
-            commentKey = _state$editComment$cu.commentKey;
-
-        var item = (0, _common.deepFind)(state, model).data.rows[itemKey];
-
-        var _model$split17 = model.split("."),
-            _model$split18 = _slicedToArray(_model$split17, 1),
-            root = _model$split18[0];
-
-        var commentObj = null;
-        if (root == "modals") {
-            commentObj = state[root].notification.data.rows[itemKey].commentList[commentKey];
-        } else {
-            commentObj = state[root].tabs[state[root].active].data.rows[itemKey].commentList[commentKey];
-        }
-        commentObj.comment = comment;
-        var commentId = commentObj.id;
-
-        var params = {
-            method: "POST",
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                comment_id: commentId,
-                comment: comment,
-                action: "updateComment"
-            }
-        };
-        _gaq.push(["_trackEvent", "clicked", "saveEditedComment"]);
-        actions.cancelCommentEdit();
-        (0, _request.request)(params).then(function (result) {
-            if (result.flag) {
-                actions.updateState(state);
-            }
-        });
-    };
-};
-
-var deleteComment = exports.deleteComment = function deleteComment(state, actions) {
-    var _state$editComment$cu2 = state.editComment.cursor,
-        model = _state$editComment$cu2.model,
-        itemKey = _state$editComment$cu2.itemKey,
-        commentKey = _state$editComment$cu2.commentKey;
-
-    var item = (0, _common.deepFind)(state, model).data.rows[itemKey];
-
-    var _model$split19 = model.split("."),
-        _model$split20 = _slicedToArray(_model$split19, 1),
-        root = _model$split20[0];
-
-    var commentId = null;
-    if (root == "modals") {
-        commentId = state[root].notification.data.rows[itemKey].commentList[commentKey].id;
-        delete state[root].notification.data.rows[itemKey].commentList[commentKey];
-    } else {
-        commentId = state[root].tabs[state[root].active].data.rows[itemKey].commentList[commentKey].id;
-        delete state[root].tabs[state[root].active].data.rows[itemKey].commentList[commentKey];
-    }
-
-    var params = {
-        method: "POST",
-        queryParams: {
-            chrome_id: state.user.data.chrome_id,
-            comment_id: commentId,
-            action: "deleteComment"
-        }
-    };
-    _gaq.push(["_trackEvent", "clicked", "deleteComment"]);
-    (0, _request.request)(params).then(function (result) {
-        if (result.flag) {
-            actions.cancelCommentEdit();
-            actions.updateState(state);
-        }
-    });
-};
-
-var cancelCommentEdit = exports.cancelCommentEdit = function cancelCommentEdit(state, actions) {
-    state.editComment.open = false;
-    state.editComment.data = {};
-    state.editComment.cursor = {};
-    actions.updateState(state);
-};
-
-/***/ }),
-/* 140 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.sendRecoveryEmail = exports.forgotPassword = exports.doRegister = exports.doLogin = exports.doLogout = exports.saveCustomization = exports.fetchUserInfo = exports.getUserLinks = exports.showProfile = exports.saveProfile = undefined;
-
-var _request = __webpack_require__(2);
-
-var _common = __webpack_require__(10);
-
-var saveProfile = exports.saveProfile = function saveProfile(state, actions) {
-    return function (_ref) {
-        var e = _ref.e,
-            data = _ref.data;
-
-        e.preventDefault();
-        data = Object.assign(state.user.data, data);
-
-        var params = {
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                nickname: data.nickname,
-                color: data.color,
-                bio: data.bio,
-                action: "saveProfile"
-            }
-        };
-        (0, _request.request)(params).then(function (result) {
-            state.user.data = data;
-            state.message = result.msg;
-            actions.updateState(state);
-        });
-    };
-};
-
-var showProfile = exports.showProfile = function showProfile(state, actions) {
-    return function (_ref2) {
-        var e = _ref2.e,
-            user_id = _ref2.user_id;
-
-        e.preventDefault();
-
-        state.modals.profile.links.isFetching = true;
-        state.modals.profile.open = 1;
-        actions.updateState(state);
-        var params1 = {
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                target_id: user_id,
-                action: "getProfile"
-            }
-        };
-        (0, _request.request)(params1).then(function (result) {
-            state.modals.profile.user = result;
-            state.modals.profile.user.id = user_id;
-            state.modals.profile.links.data.page = 0;
-            actions.updateState(state);
-        });
-        actions.getUserLinks({ e: e, user_id: user_id });
-    };
-};
-
-var getUserLinks = exports.getUserLinks = function getUserLinks(state, actions) {
-    return function (_ref3) {
-        var e = _ref3.e,
-            user_id = _ref3.user_id;
-
-        e.preventDefault();
-
-        state.modals.profile.links.isFetching = true;
-        state.modals.profile.open = 1;
-        actions.updateState(state);
-        var newPage = parseInt(state.modals.profile.links.data.page) + 1;
-        var params2 = {
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                target_id: user_id,
-                action: "getOtherUserTracks",
-                page: newPage,
-                count: 5
-            }
-        };
-
-        (0, _request.request)(params2).then(function (result) {
-            state.modals.profile.links.isFetching = false;
-            if (newPage == 1) {
-                state.modals.profile.links.data.rows = result.rows;
-            } else {
-                state.modals.profile.links.data.rows = state.modals.profile.links.data.rows.concat(result.rows);
-            }
-            state.modals.profile.links.data.page = newPage;
-            actions.updateState(state);
-        });
-    };
-};
-
-var fetchUserInfo = exports.fetchUserInfo = function fetchUserInfo(state, actions) {
-    return function (_ref4) {
-        var chrome_id = _ref4.chrome_id,
-            callback = _ref4.callback;
-
-        var params = {
-            queryParams: {
-                chrome_id: chrome_id,
-                action: "fetchUserInfo"
-            }
-        };
-        (0, _request.request)(params).then(function (result) {
-            if (result.flag == 1) {
-                result.data.chrome_id = chrome_id;
-                state.user.data = result.data;
-                state.user.loggedIn = true;
-                state.groups.defaultGroup = localStorage.defaultGroup;
-                actions.updateState(state);
-                callback();
-            }
-        });
-    };
-};
-
-var saveCustomization = exports.saveCustomization = function saveCustomization(state, actions) {
-    return function (_ref5) {
-        var e = _ref5.e,
-            key = _ref5.key;
-
-        e.preventDefault();
-        var value = parseInt(e.target.value);
-        state.user.customize[key] = value;
-        localStorage[key] = value;
-        if (key == "offline") {
-            !value && actions.__removePersist() || value && actions.__initPersist();
-        }
-        actions.updateState(state);
-    };
-};
-var doLogout = exports.doLogout = function doLogout(state, actions) {
-    return function (data) {
-        state.user.loggedIn = false;
-        localStorage.clear();
-        actions.updateState(state);
-    };
-};
-
-var doLogin = exports.doLogin = function doLogin(state, actions) {
-    return function (data) {
-        var params = {
-            method: "POST",
-            queryParams: {
-                nickname: data.nickname,
-                password: data.password,
-                action: "loginUser"
-            }
-        };
-
-        if (data.nickname.length > 0 && data.password.length > 0) {
-            state.user.login.requesting = true;
-            actions.updateState(state);
-            (0, _request.request)(params).then(function (result) {
-                if (result.flag == 1) {
-                    var lsData = {
-                        defaultGroup: 1,
-                        nickname: data.nickname,
-                        loggedIn: true,
-                        chrome_id: result.chrome_id
-                    };
-                    _common.Storage.set(lsData); //overwrite
-                    _common.Storage.set({
-                        sound: 1,
-                        notification: 1,
-                        offline: 0
-                    }, false // dont overwrite
-                    );
-                    //update the state
-                    state.user.data = result.data;
-                    state.user.loggedIn = true;
-                    state.user.customize.sound = parseInt(_common.Storage.get("sound"));
-                    state.user.customize.notification = parseInt(_common.Storage.get("notification"));
-                    state.user.customize.offline = parseInt(_common.Storage.get("offline"));
-                    if (chrome.storage) {
-                        chrome.storage.sync.set({
-                            userid: result.data.chrome_id
-                        });
-                    }
-                    actions.updateState(state);
-                    actions.fetchGroups();
-                    actions.fetchAllGroups();
-                } else {
-                    state.message = result.msg;
-                }
-                state.user.login.requesting = false;
-                state.user.login.msg = result.msg;
-                state.user.login.flag = result.flag;
-                state.groups.defaultGroup = localStorage.defaultGroup;
-                actions.updateState(state);
-            });
-        } else {
-            state.message = "All fields are required";
-            actions.updateState(state);
-        }
-    };
-};
-
-var doRegister = exports.doRegister = function doRegister(state, actions) {
-    return function (data) {
-        var chrome_id = (0, _common.getRandomToken)();
-        var params = {
-            queryParams: {
-                chrome_id: chrome_id,
-                nickname: data.nickname,
-                password: data.password,
-                email: data.email,
-                action: "registerUser"
-            }
-        };
-        if (data.nickname.length > 0 && data.password.length > 0) {
-            state.user.register.requesting = true;
-            actions.updateState(state);
-            (0, _request.request)(params).then(function (result) {
-                if (result.flag == 1) {
-                    actions.doLogin(data);
-                }
-            });
-        }
-    };
-};
-
-var forgotPassword = exports.forgotPassword = function forgotPassword(state, actions) {
-    state.modals.forgotPassword.open = true;
-    actions.updateState(state);
-};
-
-var sendRecoveryEmail = exports.sendRecoveryEmail = function sendRecoveryEmail(state, actions) {
-    return function (data) {
-        if (data.email.length == 0) {
-            state.message = "Enter an email";
-            actions.updateState(state);
-        }
-        var valid = (0, _common.validateEmail)(data.email);
-        if (valid) {
-            var params = {
-                method: "POST",
-                queryParams: {
-                    email: data.email,
-                    action: "forgotPassword"
-                }
-            };
-            (0, _request.request)(params).then(function (result) {
-                if (result.flag == 1) {
-                    state.modals.forgotPassword.open = false;
-                    state.message = "Check your email";
-                }
-                state.message = result.msg;
-                actions.updateState(state);
-            });
-        } else {
-            state.message = "Invalid Email";
-            actions.updateState(state);
-        }
-    };
-};
-
-/***/ }),
-/* 141 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.detectSite = exports.setPost = exports.doPost = undefined;
-
-var _request = __webpack_require__(2);
-
-var doPost = exports.doPost = function doPost(state, actions) {
-    return function (data) {
-        state.post = Object.assign(state.post, data);
-        state.post.posting = true;
-        if (data.title.length == 0) {
-            state.message = "Please enter a title";
-            return actions.updateState(state);
-        }
-        if (data.url.length == 0) {
-            state.message = "Please enter an url";
-            return actions.updateState(state);
-        }
-        actions.updateState(state);
-        data.action = "insertTrack";
-        data.chrome_id = state.user.data.chrome_id;
-        var params = {
-            method: "POST",
-            queryParams: data
-        };
-        (0, _request.request)(params).then(function (result) {
-            state.post.posting = false;
-            state.groups.defaultGroup = data.group;
-            state.mainNav.active = "feed";
-            actions.fetchItems({ stateKey: "mainNav", tab_id: "feed" });
-            actions.updateState(state);
-        });
-    };
-};
-
-var setPost = exports.setPost = function setPost(state, actions) {
-    return function (data) {
-        state.post = Object.assign(state.post, data);
-        actions.updateState(state);
-    };
-};
-
-var detectSite = exports.detectSite = function detectSite(state, actions) {
-    if (chrome.tabs) {
-        chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
-            //var url = tabs[0].url;
-
-            var payload = { action: "get-meta" };
-
-            chrome.extension.getBackgroundPage().retrieveSiteMeta(payload, function (data) {
-                if (data && data.url) {
-                    state.post.title = data.title;
-                    state.post.url = data.url;
-                    state.post.thumbnail = data.thumbUrl;
-                    actions.updateState(state);
-                }
-            });
-        });
-    }
-};
-
-/***/ }),
-/* 142 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.sendInvites = exports.withdrawInvite = exports.setInviteList = exports.showInviteModal = undefined;
-
-var _request = __webpack_require__(2);
-
-var invites = [];
-
-var showInviteModal = exports.showInviteModal = function showInviteModal(state, actions) {
-    return function (_ref) {
-        var e = _ref.e,
-            group_id = _ref.group_id,
-            title = _ref.title;
-
-        e.preventDefault();
-        state.modals.invite.open = true;
-        state.modals.invite.group_id = group_id;
-        actions.updateState(state);
-        var params = {
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                group_id: group_id,
-                action: "getUsersToInvite"
-            }
-        };
-        (0, _request.request)(params).then(function (result) {
-            state.modals.invite.data = result;
-            state.modals.invite.title = title;
-            actions.updateState(state);
-            actions.setInviteList({
-                data: state.modals.invite.data.users,
-                resetInvites: true
-            });
-            //actions.editInvites({ data: data.invites });
-        });
-    };
-};
-
-var ele = function ele(selector) {
-    return document.querySelector(selector);
-};
-var setInviteList = exports.setInviteList = function setInviteList(state, actions) {
-    return function (_ref2) {
-        var data = _ref2.data,
-            resetInvites = _ref2.resetInvites;
-
-        var dataClone = data;
-        if (resetInvites) {
-            invites = [];
-        }
-        var init = function init() {
-            dataClone = dataClone.sort(function (a, b) {
-                return b.nickname - a.nickname;
-            });
-            var list = ele(".token-input-list-facebook");
-            var dd = ele(".token-input-dropdown-facebook");
-            list && list.remove();
-            dd && dd.remove();
-
-            $("#tags-input-send-invites").tokenInput(dataClone, {
-                theme: "facebook",
-                preventDuplicates: true,
-                searchDelay: 0,
-                propertyToSearch: "nickname",
-                prePopulate: invites,
-                resultsLimit: 5,
-                onAdd: function onAdd(user) {
-                    dataClone = dataClone.filter(function (item) {
-                        return item.id != user.id;
-                    });
-                    invites.push(user);
-                    init();
-                },
-                onDelete: function onDelete(user) {
-                    invites = invites.filter(function (item) {
-                        return user.id !== item.id;
-                    });
-                    data.map(function (item) {
-                        if (item.id == user.id) {
-                            dataClone.push(item);
-                            init();
-                            return false;
-                        }
-                    });
-                },
-                onResult: function onResult(results) {
-                    var tagsearch = $("#token-input-tags-input-send-invites").val();
-                    return results.filter(function (item) {
-                        return item.nickname.toLowerCase().indexOf(tagsearch.toLowerCase()) === 0;
-                    });
-                }
-            });
-            $("#tags-input-send-invites").focus();
-        };
-        init();
-    };
-};
-
-var withdrawInvite = exports.withdrawInvite = function withdrawInvite(state, actions) {
-    return function (_ref3) {
-        var e = _ref3.e,
-            invite_id = _ref3.invite_id,
-            index = _ref3.index;
-
-        var user = state.modals.invite.data.invites[index];
-        delete state.modals.invite.data.invites[index];
-
-        var params = {
-            queryParams: {
-                chrome_id: state.user.data.chrome_id,
-                group_id: state.modals.invite.group_id,
-                invite_id: invite_id,
-                action: "withdrawInvite"
-            }
-        };
-        (0, _request.request)(params).then(function (result) {
-            state.modals.invite.data.users.push(user);
-            actions.updateState(state);
-            actions.setInviteList({
-                data: state.modals.invite.data.users,
-                resetInvites: false
-            });
-        });
-    };
-};
-
-var sendInvites = exports.sendInvites = function sendInvites(state, actions) {
-    if (invites.length == 0) {
-        state.message = "No users to invite";
-        actions.updateState(state);
-    }
-
-    var data = invites.map(function (user) {
-        return user.id;
-    });
-
-    var params = {
-        queryParams: {
-            chrome_id: state.user.data.chrome_id,
-            group_id: state.modals.invite.group_id,
-            users: JSON.stringify(data),
-            action: "sendInvites"
-        }
-    };
-    (0, _request.request)(params).then(function (result) {
-        state.modals.invite.open = false;
-        actions.updateState(state);
-    });
-};
-
-/***/ }),
-/* 143 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-var mainNav = {
-    tabs: {
-        notification: {
-            name: "Notifications",
-            authorized: true
-        },
-        feed: {
-            name: "Feed",
-            isFetching: false,
-            loadMore: false,
-            initialized: false,
-            data: {
-                rows: [],
-                page: 1,
-                pages: 0,
-                total: 0
-            },
-            authorized: true
-        },
-        post: {
-            name: "Post",
-            authorized: true
-        },
-        links: {
-            name: "Links",
-            authorized: true
-        },
-        search: {
-            name: "Search",
-            isFetching: false,
-            loadMore: false,
-            q: "",
-            data: {
-                rows: [],
-                page: 1,
-                pages: 0,
-                total: 0
-            },
-            authorized: true
-        },
-        groups: {
-            name: "Groups",
-            data: [],
-            authorized: true
-        },
-        settings: {
-            name: "Settings",
-            data: []
-        }
-    },
-    active: "notification"
-};
-var notificationTabs = {
-    tabs: {
-        notLinks: {
-            name: "Links",
-            isFetching: true,
-            loadMore: false,
-            initialized: false,
-            data: {
-                rows: [],
-                page: 1,
-                pages: 0,
-                total: 0
-            }
-        },
-        notGroups: {
-            name: "Groups",
-            isFetching: false,
-            loadMore: false,
-            initialized: false,
-            data: {
-                rows: [],
-                page: 1,
-                pages: 0,
-                total: 0
-            }
-        }
-    },
-    active: "notLinks"
-};
-var linkTabs = {
-    tabs: {
-        sent: {
-            name: "Sent",
-            isFetching: false,
-            loadMore: false,
-            data: {
-                rows: [],
-                page: 1,
-                pages: 0,
-                total: 0
-            }
-        },
-        favourites: {
-            name: "Favourites",
-            isFetching: true,
-            loadMore: false,
-            data: {
-                rows: [],
-                page: 1,
-                pages: 0,
-                total: 0
-            }
-        }
-    },
-    active: "sent"
-};
-
-var settingsTabs = {
-    tabs: {
-        profile: {
-            name: "Profile",
-            data: []
-        },
-        customize: {
-            name: "Customize",
-            data: []
-        },
-        about: {
-            name: "About",
-            isFetching: false,
-            loadMore: false,
-            data: []
-        }
-    },
-    active: "profile"
-};
-
-var groupTabs = {
-    tabs: {
-        public: {
-            name: "Groups",
-            data: {
-                rows: [],
-                page: 1,
-                pages: 0,
-                total: 0
-            }
-        },
-        manage: {
-            name: "Manage",
-            data: {
-                rows: [],
-                page: 1,
-                pages: 0,
-                total: 0
-            }
-        },
-        create: {
-            name: "Create",
-            isFetching: false,
-            loadMore: false,
-            data: {
-                rows: [],
-                page: 1,
-                pages: 0,
-                total: 0
-            }
-        }
-    },
-    active: "public"
-};
-
-exports.default = {
-    stateVersion: 1.0,
-    num: 0,
-    mainNav: mainNav,
-    notificationTabs: notificationTabs,
-    linkTabs: linkTabs,
-    groupTabs: groupTabs,
-    settingsTabs: settingsTabs,
-    message: "",
-    version: "1.0.0",
-    notificationStatus: {
-        count: 0,
-        links: { rows: [] },
-        groups: { rows: [] },
-        lastUpdateId: 0
-    },
-    modals: {
-        notification: {
-            open: false,
-            data: [],
-            title: ""
-        },
-        forgotPassword: {
-            open: false
-        },
-        invite: {
-            open: false,
-            group_id: 0,
-            data: {
-                users: [],
-                invites: []
-            },
-            title: "Invite Users"
-        },
-        profile: {
-            open: false,
-            links: {
-                isFetching: false,
-                data: {
-                    rows: [],
-                    page: 0,
-                    pages: 0,
-                    total: 0
-                }
-            },
-            user: {
-                id: 0
-            }
-        }
-    },
-    editComment: {
-        open: false,
-        data: {},
-        cursor: {}
-    },
-    allGroups: {
-        data: [],
-        isFetching: false,
-        selected: null
-    },
-    groupUsers: {
-        isFetching: false,
-        data: [],
-        group_id: 0,
-        admin_id: 0
-    },
-    groups: {
-        loadMore: false,
-        defaultGroup: 1,
-        data: [],
-        selected: null
-    },
-    chrome_id: null,
-    user: {
-        login: {
-            requesting: false,
-            msg: "",
-            flag: 1
-        },
-        register: {
-            requesting: false,
-            msg: "",
-            flag: 1
-        },
-        data: {
-            id: "0",
-            nickname: "Anonymous",
-            last_seen: "2017-09-30 11:25:05",
-            color: "hsl(138, 69%, 53%)",
-            bio: "",
-            email: "",
-            verified: "0"
-        },
-        customize: {
-            sound: 1,
-            notification: 1,
-            offline: 0,
-            theme: "dark"
-        },
-        loggedIn: false,
-        isFetching: false
-    },
-    post: {
-        title: "",
-        url: "",
-        comments: "",
-        thumbnail: "",
-        group: 2,
-        posting: false
-    }
-};
-
-/***/ }),
-/* 144 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _hyperapp = __webpack_require__(1);
-
-var _TabComponent = __webpack_require__(4);
-
-var _Notifications = __webpack_require__(145);
-
-var _Notifications2 = _interopRequireDefault(_Notifications);
-
-var _Feed = __webpack_require__(148);
-
-var _Feed2 = _interopRequireDefault(_Feed);
-
-var _Post = __webpack_require__(149);
-
-var _Post2 = _interopRequireDefault(_Post);
-
-var _MyLinks = __webpack_require__(150);
-
-var _MyLinks2 = _interopRequireDefault(_MyLinks);
-
-var _Groups = __webpack_require__(151);
-
-var _Groups2 = _interopRequireDefault(_Groups);
-
-var _Settings = __webpack_require__(156);
-
-var _Settings2 = _interopRequireDefault(_Settings);
-
-var _Search = __webpack_require__(161);
-
-var _Search2 = _interopRequireDefault(_Search);
-
-var _request = __webpack_require__(2);
-
-var _request2 = _interopRequireDefault(_request);
-
-var _ProfileModal = __webpack_require__(162);
-
-var _ProfileModal2 = _interopRequireDefault(_ProfileModal);
-
-var _InviteModal = __webpack_require__(163);
-
-var _InviteModal2 = _interopRequireDefault(_InviteModal);
-
-var _ForgotPasswordModal = __webpack_require__(164);
-
-var _ForgotPasswordModal2 = _interopRequireDefault(_ForgotPasswordModal);
-
-var _EditCommentModal = __webpack_require__(165);
-
-var _EditCommentModal2 = _interopRequireDefault(_EditCommentModal);
-
-var _events = __webpack_require__(166);
-
-var _events2 = _interopRequireDefault(_events);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-window.moment = __webpack_require__(0);
-__webpack_require__(170);
-__webpack_require__(171);
-__webpack_require__(172);
-var loaded = false;
-var main = function main(state, actions) {
-    var data = null;
-    var appHeight = document.body.clientHeight;
-    var msgTopSpace = appHeight - 80;
-    actions.resetMessage();
-    switch (state.mainNav.active) {
-        case "notification":
-            data = (0, _hyperapp.h)(_Notifications2.default, {
-                tabs: state.notificationTabs.tabs,
-                active: state.notificationTabs.active,
-                state: state,
-                loadMore: actions.loadMore,
-                onScroll: actions.onScroll,
-                onTabChange: actions.onTabChange,
-                actions: actions,
-                name: "notification"
-            });
-            break;
-        case "feed":
-            data = (0, _hyperapp.h)(_Feed2.default, {
-                tab: state.mainNav.tabs[state.mainNav.active],
-                actions: actions,
-                onScroll: actions.onScroll,
-                loadMore: actions.loadMore,
-                state: state
-            });
-            break;
-        case "search":
-            data = (0, _hyperapp.h)(_Search2.default, {
-                tab: state.mainNav.tabs[state.mainNav.active],
-                actions: actions,
-                onScroll: actions.onScroll,
-                loadMore: actions.loadMore,
-                state: state
-            });
-            break;
-        case "post":
-            data = (0, _hyperapp.h)(_Post2.default, { state: state, actions: actions });
-            break;
-        case "links":
-            data = (0, _hyperapp.h)(_MyLinks2.default, {
-                tabs: state.linkTabs.tabs,
-                active: state.linkTabs.active,
-                state: state,
-                loadMore: actions.loadMore,
-                onScroll: actions.onScroll,
-                onTabChange: actions.onTabChange,
-                actions: actions
-            });
-            break;
-        case "groups":
-            data = (0, _hyperapp.h)(_Groups2.default, {
-                actions: actions,
-                tabs: state.groupTabs.tabs,
-                active: state.groupTabs.active,
-                state: state
-            });
-            break;
-        case "settings":
-            data = (0, _hyperapp.h)(_Settings2.default, {
-                tabs: state.settingsTabs.tabs,
-                active: state.settingsTabs.active,
-                state: state,
-                actions: actions
-            });
-            break;
-        default:
-            console.log(state);
-    }
-
-    return (0, _hyperapp.h)(
-        "div",
-        { "class": "container" },
-        (0, _hyperapp.h)(_TabComponent.TabComponent, {
-            classes: "main-nav",
-            type: "nav-tabs",
-            state: state,
-            stateKey: "mainNav",
-            onChange: actions.onTabChange,
-            html: data
-        }),
-        state.modals.profile.open && (0, _hyperapp.h)(_ProfileModal2.default, {
-            onScroll: actions.onScroll,
-            state: state,
-            actions: actions,
-            name: "profile"
-        }),
-        state.modals.invite.open && (0, _hyperapp.h)(_InviteModal2.default, { state: state, actions: actions, name: "invite" }),
-        state.modals.forgotPassword.open && (0, _hyperapp.h)(_ForgotPasswordModal2.default, {
-            state: state,
-            actions: actions,
-            name: "forgotPassword"
-        }),
-        state.message != "" && (0, _hyperapp.h)(
-            "div",
-            {
-                id: "msg",
-                "class": "alert alert-warning",
-                style: { top: msgTopSpace + "px" }
-            },
-            state.message
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "preloader center processor invisible" },
-            (0, _hyperapp.h)("div", {
-                "class": "progress-bar progress-bar-striped active",
-                role: "progressbar",
-                "aria-valuenow": "70",
-                "aria-valuemin": "0",
-                "aria-valuemax": "100",
-                style: "width:100%"
-            })
-        ),
-        (0, _hyperapp.h)(
-            "footer",
-            { id: "footer" },
-            "Linkcast v",
-            state.version
-        )
-    );
-};
-
-exports.default = main;
-
-/***/ }),
-/* 145 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.NotificationItem = undefined;
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _hyperapp = __webpack_require__(1);
-
-var _NotificationItems = __webpack_require__(146);
-
-var _TabComponent = __webpack_require__(4);
-
-var _ScrollHoc = __webpack_require__(5);
-
-var _ScrollHoc2 = _interopRequireDefault(_ScrollHoc);
-
-var _ModalHoc = __webpack_require__(6);
-
-var _ModalHoc2 = _interopRequireDefault(_ModalHoc);
-
-var _LinkItem = __webpack_require__(7);
-
-var _LinkItem2 = _interopRequireDefault(_LinkItem);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var Notifications = function Notifications(props) {
-    var data = null;
-    var status = props.state.notificationStatus;
-
-    var joinGroup = function joinGroup(_ref) {
-        var e = _ref.e,
-            index = _ref.index,
-            group = _ref.group;
-
-        e.preventDefault();
-        props.actions.joinGroup({
-            group: group,
-            callback: function callback() {
-                props.actions.notificationJoinedGroup(index);
-            }
-        });
-    };
-    switch (props.active) {
-        case "notLinks":
-            data = props.tabs[props.active].data.rows.map(function (item, i) {
-                var className = i < status.links.rows.length ? "highlight" : "";
-                return (0, _hyperapp.h)(
-                    "div",
-                    {
-                        key: i,
-                        "class": "notification-item clearfix " + className,
-                        "data-id": item.id,
-                        onclick: function onclick(e) {
-                            e.preventDefault();
-                            props.actions.notificationClicked({
-                                active: props.active,
-                                index: i
-                            });
-                        }
-                    },
-                    (0, _hyperapp.h)(NotificationItem, item)
-                );
-            });
-            data = (0, _hyperapp.h)(
-                "div",
-                {
-                    model: "notificationTabs.tabs.notLinks",
-                    "class": "scroll",
-                    onscroll: props.onScroll
-                },
-                data,
-                props.state.modals.notification.open && (0, _ModalHoc2.default)(function () {
-                    return (0, _hyperapp.h)(
-                        "div",
-                        { model: "modals.notification" },
-                        (0, _hyperapp.h)(_LinkItem2.default, {
-                            state: props.state,
-                            key: "0",
-                            actions: props.actions,
-                            user_id: props.state.user.data.id,
-                            item: props.state.modals.notification.data.rows[0]
-                        })
-                    );
-                })(props)
-            );
-            break;
-        case "notGroups":
-            data = props.tabs[props.active].data.rows.map(function (item, i) {
-                var className = i < status.groups.rows.length ? "highlight" : "";
-                return (0, _hyperapp.h)(
-                    "div",
-                    {
-                        key: i,
-                        "class": "notification-item clearfix " + className,
-                        "data-id": item.id,
-                        onclick: function onclick() {
-                            return props.actions.notificationClicked({
-                                active: props.active,
-                                index: i
-                            });
-                        }
-                    },
-                    (0, _hyperapp.h)(NotificationItem, _extends({
-                        key: i,
-                        acceptGroupInvite: props.actions.acceptGroupInvite,
-                        rejectGroupInvite: props.actions.rejectGroupInvite,
-                        approveGroupRequest: props.actions.approveGroupRequest,
-                        rejectGroupRequest: props.actions.rejectGroupRequest,
-                        joinGroupFromNotification: joinGroup
-                    }, item))
-                );
-            });
-            data = (0, _hyperapp.h)(
-                "div",
-                {
-                    model: "notificationTabs.tabs.notGroups",
-                    "class": "scroll",
-                    onscroll: props.onScroll
-                },
-                data
-            );
-            break;
-        default:
-        //console.log(state);
-    }
-
-    return (0, _hyperapp.h)(_TabComponent.TabComponent, {
-        classes: "secondary-nav",
-        type: "nav-pills",
-        state: props.state,
-        stateKey: "notificationTabs",
-        onChange: props.onTabChange,
-        html: data,
-        onBeforeLabelSet: function onBeforeLabelSet(label) {
-            if (label == "Links" && status.links.rows.length > 0) {
-                return label + " (" + status.links.rows.length + ")";
-            } else if (label == "Groups" && status.groups.rows.length > 0) {
-                return label + " (" + status.groups.rows.length + ")";
-            }
-            return label;
-        }
-    });
-};
-
-var NotificationItem = exports.NotificationItem = function NotificationItem(item) {
-    if (item.type == "joined_group") return (0, _hyperapp.h)(_NotificationItems.JoinedGroup, item);else if (item.type == "link") return (0, _hyperapp.h)(_NotificationItems.Link, item);else if (item.type == "like") return (0, _hyperapp.h)(_NotificationItems.Like, item);else if (item.type == "comment") return (0, _hyperapp.h)(_NotificationItems.Comment, item);else if (item.type == "joined_linkcast") return (0, _hyperapp.h)(_NotificationItems.JoinedLinkcast, item);else if (item.type == "new_group") return (0, _hyperapp.h)(_NotificationItems.NewGroup, item);else if (item.type == "group_invite") return (0, _hyperapp.h)(_NotificationItems.GroupInvite, item);else if (item.type == "request_private_group_join") return (0, _hyperapp.h)(_NotificationItems.PrivateGroupRequest, item);
-};
-
-exports.default = (0, _ScrollHoc2.default)(Notifications);
-
-/***/ }),
-/* 146 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.Linkcast = exports.PrivateGroupRequest = exports.GroupInvite = exports.NewGroup = exports.JoinedLinkcast = exports.JoinedGroup = exports.Like = exports.Comment = exports.Link = undefined;
-
-var _hyperapp = __webpack_require__(1);
-
-var getTimeAgo = function getTimeAgo(created_at) {
-    return moment(created_at).add(moment().utcOffset(), "minutes").fromNow();
-};
-var Link = exports.Link = function Link(data) {
-    return (0, _hyperapp.h)(
-        "div",
-        null,
-        (0, _hyperapp.h)(
-            "a",
-            { href: "", "class": "link", "data-id": "{ITEM_ID}" },
-            (0, _hyperapp.h)(
-                "div",
-                null,
-                (0, _hyperapp.h)(
-                    "span",
-                    { "class": "strong" },
-                    data.actors,
-                    " "
-                ),
-                (0, _hyperapp.h)(
-                    "span",
-                    { "class": "activity" },
-                    "posted a link",
-                    (0, _hyperapp.h)(
-                        "span",
-                        { "class": "link strong" },
-                        " ",
-                        data.title
-                    ),
-                    (0, _hyperapp.h)(
-                        "span",
-                        { "class": "group" },
-                        " ",
-                        "in ",
-                        (0, _hyperapp.h)("i", { "class": "fa fa-users", "aria-hidden": "true" }),
-                        " ",
-                        data.group_name
-                    )
-                )
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "item-meta" },
-                (0, _hyperapp.h)("i", { "class": "fa fa-link", "aria-hidden": "true" }),
-                (0, _hyperapp.h)(
-                    "span",
-                    { "class": "comment-date grey" },
-                    getTimeAgo(data.created_at)
-                )
-            )
-        )
-    );
-};
-
-var Comment = exports.Comment = function Comment(data) {
-    return (0, _hyperapp.h)(
-        "div",
-        null,
-        (0, _hyperapp.h)(
-            "a",
-            { href: "", "class": "link", "data-id": "{ITEM_ID}" },
-            (0, _hyperapp.h)(
-                "div",
-                null,
-                (0, _hyperapp.h)(
-                    "span",
-                    { "class": "strong" },
-                    data.actors,
-                    " "
-                ),
-                (0, _hyperapp.h)(
-                    "span",
-                    { "class": "activity" },
-                    "commented on ",
-                    (0, _hyperapp.h)(
-                        "span",
-                        { "class": "strong" },
-                        data.poster,
-                        "'s"
-                    ),
-                    " ",
-                    "link",
-                    (0, _hyperapp.h)(
-                        "span",
-                        {
-                            style: "font-weight: bold; color: #CECECE",
-                            "class": "comment"
-                        },
-                        " ",
-                        data.comment,
-                        " "
-                    ),
-                    (0, _hyperapp.h)(
-                        "span",
-                        { "class": "group" },
-                        "in ",
-                        (0, _hyperapp.h)("i", { "class": "fa fa-users", "aria-hidden": "true" }),
-                        " ",
-                        " ",
-                        data.group_name,
-                        " "
-                    )
-                )
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "item-meta" },
-                (0, _hyperapp.h)("i", { "class": "fa fa-comment", "aria-hidden": "true" }),
-                (0, _hyperapp.h)(
-                    "span",
-                    { "class": "comment-date grey" },
-                    getTimeAgo(data.created_at)
-                )
-            )
-        )
-    );
-};
-
-var Like = exports.Like = function Like(data) {
-    return (0, _hyperapp.h)(
-        "div",
-        null,
-        (0, _hyperapp.h)(
-            "a",
-            { href: "", "class": "link", "data-id": "{ITEM_ID}" },
-            (0, _hyperapp.h)(
-                "div",
-                null,
-                (0, _hyperapp.h)(
-                    "span",
-                    { "class": "strong" },
-                    data.actors,
-                    " "
-                ),
-                (0, _hyperapp.h)(
-                    "span",
-                    { "class": "activity" },
-                    "liked ",
-                    (0, _hyperapp.h)(
-                        "span",
-                        { "class": "strong" },
-                        data.poster,
-                        "'s"
-                    ),
-                    " link",
-                    (0, _hyperapp.h)(
-                        "span",
-                        {
-                            style: "font-weight: bold; color: #CECECE",
-                            "class": "link"
-                        },
-                        " ",
-                        "\"",
-                        data.title,
-                        "\""
-                    ),
-                    (0, _hyperapp.h)(
-                        "span",
-                        { "class": "group" },
-                        "in ",
-                        (0, _hyperapp.h)("i", { "class": "fa fa-users", "aria-hidden": "true" }),
-                        " ",
-                        data.group_name
-                    )
-                )
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "item-meta" },
-                (0, _hyperapp.h)("i", { "class": "fa fa-heart", "aria-hidden": "true" }),
-                (0, _hyperapp.h)(
-                    "span",
-                    { "class": "comment-date grey" },
-                    getTimeAgo(data.created_at)
-                )
-            )
-        )
-    );
-};
-
-var JoinedGroup = exports.JoinedGroup = function JoinedGroup(data) {
-    return (0, _hyperapp.h)(
-        "div",
-        null,
-        (0, _hyperapp.h)(
-            "div",
-            null,
-            (0, _hyperapp.h)(
-                "span",
-                { "class": "strong" },
-                data.actors,
-                " "
-            ),
-            (0, _hyperapp.h)(
-                "span",
-                { "class": "activity" },
-                "joined",
-                (0, _hyperapp.h)(
-                    "span",
-                    { "class": "group" },
-                    " ",
-                    (0, _hyperapp.h)("i", { "class": "fa fa-users", "aria-hidden": "true" }),
-                    " ",
-                    data.group_name
-                )
-            )
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "item-meta" },
-            (0, _hyperapp.h)("i", { "class": "fa fa-sign-in", "aria-hidden": "true" }),
-            (0, _hyperapp.h)(
-                "span",
-                { "class": "comment-date grey" },
-                getTimeAgo(data.created_at)
-            )
-        )
-    );
-};
-
-var JoinedLinkcast = exports.JoinedLinkcast = function JoinedLinkcast(data) {
-    return (0, _hyperapp.h)(
-        "div",
-        null,
-        (0, _hyperapp.h)(
-            "div",
-            null,
-            (0, _hyperapp.h)(
-                "span",
-                { "class": "strong" },
-                data.actors
-            ),
-            (0, _hyperapp.h)(
-                "span",
-                { "class": "activity" },
-                " ",
-                "joined",
-                " ",
-                (0, _hyperapp.h)(
-                    "span",
-                    { style: "color:#c53333; font-weight: bold" },
-                    " LinkCast"
-                )
-            )
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "item-meta" },
-            (0, _hyperapp.h)("i", { "class": "fa fa-user", "aria-hidden": "true" }),
-            (0, _hyperapp.h)(
-                "span",
-                { "class": "comment-date grey" },
-                getTimeAgo(data.created_at)
-            )
-        )
-    );
-};
-
-var NewGroup = exports.NewGroup = function NewGroup(data) {
-    return (0, _hyperapp.h)(
-        "div",
-        null,
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "group_row" },
-            (0, _hyperapp.h)(
-                "span",
-                { "class": "strong" },
-                data.actors,
-                " "
-            ),
-            (0, _hyperapp.h)(
-                "span",
-                { "class": "activity" },
-                "created a new group ",
-                (0, _hyperapp.h)("i", {
-                    "class": "fa fa-users",
-                    "aria-hidden": "true"
-                }),
-                " ",
-                (0, _hyperapp.h)(
-                    "span",
-                    { style: "color:#c53333; font-weight: bold" },
-                    " ",
-                    data.group_name,
-                    ".",
-                    " "
-                ),
-                data.accepted == "0" && (0, _hyperapp.h)(
-                    "a",
-                    {
-                        href: "#",
-                        "class": "group-join green",
-                        onclick: function onclick(e) {
-                            return data.joinGroupFromNotification({
-                                e: e,
-                                index: data.key,
-                                group: {
-                                    group_id: data.group_id,
-                                    is_public: 1
-                                }
-                            });
-                        }
-                    },
-                    "Join Now"
-                )
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                null,
-                (0, _hyperapp.h)(
-                    "i",
-                    null,
-                    data.desc
-                )
-            )
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "item-meta" },
-            (0, _hyperapp.h)("i", { "class": "fa fa-users", "aria-hidden": "true" }),
-            (0, _hyperapp.h)(
-                "span",
-                { "class": "comment-date grey" },
-                getTimeAgo(data.created_at)
-            )
-        )
-    );
-};
-
-var GroupInvite = exports.GroupInvite = function GroupInvite(data) {
-    return (0, _hyperapp.h)(
-        "div",
-        null,
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "group_row", "data-aid": "{ID}", "data-group_id": "{group_id}" },
-            (0, _hyperapp.h)(
-                "span",
-                { "class": "strong" },
-                data.admin
-            ),
-            (0, _hyperapp.h)(
-                "span",
-                { "class": "activity" },
-                " ",
-                "invited you to join",
-                " ",
-                (0, _hyperapp.h)(
-                    "span",
-                    { style: "font-weight: bold" },
-                    " ",
-                    data.group_name,
-                    "."
-                ),
-                (0, _hyperapp.h)(
-                    "a",
-                    {
-                        href: "#",
-                        "class": "group-accept green",
-                        onclick: function onclick(e) {
-                            return data.acceptGroupInvite({
-                                e: e,
-                                index: data.key,
-                                activity: {
-                                    group_id: data.group_id,
-                                    activity_id: data.id
-                                }
-                            });
-                        }
-                    },
-                    " ",
-                    "Accept"
-                ),
-                " ",
-                "|",
-                (0, _hyperapp.h)(
-                    "a",
-                    {
-                        href: "#",
-                        "class": "group-reject red",
-                        onclick: function onclick(e) {
-                            return data.rejectGroupInvite({
-                                e: e,
-                                index: data.key,
-                                activity: {
-                                    group_id: data.group_id,
-                                    activity_id: data.id
-                                }
-                            });
-                        }
-                    },
-                    " ",
-                    "Reject"
-                )
-            )
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "item-meta" },
-            (0, _hyperapp.h)("i", { "class": "fa fa-users", "aria-hidden": "true" }),
-            (0, _hyperapp.h)(
-                "span",
-                { "class": "comment-date grey" },
-                getTimeAgo(data.created_at)
-            )
-        )
-    );
-};
-
-var PrivateGroupRequest = exports.PrivateGroupRequest = function PrivateGroupRequest(data) {
-    return (0, _hyperapp.h)(
-        "div",
-        null,
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "group_row", "data-aid": "{ID}", "data-group_id": "{group_id}" },
-            (0, _hyperapp.h)(
-                "span",
-                { "class": "strong" },
-                data.actors
-            ),
-            (0, _hyperapp.h)(
-                "span",
-                { "class": "activity" },
-                " ",
-                "wants to join",
-                " ",
-                (0, _hyperapp.h)(
-                    "span",
-                    { style: "font-weight: bold" },
-                    " ",
-                    data.group_name,
-                    "."
-                ),
-                (0, _hyperapp.h)(
-                    "a",
-                    {
-                        href: "#",
-                        "class": "group-accept green",
-                        onclick: function onclick(e) {
-                            return data.approveGroupRequest({
-                                e: e,
-                                index: data.key,
-                                activity: {
-                                    group_id: data.group_id,
-                                    activity_id: data.id
-                                }
-                            });
-                        }
-                    },
-                    " ",
-                    "Approve"
-                ),
-                " ",
-                "|",
-                (0, _hyperapp.h)(
-                    "a",
-                    {
-                        href: "#",
-                        "class": "group-reject red",
-                        onclick: function onclick(e) {
-                            return data.rejectGroupRequest({
-                                e: e,
-                                index: data.key,
-                                activity: {
-                                    group_id: data.group_id,
-                                    activity_id: data.id
-                                }
-                            });
-                        }
-                    },
-                    " ",
-                    "Reject"
-                )
-            )
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "item-meta" },
-            (0, _hyperapp.h)("i", { "class": "fa fa-users", "aria-hidden": "true" }),
-            (0, _hyperapp.h)(
-                "span",
-                { "class": "comment-date grey" },
-                getTimeAgo(data.created_at)
-            )
-        )
-    );
-};
-
-var Linkcast = exports.Linkcast = function Linkcast(data) {
-    return (0, _hyperapp.h)(
-        "div",
-        { "class": "announcement" },
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "linkcast-msg", style: "color:{LCOLOR}" },
-            data.actors,
-            " - ",
-            data.title
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "item-meta" },
-            (0, _hyperapp.h)("i", { "class": "fa fa-bullhorn blink_me", "aria-hidden": "true" }),
-            (0, _hyperapp.h)(
-                "span",
-                { "class": "comment-date grey" },
-                getTimeAgo(data.created_at)
-            )
-        )
-    );
-};
-
-/***/ }),
-/* 147 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _hyperapp = __webpack_require__(1);
-
-var Comments = function Comments(props) {
-    var comments = typeof props.data == "undefined" ? [] : props.data;
-
-    var markup = comments.map(function (item, index) {
-        return (0, _hyperapp.h)(
-            "div",
-            { "class": "left clearfix" },
-            (0, _hyperapp.h)(
-                "span",
-                { "class": "comment-user", style: { color: item.color } },
-                item.nickname
-            ),
-            " ",
-            "- ",
-            (0, _hyperapp.h)(
-                "span",
-                { "class": "user-comment" },
-                item.comment
-            ),
-            (0, _hyperapp.h)(
-                "span",
-                { "class": "comment-meta" },
-                (0, _hyperapp.h)(
-                    "span",
-                    { "class": "comment-date grey" },
-                    "  ",
-                    props.user_id == item.user_id && (0, _hyperapp.h)(
-                        "span",
-                        {
-                            "class": "comment-edit",
-                            onclick: function onclick(e) {
-                                var model = e.target.closest("[model]").model;
-                                var itemKey = props.key;
-                                var commentKey = index;
-                                props.actions.editComment({
-                                    model: model,
-                                    itemKey: itemKey,
-                                    commentKey: commentKey
-                                });
-                            }
-                        },
-                        (0, _hyperapp.h)("i", { "class": "red fa fa-pencil" })
-                    ),
-                    (0, _hyperapp.h)(
-                        "span",
-                        { "class": "date" },
-                        function () {
-                            var d = "now";
-                            if (item.created_at != "now") {
-                                d = moment(item.created_at).add(moment().utcOffset(), "minutes").fromNow();
-                            }
-                            return d;
-                        }()
-                    )
-                )
-            )
-        );
-    });
-
-    return (0, _hyperapp.h)(
-        "div",
-        { "class": "comments" },
-        markup
-    );
-};
-exports.default = Comments;
-
-/***/ }),
-/* 148 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _hyperapp = __webpack_require__(1);
-
-var _DropDown = __webpack_require__(8);
-
-var _DropDown2 = _interopRequireDefault(_DropDown);
-
-var _LinkItem = __webpack_require__(7);
-
-var _LinkItem2 = _interopRequireDefault(_LinkItem);
-
-var _Links = __webpack_require__(3);
-
-var _Links2 = _interopRequireDefault(_Links);
-
-var _ScrollHoc = __webpack_require__(5);
-
-var _ScrollHoc2 = _interopRequireDefault(_ScrollHoc);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var Feed = function Feed(props) {
-    var onGroupChange = function onGroupChange(e) {
-        props.actions.setDefaultGroup(e.target.options.selectedIndex);
-    };
-    var invite = function invite(e) {
-        var selectedGroup = props.state.groups.data.filter(function (group) {
-            return group.group_id == props.state.groups.defaultGroup;
-        })[0];
-        if (selectedGroup.group_id == 0) {
-            return props.actions.setMessage("Change the group to invite");
-        }
-        if (selectedGroup.is_public == "0" && selectedGroup.admin !== props.state.user.data.id) {
-            return props.actions.setMessage("Only admin can invite in Private groups");
-        }
-        props.actions.showInviteModal({
-            e: e,
-            group_id: props.state.groups.defaultGroup,
-            title: "Invite users in " + selectedGroup.name
-        });
-    };
-
-    return (0, _hyperapp.h)(
-        "div",
-        null,
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "footer" },
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "pull-left" },
-                "Switch Group: "
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "pull-left" },
-                (0, _hyperapp.h)(_DropDown2.default, {
-                    classes: "groups-dd",
-                    identifier: "group_id",
-                    selected: props.state.groups.defaultGroup,
-                    data: props.state.groups.data,
-                    onChange: onGroupChange
-                })
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "pull-right" },
-                (0, _hyperapp.h)(
-                    "a",
-                    { "class": "invite-link", href: "#", onclick: invite },
-                    "Invite"
-                )
-            ),
-            (0, _hyperapp.h)("span", { "class": "clearfix" })
-        ),
-        (0, _hyperapp.h)(_Links2.default, {
-            model: "mainNav.tabs.feed",
-            tab: props.tab,
-            actions: props.actions,
-            loadMore: props.actions.loadMore,
-            onScroll: props.onScroll,
-            state: props.state
-        })
-    );
-};
-exports.default = (0, _ScrollHoc2.default)(Feed);
-
-/***/ }),
-/* 149 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _hyperapp = __webpack_require__(1);
-
-var _DropDown = __webpack_require__(8);
-
-var _DropDown2 = _interopRequireDefault(_DropDown);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var Post = function Post(_ref) {
-    var state = _ref.state,
-        actions = _ref.actions;
-
-    var params = {
-        title: state.post.title,
-        url: state.post.url,
-        comments: state.post.comments,
-        thumbnail: state.post.thumbnail,
-        group: state.groups.defaultGroup
-    };
-    var _onChange = function _onChange(e, key) {
-        params[key] = e.target.value.trim();
-
-        if (e.target.tagName == "SELECT") {
-            var selectedIdx = e.target.options.selectedIndex;
-            params[key] = state.groups.data[selectedIdx].group_id;
-        }
-        actions.setPost(params);
-    };
-    var handlePost = function handlePost(e) {
-        e.preventDefault();
-        actions.doPost(params);
-    };
-
-    return (0, _hyperapp.h)(
-        "div",
-        { "class": "col-sm-12 pt20 form-horizontal" },
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "form-group" },
-            (0, _hyperapp.h)(
-                "label",
-                { "class": "control-label col-sm-3 required", "for": "item-name" },
-                "Name"
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "col-sm-9" },
-                (0, _hyperapp.h)("input", {
-                    type: "text",
-                    "class": "form-control",
-                    value: state.post.title,
-                    onkeyup: function onkeyup(e) {
-                        return _onChange(e, "title");
-                    }
-                })
-            )
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "form-group" },
-            (0, _hyperapp.h)(
-                "label",
-                { "class": "control-label col-sm-3 required", "for": "item-url" },
-                "URL"
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "col-sm-9" },
-                (0, _hyperapp.h)("input", {
-                    name: "url",
-                    type: "text",
-                    "class": "form-control",
-                    value: state.post.url,
-                    onkeyup: function onkeyup(e) {
-                        return _onChange(e, "url");
-                    }
-                })
-            )
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "form-group" },
-            (0, _hyperapp.h)(
-                "label",
-                { "class": "control-label col-sm-3", "for": "item-comments" },
-                "Comments"
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "col-sm-9" },
-                (0, _hyperapp.h)("input", {
-                    name: "comments",
-                    type: "text",
-                    "class": "form-control",
-                    value: state.post.comments,
-                    onkeyup: function onkeyup(e) {
-                        return _onChange(e, "comments");
-                    }
-                })
-            )
-        ),
-        (0, _hyperapp.h)("input", { type: "hidden", id: "item-thumb" }),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "form-group" },
-            (0, _hyperapp.h)(
-                "label",
-                { "for": "groups-dd", "class": "control-label col-sm-3" },
-                "Select Group"
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "col-sm-9" },
-                (0, _hyperapp.h)(_DropDown2.default, {
-                    classes: "form-control groups-dd",
-                    data: state.groups.data,
-                    selected: state.groups.defaultGroup,
-                    onChange: function onChange(e) {
-                        return _onChange(e, "group");
-                    },
-                    identifier: "group_id"
-                })
-            )
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "col-sm-9 col-sm-offset-3" },
-            (0, _hyperapp.h)(
-                "button",
-                {
-                    id: "post-btn",
-                    type: "submit",
-                    "class": "btn btn-default btn-sm",
-                    onclick: handlePost
-                },
-                "Post"
-            )
-        )
-    );
-};
-exports.default = Post;
-
-/***/ }),
-/* 150 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _hyperapp = __webpack_require__(1);
-
-var _Links = __webpack_require__(3);
-
-var _Links2 = _interopRequireDefault(_Links);
-
-var _TabComponent = __webpack_require__(4);
-
-var _ScrollHoc = __webpack_require__(5);
-
-var _ScrollHoc2 = _interopRequireDefault(_ScrollHoc);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var MyLinks = function MyLinks(props) {
-    var onGroupChange = function onGroupChange(e) {
-        return (0, _hyperapp.h)("div", null);
-    };
-    var data = null;
-    switch (props.active) {
-        case "favourites":
-            data = (0, _hyperapp.h)(_Links2.default, {
-                model: "linkTabs.tabs.favourites",
-                tab: props.tabs[props.active],
-                onScroll: props.onScroll,
-                loadMore: props.actions.loadMore,
-                state: props.state,
-                actions: props.actions
-            });
-            break;
-        case "sent":
-            data = (0, _hyperapp.h)(
-                "div",
-                null,
-                (0, _hyperapp.h)(_Links2.default, {
-                    model: "linkTabs.tabs.sent",
-                    tab: props.tabs[props.active],
-                    onScroll: props.onScroll,
-                    loadMore: props.actions.loadMore,
-                    state: props.state,
-                    actions: props.actions
-                })
-            );
-            break;
-        default:
-            console.log(state);
-    }
-
-    return (0, _hyperapp.h)(_TabComponent.TabComponent, {
-        classes: "secondary-nav",
-        type: "nav-pills",
-        state: props.state,
-        stateKey: "linkTabs",
-        onChange: props.onTabChange,
-        html: data
-    });
-};
-exports.default = (0, _ScrollHoc2.default)(MyLinks);
-
-/***/ }),
-/* 151 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _hyperapp = __webpack_require__(1);
-
-var _Links = __webpack_require__(3);
-
-var _Links2 = _interopRequireDefault(_Links);
-
-var _TabComponent = __webpack_require__(4);
-
-var _ScrollHoc = __webpack_require__(5);
-
-var _ScrollHoc2 = _interopRequireDefault(_ScrollHoc);
-
-var _PublicGroups = __webpack_require__(152);
-
-var _PublicGroups2 = _interopRequireDefault(_PublicGroups);
-
-var _ManageGroups = __webpack_require__(153);
-
-var _ManageGroups2 = _interopRequireDefault(_ManageGroups);
-
-var _CreateGroup = __webpack_require__(155);
-
-var _CreateGroup2 = _interopRequireDefault(_CreateGroup);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var Groups = function Groups(_ref) {
-    var active = _ref.active,
-        actions = _ref.actions,
-        tabs = _ref.tabs,
-        state = _ref.state;
-
-    var onGroupChange = function onGroupChange(e) {
-        return (0, _hyperapp.h)("div", null);
-    };
-    var data = null;
-    switch (active) {
-        case "manage":
-            data = (0, _hyperapp.h)(_ManageGroups2.default, {
-                actions: actions,
-                state: state,
-                tab: tabs[active]
-            });
-            break;
-        case "public":
-            data = (0, _hyperapp.h)(_PublicGroups2.default, {
-                actions: actions,
-                state: state,
-                tab: tabs[active]
-            });
-            break;
-        case "create":
-            data = (0, _hyperapp.h)(_CreateGroup2.default, {
-                actions: actions,
-                state: state,
-                tab: tabs[active]
-            });
-            break;
-    }
-
-    return (0, _hyperapp.h)(_TabComponent.TabComponent, {
-        classes: "secondary-nav",
-        state: state,
-        type: "nav-pills",
-        stateKey: "groupTabs",
-        onChange: actions.onTabChange,
-        html: data
-    });
-};
-exports.default = Groups;
-
-/***/ }),
-/* 152 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _hyperapp = __webpack_require__(1);
-
-var PublicGroups = function PublicGroups(_ref) {
-    var actions = _ref.actions,
-        state = _ref.state,
-        tab = _ref.tab;
-
-    var groups = state.allGroups.data.map(function (group, key) {
-        return (0, _hyperapp.h)(PublicGroupsTable, {
-            user_id: state.user.data.id,
-            actions: actions,
-            key: key,
-            item: group
-        });
-    });
-    return (0, _hyperapp.h)(
-        "div",
-        null,
-        (0, _hyperapp.h)(
-            "p",
-            null,
-            "These are the public group. You can join and start posting links if you have the permission."
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "scroll" },
-            (0, _hyperapp.h)(
-                "table",
-                { style: "margin-bottom:0px;", "class": "table table-hover" },
-                (0, _hyperapp.h)(
-                    "thead",
-                    null,
-                    (0, _hyperapp.h)(
-                        "tr",
-                        null,
-                        (0, _hyperapp.h)(
-                            "th",
-                            { width: "160" },
-                            "Name"
-                        ),
-                        (0, _hyperapp.h)(
-                            "th",
-                            null,
-                            "Type"
-                        ),
-                        (0, _hyperapp.h)(
-                            "th",
-                            null,
-                            "Description"
-                        ),
-                        (0, _hyperapp.h)(
-                            "th",
-                            null,
-                            "Admin"
-                        ),
-                        (0, _hyperapp.h)(
-                            "th",
-                            null,
-                            "Access"
-                        ),
-                        (0, _hyperapp.h)(
-                            "th",
-                            null,
-                            "Users"
-                        ),
-                        (0, _hyperapp.h)(
-                            "th",
-                            null,
-                            "Action"
-                        )
-                    )
-                ),
-                (0, _hyperapp.h)(
-                    "tbody",
-                    { "class": "items" },
-                    groups
-                )
-            )
-        )
-    );
-};
-
-var PublicGroupsTable = function PublicGroupsTable(_ref2) {
-    var actions = _ref2.actions,
-        item = _ref2.item,
-        user_id = _ref2.user_id,
-        key = _ref2.key;
-
-    var isPublic = parseInt(item.is_public);
-    var joinGroup = function joinGroup(_ref3) {
-        var e = _ref3.e,
-            group = _ref3.group;
-
-        e.preventDefault();
-        actions.joinGroup({ group: group });
-    };
-
-    return (0, _hyperapp.h)(
-        "tr",
-        { "class": "group_row" },
-        (0, _hyperapp.h)(
-            "td",
-            null,
-            (0, _hyperapp.h)(
-                "a",
-                { href: "#", "class": "group-name" },
-                (0, _hyperapp.h)(
-                    "strong",
-                    null,
-                    item.name
-                )
-            )
-        ),
-        (0, _hyperapp.h)(
-            "td",
-            { align: "center", style: { color: isPublic ? "" : "red" } },
-            isPublic ? (0, _hyperapp.h)("i", { "class": "fa fa-unlock", "aria-hidden": "true" }) : (0, _hyperapp.h)("i", { "class": "fa fa-lock", "aria-hidden": "true" })
-        ),
-        (0, _hyperapp.h)(
-            "td",
-            null,
-            item.desc
-        ),
-        (0, _hyperapp.h)(
-            "td",
-            null,
-            item.adminName
-        ),
-        (0, _hyperapp.h)(
-            "td",
-            null,
-            item.group_rights
-        ),
-        (0, _hyperapp.h)(
-            "td",
-            { align: "center" },
-            item.total
-        ),
-        (0, _hyperapp.h)(
-            "td",
-            { align: "center" },
-            function () {
-                var action = "Leave";
-                if (item.total == 1 && item.admin == user_id) {
-                    action = "Delete";
-                }
-                if (item.status == "1") {
-                    return (0, _hyperapp.h)(
-                        "a",
-                        {
-                            href: "#",
-                            "class": "red group-leave",
-                            onclick: function onclick(e) {
-                                return actions.leaveGroup({ e: e, key: key });
-                            }
-                        },
-                        action
-                    );
-                } else if (item.status == "0") {
-                    return (0, _hyperapp.h)(
-                        "a",
-                        {
-                            href: "#",
-                            "class": "green group-join",
-                            onclick: function onclick(e) {
-                                return joinGroup({
-                                    e: e,
-                                    group: {
-                                        group_id: item.id,
-                                        is_public: item.is_public
-                                    }
-                                });
-                            }
-                        },
-                        isPublic ? "Join" : "Request"
-                    );
-                } else if (item.status == "2") {
-                    return (0, _hyperapp.h)(
-                        "span",
-                        null,
-                        "Pending"
-                    );
-                }
-            }()
-        )
-    );
-};
-exports.default = PublicGroups;
-
-/***/ }),
-/* 153 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _hyperapp = __webpack_require__(1);
-
-var _Users = __webpack_require__(154);
-
-var _Users2 = _interopRequireDefault(_Users);
-
-var _DropDown = __webpack_require__(8);
-
-var _DropDown2 = _interopRequireDefault(_DropDown);
-
-var _Radio = __webpack_require__(9);
-
-var _utils = __webpack_require__(12);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var ManageGroups = function ManageGroups(_ref) {
-    var state = _ref.state,
-        actions = _ref.actions;
-
-    var GroupUsers = state.groupUsers.data.map(function (item, index) {
-        return (0, _hyperapp.h)(_Users2.default, {
-            actions: actions,
-            index: index,
-            group_id: state.groupUsers.group_id,
-            item: item,
-            isAdmin: item.id == state.groupUsers.admin_id
-        });
-    });
-    var groups = [];
-    var selectedIndex = 0;
-    state.allGroups.data.map(function (item) {
-        if (item.admin == state.user.data.id) {
-            groups.push(item);
-        }
-    });
-    var selected = groups[0] ? groups[0].id : 0;
-
-    if (groups.length == 0) return (0, _hyperapp.h)(
-        "p",
-        null,
-        "You are not an admin of any group."
-    );
-
-    var getSelectedGroup = function getSelectedGroup() {
-        return document.querySelector(".manage-gdd option:checked").innerHTML;
-    };
-
-    return (0, _hyperapp.h)(
-        "div",
-        { "class": "tab-pane", id: "tab-manage-groups" },
-        (0, _hyperapp.h)(
-            "p",
-            null,
-            "You can manage the groups for which are you are the admin.",
-            (0, _hyperapp.h)(
-                "button",
-                {
-                    "class": "invite-btn btn btn-xs btn-success pull-right",
-                    onclick: function onclick(e) {
-                        return actions.showInviteModal({
-                            e: e,
-                            group_id: state.groupUsers.group_id,
-                            title: "Invite users in " + getSelectedGroup()
-                        });
-                    }
-                },
-                "Invite"
-            )
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "row" },
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "col-sm-6 form-horizontal" },
-                (0, _hyperapp.h)(
-                    "div",
-                    {
-                        "class": "form-group",
-                        oncreate: function oncreate() {
-                            return (0, _utils.trigger)(".manage-gdd", "change");
-                        }
-                    },
-                    (0, _hyperapp.h)(
-                        "label",
-                        { "class": "control-label col-sm-3" },
-                        "Groups:"
-                    ),
-                    (0, _hyperapp.h)(
-                        "div",
-                        { "class": "col-sm-9" },
-                        (0, _hyperapp.h)(_DropDown2.default, {
-                            classes: "form-control manage-gdd",
-                            identifier: "id",
-                            data: groups,
-                            selected: selected,
-                            onChange: actions.fetchGroupUsers
-                        })
-                    )
-                ),
-                (0, _hyperapp.h)(GroupEditForm, {
-                    saveEditedGroup: actions.saveEditedGroup,
-                    state: state
-                })
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "col-sm-6 form-group scroll", id: "group-users-block" },
-                (0, _hyperapp.h)(
-                    "label",
-                    null,
-                    "Group Users:"
-                ),
-                (0, _hyperapp.h)(
-                    "table",
-                    { "class": "table table-hover", id: "group-users-table" },
-                    (0, _hyperapp.h)(
-                        "thead",
-                        null,
-                        (0, _hyperapp.h)(
-                            "tr",
-                            null,
-                            (0, _hyperapp.h)(
-                                "th",
-                                null,
-                                "Name"
-                            ),
-                            (0, _hyperapp.h)(
-                                "th",
-                                null,
-                                "Access"
-                            ),
-                            (0, _hyperapp.h)(
-                                "th",
-                                null,
-                                "Remove"
-                            )
-                        )
-                    ),
-                    (0, _hyperapp.h)(
-                        "tbody",
-                        null,
-                        GroupUsers
-                    )
-                )
-            )
-        )
-    );
-};
-var GroupEditForm = function GroupEditForm(_ref2) {
-    var state = _ref2.state,
-        saveEditedGroup = _ref2.saveEditedGroup;
-
-    var selectedGroup = {};
-    state.allGroups.data.map(function (group, i) {
-        if (state.groupUsers.group_id == group.id) {
-            selectedGroup = group;
-        }
-    });
-
-    var localState = { mode: "edit" };
-
-    var onBlur = function onBlur(e, key) {
-        localState[key] = e.target.value;
-    };
-    var saveGroup = function saveGroup() {
-        var data = Object.assign(selectedGroup, localState);
-        saveEditedGroup(data);
-    };
-
-    return (0, _hyperapp.h)(
-        "div",
-        { "class": "editgroup-block" },
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "form-group" },
-            (0, _hyperapp.h)(
-                "label",
-                {
-                    "class": "control-label col-sm-3 required",
-                    "for": "inputGroupCreate"
-                },
-                "Name"
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "col-sm-9" },
-                (0, _hyperapp.h)("input", {
-                    "class": "form-control",
-                    value: selectedGroup.name,
-                    type: "text",
-                    onblur: function onblur(e) {
-                        return onBlur(e, "name");
-                    }
-                })
-            )
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "form-group" },
-            (0, _hyperapp.h)(
-                "label",
-                {
-                    "class": "control-label col-sm-3 required",
-                    "for": "inputGrpDesc"
-                },
-                "Desc"
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "col-sm-9" },
-                (0, _hyperapp.h)("input", {
-                    size: "140",
-                    "class": "form-control",
-                    value: selectedGroup.desc,
-                    type: "text",
-                    onblur: function onblur(e) {
-                        return onBlur(e, "desc");
-                    }
-                })
-            )
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "form-group", id: "group-visibility" },
-            (0, _hyperapp.h)(
-                "label",
-                { "class": "control-label col-sm-3", "for": "inputDefault" },
-                "Visibility"
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "col-sm-9" },
-                (0, _hyperapp.h)(
-                    "label",
-                    { "class": "radio-inline" },
-                    (0, _hyperapp.h)(_Radio.Radio, {
-                        "class": "radio",
-                        type: "radio",
-                        value: "1",
-                        name: "group-visibility",
-                        checked: selectedGroup.is_public == "1",
-                        onclick: function onclick(e) {
-                            return onBlur(e, "is_public");
-                        }
-                    }),
-                    "Public"
-                ),
-                (0, _hyperapp.h)(
-                    "label",
-                    { "class": "radio-inline" },
-                    (0, _hyperapp.h)(_Radio.Radio, {
-                        "class": "radio",
-                        type: "radio",
-                        value: "0",
-                        name: "group-visibility",
-                        checked: selectedGroup.is_public == "0",
-                        onclick: function onclick(e) {
-                            return onBlur(e, "is_public");
-                        }
-                    }),
-                    "Private"
-                )
-            )
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "form-group", id: "group-rights" },
-            (0, _hyperapp.h)(
-                "label",
-                { "class": "control-label col-sm-3" },
-                "Permissions:"
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "col-sm-9" },
-                (0, _hyperapp.h)(
-                    "label",
-                    { "class": "radio-inline" },
-                    (0, _hyperapp.h)(_Radio.Radio, {
-                        "class": "radio",
-                        type: "radio",
-                        value: "can_post",
-                        name: "group_rights",
-                        checked: selectedGroup.group_rights == "can_post",
-                        onclick: function onclick(e) {
-                            return onBlur(e, "group_rights");
-                        }
-                    }),
-                    "Can Post"
-                ),
-                (0, _hyperapp.h)(
-                    "label",
-                    { "class": "radio-inline" },
-                    (0, _hyperapp.h)(_Radio.Radio, {
-                        "class": "radio",
-                        type: "radio",
-                        value: "can_read",
-                        name: "group_rights",
-                        checked: selectedGroup.group_rights == "can_read",
-                        onclick: function onclick(e) {
-                            return onBlur(e, "group_rights");
-                        }
-                    }),
-                    "Can Read"
-                )
-            )
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "col-xs-offset-3 col-xs-9" },
-            (0, _hyperapp.h)(
-                "button",
-                {
-                    type: "submit",
-                    onclick: saveGroup,
-                    "class": "btn btn-default btn-sm"
-                },
-                "Save"
-            )
-        )
-    );
-};
-
-exports.default = ManageGroups;
-
-/***/ }),
-/* 154 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _hyperapp = __webpack_require__(1);
-
-var _Radio = __webpack_require__(9);
-
-var Users = function Users(_ref) {
-    var actions = _ref.actions,
-        item = _ref.item,
-        isAdmin = _ref.isAdmin,
-        group_id = _ref.group_id,
-        index = _ref.index;
-
-    var remove = isAdmin ? "" : "remove";
-    var can_post = item.group_rights == "can_post";
-    var can_read = item.group_rights == "can_read";
-    var changePermission = function changePermission(group_rights) {
-        actions.changePublicRights({
-            user_id: item.id,
-            group_rights: group_rights,
-            group_id: group_id,
-            index: index
-        });
-    };
-    var style = {
-        verticalAlign: "middle"
-    };
-    return (0, _hyperapp.h)(
-        "tr",
-        { "class": "user-item", "data-id": "{USER_ID}" },
-        (0, _hyperapp.h)(
-            "td",
-            { style: style },
-            (0, _hyperapp.h)(
-                "span",
-                { style: { color: item.color } },
-                item.nickname
-            )
-        ),
-        (0, _hyperapp.h)(
-            "td",
-            { style: style },
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "btn-group", "data-toggle": "buttons" },
-                (0, _hyperapp.h)(
-                    "label",
-                    { "class": "radio" },
-                    (0, _hyperapp.h)(_Radio.Radio, {
-                        "class": "radio",
-                        type: "radio",
-                        value: "can_post",
-                        name: "item-" + item.id,
-                        checked: can_post,
-                        onclick: function onclick(e) {
-                            return changePermission("can_post");
-                        }
-                    }),
-                    "Can Post"
-                ),
-                (0, _hyperapp.h)(
-                    "label",
-                    { "class": "radio" },
-                    (0, _hyperapp.h)(_Radio.Radio, {
-                        "class": "radio",
-                        type: "radio",
-                        value: "can_read",
-                        name: "item-" + item.id,
-                        checked: can_read,
-                        onclick: function onclick(e) {
-                            return changePermission("can_read");
-                        }
-                    }),
-                    "Can Read"
-                )
-            )
-        ),
-        (0, _hyperapp.h)(
-            "td",
-            { style: style },
-            (0, _hyperapp.h)(
-                "a",
-                {
-                    href: "#",
-                    "class": "remove-user",
-                    onclick: function onclick(e) {
-                        actions.removeUserFromGroup({ index: index, group_id: group_id });
-                    }
-                },
-                remove
-            )
-        )
-    );
-};
-exports.default = Users;
-
-/***/ }),
 /* 155 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -21507,1490 +22606,15 @@ exports.default = Users;
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.init = undefined;
 
-var _hyperapp = __webpack_require__(1);
+var _common = __webpack_require__(8);
 
-var _Radio = __webpack_require__(9);
-
-var localState = {
-    name: "",
-    desc: "",
-    mode: "create",
-    group_rights: "can_post",
-    is_public: 1
-};
-var CreateGroup = function CreateGroup(props) {
-    var onBlur = function onBlur(e, key) {
-        localState[key] = e.target.value;
-    };
-    var createGroup = function createGroup() {
-        props.actions.createNewGroup(localState);
-    };
-    return (0, _hyperapp.h)(
-        "div",
-        null,
-        (0, _hyperapp.h)(
-            "p",
-            null,
-            "You can create a public group which is visible to all users. Any body will be able to join and see the links being shared. For privacy, you can create a private group."
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            null,
-            (0, _hyperapp.h)(
-                "div",
-                { "class": " form-horizontal", id: "create-group-block" },
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "form-group" },
-                    (0, _hyperapp.h)(
-                        "label",
-                        {
-                            "class": "control-label col-sm-3 required",
-                            "for": "inputGroupCreate"
-                        },
-                        "Name"
-                    ),
-                    (0, _hyperapp.h)(
-                        "div",
-                        { "class": "col-sm-9" },
-                        (0, _hyperapp.h)("input", {
-                            size: "30",
-                            "class": "form-control",
-                            id: "inputGroupCreate",
-                            type: "text",
-                            onblur: function onblur(e) {
-                                return onBlur(e, "name");
-                            },
-                            placeholder: "Enter a group name"
-                        })
-                    )
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "form-group" },
-                    (0, _hyperapp.h)(
-                        "label",
-                        {
-                            "class": "control-label col-sm-3 required",
-                            "for": "inputGrpDesc"
-                        },
-                        "Desc"
-                    ),
-                    (0, _hyperapp.h)(
-                        "div",
-                        { "class": "col-sm-9" },
-                        (0, _hyperapp.h)("input", {
-                            size: "140",
-                            "class": "form-control",
-                            id: "inputGrpDesc",
-                            type: "text",
-                            onblur: function onblur(e) {
-                                return onBlur(e, "desc");
-                            },
-                            placeholder: "Enter a group description"
-                        })
-                    )
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "form-group", id: "group-visibility" },
-                    (0, _hyperapp.h)(
-                        "label",
-                        {
-                            "class": "control-label col-sm-3",
-                            "for": "inputDefault"
-                        },
-                        "Visibility"
-                    ),
-                    (0, _hyperapp.h)(
-                        "div",
-                        { "class": "col-sm-9" },
-                        (0, _hyperapp.h)(
-                            "label",
-                            { "class": "radio-inline" },
-                            (0, _hyperapp.h)(_Radio.Radio, {
-                                "class": "radio",
-                                type: "radio",
-                                value: "1",
-                                name: "group-visibility",
-                                checked: "true",
-                                onclick: function onclick(e) {
-                                    return onBlur(e, "is_public");
-                                }
-                            }),
-                            "Public"
-                        ),
-                        (0, _hyperapp.h)(
-                            "label",
-                            { "class": "radio-inline" },
-                            (0, _hyperapp.h)(_Radio.Radio, {
-                                "class": "radio",
-                                type: "radio",
-                                value: "0",
-                                name: "group-visibility",
-                                onclick: function onclick(e) {
-                                    return onBlur(e, "is_public");
-                                }
-                            }),
-                            "Private"
-                        )
-                    )
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "form-group", id: "group-rights" },
-                    (0, _hyperapp.h)(
-                        "label",
-                        { "class": "control-label col-sm-3" },
-                        "Permissions:"
-                    ),
-                    (0, _hyperapp.h)(
-                        "div",
-                        { "class": "col-sm-9" },
-                        (0, _hyperapp.h)(
-                            "label",
-                            { "class": "radio-inline" },
-                            (0, _hyperapp.h)(_Radio.Radio, {
-                                "class": "radio",
-                                type: "radio",
-                                value: "can_post",
-                                name: "group_rights",
-                                checked: "true",
-                                onclick: function onclick(e) {
-                                    return onBlur(e, "group_rights");
-                                }
-                            }),
-                            "Can Post"
-                        ),
-                        (0, _hyperapp.h)(
-                            "label",
-                            { "class": "radio-inline" },
-                            (0, _hyperapp.h)(_Radio.Radio, {
-                                "class": "radio",
-                                type: "radio",
-                                value: "can_read",
-                                name: "group_rights",
-                                checked: "false",
-                                onclick: function onclick(e) {
-                                    return onBlur(e, "group_rights");
-                                }
-                            }),
-                            "Can Read"
-                        )
-                    )
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "col-xs-offset-3 col-xs-9" },
-                    (0, _hyperapp.h)("br", null),
-                    (0, _hyperapp.h)(
-                        "button",
-                        {
-                            type: "submit",
-                            "data-action": "create",
-                            id: "create-group",
-                            "class": "actionBtn btn btn-default btn-sm",
-                            onclick: createGroup
-                        },
-                        "Create Group"
-                    )
-                )
-            ),
-            (0, _hyperapp.h)("br", null)
-        )
-    );
-};
-
-exports.default = CreateGroup;
-
-/***/ }),
-/* 156 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _hyperapp = __webpack_require__(1);
-
-var _Links = __webpack_require__(3);
-
-var _Links2 = _interopRequireDefault(_Links);
-
-var _TabComponent = __webpack_require__(4);
-
-var _Profile = __webpack_require__(157);
-
-var _Profile2 = _interopRequireDefault(_Profile);
-
-var _Customize = __webpack_require__(159);
-
-var _Customize2 = _interopRequireDefault(_Customize);
-
-var _About = __webpack_require__(160);
-
-var _About2 = _interopRequireDefault(_About);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var Settings = function Settings(_ref) {
-    var active = _ref.active,
-        state = _ref.state,
-        actions = _ref.actions,
-        tabs = _ref.tabs;
-
-    var onGroupChange = function onGroupChange(e) {
-        return (0, _hyperapp.h)("div", null);
-    };
-    var data = null;
-    switch (active) {
-        case "profile":
-            data = (0, _hyperapp.h)(_Profile2.default, {
-                state: state,
-                model: "settingsTabs.tabs.profile",
-                tab: tabs[active],
-                actions: actions
-            });
-            break;
-        case "customize":
-            data = (0, _hyperapp.h)(
-                "div",
-                null,
-                (0, _hyperapp.h)(_Customize2.default, {
-                    state: state,
-                    model: "settingsTabs.tabs.customize",
-                    tab: tabs[active],
-                    actions: actions
-                })
-            );
-            break;
-        case "about":
-            data = (0, _hyperapp.h)(
-                "div",
-                null,
-                (0, _hyperapp.h)(_About2.default, {
-                    model: "settingsTabs.tabs.about",
-                    state: state,
-                    tab: tabs[active]
-                })
-            );
-            break;
-        default:
-            // onTabChange({
-            //     stateKey: "settingsTabs",
-            //     tab_id: active
-            // });
-            break;
-    }
-    return (0, _hyperapp.h)(_TabComponent.TabComponent, {
-        classes: "secondary-nav",
-        type: "nav-pills",
-        state: state,
-        stateKey: "settingsTabs",
-        onChange: actions.onTabChange,
-        html: data
-    });
-};
-exports.default = Settings;
-
-/***/ }),
-/* 157 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _hyperapp = __webpack_require__(1);
-
-__webpack_require__(158);
-
-var Profile = function Profile(_ref) {
-    var state = _ref.state,
-        actions = _ref.actions;
-
-    return (0, _hyperapp.h)(
-        "div",
-        null,
-        (0, _hyperapp.h)(Info, {
-            actions: actions,
-            state: state,
-            loggedIn: state.user.loggedIn
-        }),
-        (0, _hyperapp.h)(LoginRegistration, {
-            actions: actions,
-            state: state,
-            loggedIn: state.user.loggedIn
-        })
-    );
-};
-
-var Info = function Info(_ref2) {
-    var state = _ref2.state,
-        actions = _ref2.actions,
-        loggedIn = _ref2.loggedIn;
-
-    if (!loggedIn) return null;
-
-    var localState = {};
-
-    var onBlur = function onBlur(e, key) {
-        localState[key] = e.target.value;
-    };
-    return state.user.loggedIn && (0, _hyperapp.h)(
-        "div",
-        { "class": "authorized " },
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "status" },
-            (0, _hyperapp.h)(
-                "div",
-                null,
-                "Connected as",
-                (0, _hyperapp.h)(
-                    "strong",
-                    null,
-                    " ",
-                    state.user.data.nickname
-                ),
-                ",",
-                " ",
-                (0, _hyperapp.h)(
-                    "a",
-                    { href: "#", onclick: actions.doLogout },
-                    "Logout"
-                )
-            )
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { id: "edit-profile" },
-            (0, _hyperapp.h)(
-                "form",
-                {
-                    "class": "form-horizontal",
-                    oncreate: function oncreate(e) {
-                        var nicknameStyle = document.querySelector("#nickname").style;
-                        nicknameStyle.color = state.user.data.color;
-                        ColorPicker(document.getElementById("slide"), document.getElementById("picker"), function (hex, hsv, rgb) {
-                            nicknameStyle.color = hex;
-                            var e = {
-                                target: {
-                                    value: hex
-                                }
-                            };
-                            onBlur(e, "color");
-                        });
-                    }
-                },
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "form-group", style: "line-height: 44px;" },
-                    (0, _hyperapp.h)(
-                        "label",
-                        {
-                            "class": "control-label col-sm-3",
-                            "for": "profile-color"
-                        },
-                        "Profile Color"
-                    ),
-                    (0, _hyperapp.h)(
-                        "div",
-                        { "class": "col-sm-9", style: { display: "flex" } },
-                        (0, _hyperapp.h)("div", { id: "picker" }),
-                        (0, _hyperapp.h)("div", { id: "slide" })
-                    )
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "form-group" },
-                    (0, _hyperapp.h)(
-                        "label",
-                        {
-                            "class": "control-label col-sm-3",
-                            "for": "new-nickname"
-                        },
-                        "Nickname"
-                    ),
-                    (0, _hyperapp.h)(
-                        "div",
-                        { "class": "col-sm-9" },
-                        (0, _hyperapp.h)("input", {
-                            "class": "form-control",
-                            id: "nickname",
-                            onblur: function onblur(e) {
-                                return onBlur(e, "nickname");
-                            },
-                            type: "text",
-                            value: state.user.data.nickname
-                        })
-                    )
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "form-group" },
-                    (0, _hyperapp.h)(
-                        "label",
-                        { "class": "control-label col-sm-3", "for": "bio" },
-                        "Short Bio"
-                    ),
-                    (0, _hyperapp.h)(
-                        "div",
-                        { "class": "col-sm-9" },
-                        (0, _hyperapp.h)("input", {
-                            "class": "form-control",
-                            onblur: function onblur(e) {
-                                return onBlur(e, "bio");
-                            },
-                            type: "text",
-                            value: state.user.data.bio
-                        })
-                    )
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "col-xs-offset-3" },
-                    (0, _hyperapp.h)(
-                        "button",
-                        {
-                            type: "submit",
-                            style: "margin-left: 14px;",
-                            onclick: function onclick(e) {
-                                return actions.saveProfile({
-                                    e: e,
-                                    data: localState
-                                });
-                            },
-                            "class": "profile-btn btn btn-default btn-sm"
-                        },
-                        "Save"
-                    )
-                )
-            )
-        )
-    );
-};
-var initialState = {
-    nickname: "",
-    password: "",
-    email: ""
-};
-var LoginRegistration = function LoginRegistration(_ref3) {
-    var actions = _ref3.actions,
-        state = _ref3.state,
-        loggedIn = _ref3.loggedIn;
-
-    if (loggedIn) return null;
-
-    var onBlur = function onBlur(e, key) {
-        initialState[key] = e.target.value;
-    };
-    var handleLogin = function handleLogin() {
-        actions.doLogin(initialState);
-    };
-    var handleRegistration = function handleRegistration(e, key) {
-        actions.doRegister(initialState);
-    };
-
-    return (0, _hyperapp.h)(
-        "div",
-        { "class": "step form-horizontal" },
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "col-xs-6" },
-            (0, _hyperapp.h)(
-                "p",
-                null,
-                "Login"
-            ),
-            (0, _hyperapp.h)("br", null),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "form-group" },
-                (0, _hyperapp.h)(
-                    "label",
-                    { "class": "control-label col-sm-3", "for": "nickname" },
-                    "Nickname"
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "col-sm-9" },
-                    (0, _hyperapp.h)("input", {
-                        "class": "form-control",
-                        onblur: function onblur(e) {
-                            return onBlur(e, "nickname");
-                        },
-                        type: "text"
-                    })
-                )
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "form-group" },
-                (0, _hyperapp.h)(
-                    "label",
-                    { "class": "control-label  col-sm-3", "for": "password" },
-                    "Password"
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "col-sm-9" },
-                    (0, _hyperapp.h)("input", {
-                        "class": "form-control",
-                        onblur: function onblur(e) {
-                            return onBlur(e, "password");
-                        },
-                        type: "password"
-                    })
-                )
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "col-sm-9 col-sm-offset-3" },
-                (0, _hyperapp.h)(
-                    "a",
-                    { href: "#", onclick: actions.forgotPassword },
-                    "Forgot Password"
-                )
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "col-sm-9 col-sm-offset-3" },
-                (0, _hyperapp.h)("br", null),
-                (0, _hyperapp.h)(
-                    "button",
-                    {
-                        type: "submit",
-                        "class": "login-btn btn btn-default btn-sm",
-                        onclick: handleLogin
-                    },
-                    "Login"
-                )
-            )
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "col-xs-6" },
-            (0, _hyperapp.h)(
-                "p",
-                null,
-                "Register"
-            ),
-            (0, _hyperapp.h)("br", null),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "form-group" },
-                (0, _hyperapp.h)(
-                    "label",
-                    { "class": "control-label col-sm-3", "for": "r-email" },
-                    "Email"
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "col-sm-9" },
-                    (0, _hyperapp.h)("input", {
-                        onblur: function onblur(e) {
-                            return onBlur(e, "email");
-                        },
-                        "class": "form-control",
-                        id: "r-email",
-                        type: "email"
-                    })
-                )
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "form-group" },
-                (0, _hyperapp.h)(
-                    "label",
-                    { "class": "control-label  col-sm-3", "for": "r-nickname" },
-                    "Nickname"
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "col-sm-9" },
-                    (0, _hyperapp.h)("input", {
-                        "class": "form-control",
-                        id: "r-nickname",
-                        type: "text",
-                        onblur: function onblur(e) {
-                            return onBlur(e, "nickname");
-                        }
-                    })
-                )
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "form-group" },
-                (0, _hyperapp.h)(
-                    "label",
-                    { "class": "control-label col-sm-3", "for": "r-password" },
-                    "Password"
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "col-sm-9" },
-                    (0, _hyperapp.h)("input", {
-                        "class": "form-control",
-                        id: "r-password",
-                        type: "password",
-                        onblur: function onblur(e) {
-                            return onBlur(e, "password");
-                        }
-                    })
-                )
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "col-sm-9 col-sm-offset-3" },
-                (0, _hyperapp.h)(
-                    "button",
-                    {
-                        type: "submit",
-                        "class": "register-btn btn btn-default btn-sm",
-                        onclick: handleRegistration
-                    },
-                    "Register"
-                )
-            )
-        )
-    );
-};
-exports.default = Profile;
-
-/***/ }),
-/* 158 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-(function (g, p, n) {
-    function v(a) {
-        if (g.event && g.event.contentOverflow !== n) return { x: g.event.offsetX, y: g.event.offsetY };if (a.offsetX !== n && a.offsetY !== n) return { x: a.offsetX, y: a.offsetY };var b = a.target.parentNode.parentNode;return { x: a.layerX - b.offsetLeft, y: a.layerY - b.offsetTop };
-    }function e(a, b, c) {
-        a = p.createElementNS(z, a);for (var d in b) {
-            a.setAttribute(d, b[d]);
-        }"[object Array]" != Object.prototype.toString.call(c) && (c = [c]);b = 0;for (d = c[0] && c.length || 0; b < d; b++) {
-            a.appendChild(c[b]);
-        }return a;
-    }function h(a) {
-        var b,
-            c,
-            d,
-            j,
-            e = a.h % 360 / 60;j = a.v * a.s;d = j * (1 - Math.abs(e % 2 - 1));b = c = a = a.v - j;e = ~~e;b += [j, d, 0, 0, d, j][e];c += [d, j, j, d, 0, 0][e];a += [0, 0, d, j, j, d][e];d = Math.floor(255 * b);c = Math.floor(255 * c);a = Math.floor(255 * a);return { r: d, g: c, b: a, hex: "#" + (16777216 | a | c << 8 | d << 16).toString(16).slice(1) };
-    }function q(a) {
-        var b = a.r,
-            c = a.g,
-            d = a.b;if (1 < a.r || 1 < a.g || 1 < a.b) b /= 255, c /= 255, d /= 255;var e;a = Math.max(b, c, d);e = a - Math.min(b, c, d);b = 60 * ((0 == e ? 0 : a == b ? (c - d) / e + (c < d ? 6 : 0) : a == c ? (d - b) / e + 2 : (b - c) / e + 4) % 6);return { h: b, s: 0 == e ? 0 : e / a, v: a };
-    }function w(a, b, c) {
-        return function (d) {
-            d = d || g.event;d = v(d);a.h = 360 * (d.y / b.offsetHeight) + s;a.s = a.v = 1;var e = h({ h: a.h, s: 1, v: 1 });c.style.backgroundColor = e.hex;a.callback && a.callback(e.hex, { h: a.h - s, s: a.s, v: a.v }, { r: e.r, g: e.g, b: e.b }, n, d);
-        };
-    }function x(a, b) {
-        return function (c) {
-            c = c || g.event;c = v(c);var d = b.offsetHeight;a.s = c.x / b.offsetWidth;a.v = (d - c.y) / d;d = h(a);a.callback && a.callback(d.hex, { h: a.h - s, s: a.s, v: a.v }, { r: d.r, g: d.g, b: d.b }, c);
-        };
-    }function f(a, b, c) {
-        if (!(this instanceof f)) return new f(a, b, c);this.h = 0;this.v = this.s = 1;if (c) this.callback = c, this.pickerElement = b, this.slideElement = a;else {
-            a.innerHTML = A;this.slideElement = a.getElementsByClassName("slide")[0];this.pickerElement = a.getElementsByClassName("picker")[0];var d = a.getElementsByClassName("slide-indicator")[0],
-                e = a.getElementsByClassName("picker-indicator")[0];f.fixIndicators(d, e);this.callback = function (a, c, g, h, k) {
-                f.positionIndicators(d, e, k, h);b(a, c, g);
-            };
-        }"SVG" == t ? (a = k.getElementsByTagName("linearGradient")[0], c = k.getElementsByTagName("rect")[0], a.id = "gradient-hsv-" + r, c.setAttribute("fill", "url(#" + a.id + ")"), a = l.getElementsByTagName("linearGradient"), c = l.getElementsByTagName("rect"), a[0].id = "gradient-black-" + r, a[1].id = "gradient-white-" + r, c[0].setAttribute("fill", "url(#" + a[1].id + ")"), c[1].setAttribute("fill", "url(#" + a[0].id + ")"), this.slideElement.appendChild(k.cloneNode(!0)), this.pickerElement.appendChild(l.cloneNode(!0)), r++) : (this.slideElement.innerHTML = k, this.pickerElement.innerHTML = l);m(this.slideElement, "click", w(this, this.slideElement, this.pickerElement));m(this.pickerElement, "click", x(this, this.pickerElement));y(this, this.slideElement, w(this, this.slideElement, this.pickerElement));y(this, this.pickerElement, x(this, this.pickerElement));
-    }function m(a, b, c) {
-        a.attachEvent ? a.attachEvent("on" + b, c) : a.addEventListener && a.addEventListener(b, c, !1);
-    }function y(a, b, c) {
-        var d = !1;m(b, "mousedown", function () {
-            d = !0;
-        });m(b, "mouseup", function () {
-            d = !1;
-        });m(b, "mouseout", function () {
-            d = !1;
-        });m(b, "mousemove", function (a) {
-            d && c(a);
-        });
-    }function u(a, b, c, d) {
-        a.h = b.h % 360;a.s = b.s;a.v = b.v;b = h(a);var e = { y: a.h * a.slideElement.offsetHeight / 360, x: 0 },
-            f = a.pickerElement.offsetHeight,
-            f = { x: a.s * a.pickerElement.offsetWidth, y: f - a.v * f };a.pickerElement.style.backgroundColor = h({ h: a.h, s: 1, v: 1 }).hex;a.callback && a.callback(d || b.hex, { h: a.h, s: a.s, v: a.v }, c || { r: b.r, g: b.g, b: b.b }, f, e);return a;
-    }var t = g.SVGAngle || p.implementation.hasFeature("http://www.w3.org/TR/SVG11/feature#BasicStructure", "1.1") ? "SVG" : "VML",
-        l,
-        k,
-        s = 15,
-        z = "http://www.w3.org/2000/svg",
-        A = '<div class="picker-wrapper"><div class="picker"></div><div class="picker-indicator"></div></div><div class="slide-wrapper"><div class="slide"></div><div class="slide-indicator"></div></div>';
-    "SVG" == t ? (k = e("svg", { xmlns: "http://www.w3.org/2000/svg", version: "1.1", width: "100%", height: "100%" }, [e("defs", {}, e("linearGradient", { id: "gradient-hsv", x1: "0%", y1: "100%", x2: "0%", y2: "0%" }, [e("stop", { offset: "0%", "stop-color": "#FF0000", "stop-opacity": "1" }), e("stop", { offset: "13%", "stop-color": "#FF00FF", "stop-opacity": "1" }), e("stop", { offset: "25%", "stop-color": "#8000FF", "stop-opacity": "1" }), e("stop", { offset: "38%", "stop-color": "#0040FF", "stop-opacity": "1" }), e("stop", { offset: "50%", "stop-color": "#00FFFF", "stop-opacity": "1" }), e("stop", { offset: "63%", "stop-color": "#00FF40", "stop-opacity": "1" }), e("stop", { offset: "75%", "stop-color": "#0BED00", "stop-opacity": "1" }), e("stop", { offset: "88%", "stop-color": "#FFFF00", "stop-opacity": "1" }), e("stop", { offset: "100%", "stop-color": "#FF0000", "stop-opacity": "1" })])), e("rect", { x: "0", y: "0", width: "100%", height: "100%", fill: "url(#gradient-hsv)" })]), l = e("svg", { xmlns: "http://www.w3.org/2000/svg", version: "1.1", width: "100%", height: "100%" }, [e("defs", {}, [e("linearGradient", { id: "gradient-black", x1: "0%",
-        y1: "100%", x2: "0%", y2: "0%" }, [e("stop", { offset: "0%", "stop-color": "#000000", "stop-opacity": "1" }), e("stop", { offset: "100%", "stop-color": "#CC9A81", "stop-opacity": "0" })]), e("linearGradient", { id: "gradient-white", x1: "0%", y1: "100%", x2: "100%", y2: "100%" }, [e("stop", { offset: "0%", "stop-color": "#FFFFFF", "stop-opacity": "1" }), e("stop", { offset: "100%", "stop-color": "#CC9A81", "stop-opacity": "0" })])]), e("rect", { x: "0", y: "0", width: "100%", height: "100%", fill: "url(#gradient-white)" }), e("rect", { x: "0", y: "0", width: "100%", height: "100%",
-        fill: "url(#gradient-black)" })])) : "VML" == t && (k = '<DIV style="position: relative; width: 100%; height: 100%"><v:rect style="position: absolute; top: 0; left: 0; width: 100%; height: 100%" stroked="f" filled="t"><v:fill type="gradient" method="none" angle="0" color="red" color2="red" colors="8519f fuchsia;.25 #8000ff;24903f #0040ff;.5 aqua;41287f #00ff40;.75 #0bed00;57671f yellow"></v:fill></v:rect></DIV>', l = '<DIV style="position: relative; width: 100%; height: 100%"><v:rect style="position: absolute; left: -1px; top: -1px; width: 101%; height: 101%" stroked="f" filled="t"><v:fill type="gradient" method="none" angle="270" color="#FFFFFF" opacity="100%" color2="#CC9A81" o:opacity2="0%"></v:fill></v:rect><v:rect style="position: absolute; left: 0px; top: 0px; width: 100%; height: 101%" stroked="f" filled="t"><v:fill type="gradient" method="none" angle="0" color="#000000" opacity="100%" color2="#CC9A81" o:opacity2="0%"></v:fill></v:rect></DIV>', p.namespaces.v || p.namespaces.add("v", "urn:schemas-microsoft-com:vml", "#default#VML"));var r = 0;f.hsv2rgb = function (a) {
-        a = h(a);delete a.hex;return a;
-    };f.hsv2hex = function (a) {
-        return h(a).hex;
-    };f.rgb2hsv = q;f.rgb2hex = function (a) {
-        return h(q(a)).hex;
-    };f.hex2hsv = function (a) {
-        return q(f.hex2rgb(a));
-    };f.hex2rgb = function (a) {
-        return { r: parseInt(a.substr(1, 2), 16), g: parseInt(a.substr(3, 2), 16), b: parseInt(a.substr(5, 2), 16) };
-    };f.prototype.setHsv = function (a) {
-        return u(this, a);
-    };f.prototype.setRgb = function (a) {
-        return u(this, q(a), a);
-    };f.prototype.setHex = function (a) {
-        return u(this, f.hex2hsv(a), n, a);
-    };f.positionIndicators = function (a, b, c, d) {
-        c && (b.style.left = "auto", b.style.right = "0px", b.style.top = "0px", a.style.top = c.y - a.offsetHeight / 2 + "px");d && (b.style.top = d.y - b.offsetHeight / 2 + "px", b.style.left = d.x - b.offsetWidth / 2 + "px");
-    };f.fixIndicators = function (a, b) {
-        b.style.pointerEvents = "none";a.style.pointerEvents = "none";
-    };g.ColorPicker = f;
-})(window, window.document);
-
-/***/ }),
-/* 159 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _hyperapp = __webpack_require__(1);
-
-var _Radio = __webpack_require__(9);
-
-var Customize = function Customize(_ref) {
-    var state = _ref.state,
-        actions = _ref.actions;
-
-    var itemClicked = function itemClicked(e, key) {
-        actions.saveCustomization({ e: e, key: key });
-    };
-    var initialState = state.user.customize;
-    return (0, _hyperapp.h)(
-        "div",
-        null,
-        (0, _hyperapp.h)(
-            "div",
-            { "class": " form-horizontal" },
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "form-group", id: "sound-setting" },
-                (0, _hyperapp.h)(
-                    "label",
-                    { "class": "control-label col-sm-3" },
-                    "Sound"
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "col-sm-9" },
-                    (0, _hyperapp.h)(
-                        "div",
-                        { "class": "btn-group", "data-toggle": "buttons" },
-                        (0, _hyperapp.h)(
-                            "label",
-                            {
-                                "data-val": "1",
-                                "class": "btn btn-default btn-sm " + (initialState.sound && "active")
-                            },
-                            (0, _hyperapp.h)(_Radio.Radio, {
-                                "class": "radio",
-                                type: "radio",
-                                value: "1",
-                                name: "sound",
-                                onclick: function onclick(e) {
-                                    return itemClicked(e, "sound");
-                                },
-                                checked: initialState.sound
-                            }),
-                            "On"
-                        ),
-                        (0, _hyperapp.h)(
-                            "label",
-                            {
-                                "data-val": "0",
-                                "class": "btn btn-default btn-sm " + (!initialState.sound && "active")
-                            },
-                            (0, _hyperapp.h)(_Radio.Radio, {
-                                "class": "radio",
-                                type: "radio",
-                                value: "0",
-                                name: "sound",
-                                onclick: function onclick(e) {
-                                    return itemClicked(e, "sound");
-                                },
-                                checked: !initialState.sound
-                            }),
-                            "Off"
-                        )
-                    )
-                )
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "form-group", id: "persist-setting" },
-                (0, _hyperapp.h)(
-                    "label",
-                    { "class": "control-label col-sm-3" },
-                    "Allow offline"
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "col-sm-9" },
-                    (0, _hyperapp.h)(
-                        "div",
-                        { "class": "btn-group", "data-toggle": "buttons" },
-                        (0, _hyperapp.h)(
-                            "label",
-                            {
-                                "data-val": "1",
-                                "class": "btn btn-default btn-sm " + (initialState.offline && "active")
-                            },
-                            (0, _hyperapp.h)(_Radio.Radio, {
-                                "class": "radio",
-                                type: "radio",
-                                value: "1",
-                                name: "offline",
-                                onclick: function onclick(e) {
-                                    return itemClicked(e, "offline");
-                                },
-                                checked: initialState.offline
-                            }),
-                            "On"
-                        ),
-                        (0, _hyperapp.h)(
-                            "label",
-                            {
-                                "data-val": "0",
-                                "class": "btn btn-default btn-sm " + (!initialState.offline && "active")
-                            },
-                            (0, _hyperapp.h)(_Radio.Radio, {
-                                "class": "radio",
-                                type: "radio",
-                                value: "0",
-                                name: "offline",
-                                onclick: function onclick(e) {
-                                    return itemClicked(e, "offline");
-                                },
-                                checked: !initialState.offline
-                            }),
-                            "Off"
-                        )
-                    )
-                )
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "form-group", id: "rich-notification" },
-                (0, _hyperapp.h)(
-                    "label",
-                    { "class": "control-label col-sm-3" },
-                    "Notification:"
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "col-sm-9" },
-                    (0, _hyperapp.h)(
-                        "div",
-                        { "class": "btn-group", "data-toggle": "buttons" },
-                        (0, _hyperapp.h)(
-                            "label",
-                            {
-                                "data-val": "1",
-                                "class": "btn btn-default btn-sm " + (initialState.notification && "active")
-                            },
-                            (0, _hyperapp.h)(_Radio.Radio, {
-                                "class": "radio",
-                                type: "radio",
-                                value: "1",
-                                name: "noti",
-                                onclick: function onclick(e) {
-                                    return itemClicked(e, "notification");
-                                },
-                                checked: initialState.notification
-                            }),
-                            "On"
-                        ),
-                        (0, _hyperapp.h)(
-                            "label",
-                            {
-                                "data-val": "0",
-                                "class": "btn btn-default btn-sm " + (!initialState.notification && "active")
-                            },
-                            (0, _hyperapp.h)(_Radio.Radio, {
-                                "class": "radio",
-                                type: "radio",
-                                value: "0",
-                                name: "noti",
-                                onclick: function onclick(e) {
-                                    return itemClicked(e, "notification");
-                                },
-                                checked: !initialState.notification
-                            }),
-                            "Off"
-                        )
-                    )
-                )
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "form-group", id: "theme-setting" },
-                (0, _hyperapp.h)(
-                    "label",
-                    { "class": "control-label col-sm-3" },
-                    "Theme:"
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "col-sm-9" },
-                    (0, _hyperapp.h)(
-                        "div",
-                        { "class": "btn-group", "data-toggle": "buttons" },
-                        (0, _hyperapp.h)(
-                            "label",
-                            {
-                                "data-val": "1",
-                                "class": "btn btn-default btn-sm active"
-                            },
-                            (0, _hyperapp.h)("input", {
-                                "class": "radio",
-                                type: "radio",
-                                value: "1",
-                                name: "noti"
-                            }),
-                            "Dark"
-                        )
-                    )
-                )
-            )
-        )
-    );
-};
-
-exports.default = Customize;
-
-/***/ }),
-/* 160 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _hyperapp = __webpack_require__(1);
-
-var About = function About(_ref) {
-    var state = _ref.state;
-
-    return (0, _hyperapp.h)(
-        "div",
-        { "class": "" },
-        "Linkcast v",
-        state.version,
-        (0, _hyperapp.h)("p", null),
-        (0, _hyperapp.h)(
-            "p",
-            null,
-            "Web Linkcast:",
-            " ",
-            (0, _hyperapp.h)(
-                "a",
-                {
-                    target: "_blank",
-                    href: "chrome-extension://" + chrome.runtime.id + "/popup.html",
-                    id: "linkcast-web"
-                },
-                "Click here"
-            )
-        ),
-        (0, _hyperapp.h)("p", null),
-        (0, _hyperapp.h)("p", null),
-        (0, _hyperapp.h)("span", { id: "random_quote" }),
-        (0, _hyperapp.h)(
-            "div",
-            { style: "position:absolute;bottom: 42px;" },
-            "For any bugs, log them",
-            " ",
-            (0, _hyperapp.h)(
-                "a",
-                {
-                    target: "_blank",
-                    href: "https://github.com/ajaxtown/linkcast/issues"
-                },
-                "here"
-            )
-        )
-    );
-};
-
-exports.default = About;
-
-/***/ }),
-/* 161 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _hyperapp = __webpack_require__(1);
-
-var _DropDown = __webpack_require__(8);
-
-var _DropDown2 = _interopRequireDefault(_DropDown);
-
-var _LinkItem = __webpack_require__(7);
-
-var _LinkItem2 = _interopRequireDefault(_LinkItem);
-
-var _Links = __webpack_require__(3);
-
-var _Links2 = _interopRequireDefault(_Links);
-
-var _ScrollHoc = __webpack_require__(5);
-
-var _ScrollHoc2 = _interopRequireDefault(_ScrollHoc);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var Search = function Search(props) {
-    var doSearch = function doSearch(e) {
-        if (e.keyCode == 13) {
-            if (e.target.value.length > 0) {
-                props.actions.fetchItems({
-                    stateKey: "mainNav",
-                    q: e.target.value,
-                    tab_id: "search"
-                });
-            }
-        }
-    };
-    return (0, _hyperapp.h)(
-        "div",
-        null,
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "footer" },
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "pull-left" },
-                "Search:"
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "pull-left" },
-                (0, _hyperapp.h)("input", {
-                    type: "text",
-                    "class": "search-box",
-                    placeholder: "Search links, titles, hastags, users...almost everything",
-                    value: props.state.mainNav.tabs.search.q,
-                    onkeypress: doSearch,
-                    oncreate: function oncreate(e) {
-                        return e.focus();
-                    }
-                })
-            ),
-            (0, _hyperapp.h)("span", { "class": "clearfix" })
-        ),
-        (0, _hyperapp.h)(_Links2.default, {
-            model: "mainNav.tabs.search",
-            tab: props.tab,
-            actions: props.actions,
-            loadMore: props.actions.loadMore,
-            onScroll: props.onScroll,
-            state: props.state
-        })
-    );
-};
-exports.default = (0, _ScrollHoc2.default)(Search);
-
-/***/ }),
-/* 162 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _hyperapp = __webpack_require__(1);
-
-var _Links = __webpack_require__(3);
-
-var _Links2 = _interopRequireDefault(_Links);
-
-var _ModalHoc = __webpack_require__(6);
-
-var _ModalHoc2 = _interopRequireDefault(_ModalHoc);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var P = function P(_ref) {
-    var state = _ref.state,
-        actions = _ref.actions,
-        onScroll = _ref.onScroll,
-        loadMore = _ref.loadMore;
-
-    return (0, _hyperapp.h)(
-        "div",
-        { model: "modals.profile.links", "class": "row" },
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "col-sm-3" },
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "user-groups-list" },
-                (0, _hyperapp.h)(
-                    "h5",
-                    { "class": "group-title" },
-                    "Groups"
-                ),
-                (0, _hyperapp.h)("div", { "class": "groups-wrapper" })
-            )
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "col-sm-9" },
-            (0, _hyperapp.h)(_Links2.default, {
-                model: "modals.profile.links",
-                tab: state.modals.profile.links,
-                onScroll: actions.onScroll,
-                state: state,
-                loadMore: function loadMore(e) {
-                    return actions.getUserLinks({
-                        e: e,
-                        user_id: state.modals.profile.user.id
-                    });
-                },
-                actions: actions
-            })
-        )
-    );
-};
-
-exports.default = (0, _ModalHoc2.default)(P);
-
-/***/ }),
-/* 163 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _hyperapp = __webpack_require__(1);
-
-var _ModalHoc = __webpack_require__(6);
-
-var _ModalHoc2 = _interopRequireDefault(_ModalHoc);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var InviteModal = function InviteModal(_ref) {
-    var state = _ref.state,
-        actions = _ref.actions,
-        onScroll = _ref.onScroll,
-        loadMore = _ref.loadMore;
-
-    return (0, _hyperapp.h)(
-        "div",
-        { model: "modals.profile.invite", "class": "row" },
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "col-xs-6" },
-            (0, _hyperapp.h)(
-                "h6",
-                null,
-                "# Send Invites"
-            ),
-            (0, _hyperapp.h)("input", {
-                type: "text",
-                id: "tags-input-send-invites",
-                "class": "form-control",
-                oncreate: function oncreate(e) {
-                    e.focus();
-                }
-            })
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "col-xs-6" },
-            (0, _hyperapp.h)(
-                "h6",
-                null,
-                "# Edit Pending Invites"
-            ),
-            (0, _hyperapp.h)(
-                "div",
-                {
-                    id: "sent-invites",
-                    "class": "scroll",
-                    style: { height: "280px" }
-                },
-                state.modals.invite.data.invites.map(function (user, index) {
-                    return (0, _hyperapp.h)(
-                        "div",
-                        { "class": "invite" },
-                        (0, _hyperapp.h)(
-                            "span",
-                            { style: { color: user.color } },
-                            user.nickname
-                        ),
-                        (0, _hyperapp.h)(
-                            "span",
-                            null,
-                            (0, _hyperapp.h)(
-                                "a",
-                                {
-                                    "class": "withdraw-invite",
-                                    href: "#",
-                                    onclick: function onclick(e) {
-                                        return actions.withdrawInvite({
-                                            e: e,
-                                            index: index,
-                                            invite_id: user.invite_id
-                                        });
-                                    }
-                                },
-                                "Withdraw"
-                            )
-                        )
-                    );
-                })
-            )
-        ),
-        (0, _hyperapp.h)(
-            "div",
-            { "class": "col-xs-12" },
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "modal-footer" },
-                (0, _hyperapp.h)(
-                    "button",
-                    {
-                        type: "button",
-                        onclick: actions.sendInvites,
-                        "class": "btn btn-default btn-xs"
-                    },
-                    "Send Invites"
-                )
-            )
-        )
-    );
-};
-
-exports.default = (0, _ModalHoc2.default)(InviteModal);
-
-/***/ }),
-/* 164 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _hyperapp = __webpack_require__(1);
-
-var _Links = __webpack_require__(3);
-
-var _Links2 = _interopRequireDefault(_Links);
-
-var _ModalHoc = __webpack_require__(6);
-
-var _ModalHoc2 = _interopRequireDefault(_ModalHoc);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var localState = {};
-var ForgotPasswordModal = function ForgotPasswordModal(_ref) {
-    var state = _ref.state,
-        actions = _ref.actions;
-
-    var onBlur = function onBlur(e, key) {
-        localState[key] = e.target.value.trim();
-    };
-    return (0, _hyperapp.h)(
-        "div",
-        { model: "modals.profile.links", "class": "row" },
-        (0, _hyperapp.h)(
-            "div",
-            { "class": " form-horizontal" },
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "col-xs-12" },
-                (0, _hyperapp.h)(
-                    "p",
-                    null,
-                    "Enter your email address to recover your password"
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "form-group" },
-                    (0, _hyperapp.h)(
-                        "label",
-                        { "class": "control-label col-sm-3", "for": "email" },
-                        "Email"
-                    ),
-                    (0, _hyperapp.h)(
-                        "div",
-                        { "class": "col-sm-9" },
-                        (0, _hyperapp.h)("input", {
-                            "class": "form-control",
-                            onblur: function onblur(e) {
-                                return onBlur(e, "email");
-                            },
-                            type: "text",
-                            placeholder: "Enter your email.."
-                        })
-                    ),
-                    (0, _hyperapp.h)(
-                        "div",
-                        { "class": "col-sm-9 col-sm-offset-3" },
-                        (0, _hyperapp.h)("br", null),
-                        (0, _hyperapp.h)(
-                            "button",
-                            {
-                                type: "submit",
-                                "class": "login-btn btn btn-default btn-xs",
-                                onclick: function onclick() {
-                                    return actions.sendRecoveryEmail(localState);
-                                }
-                            },
-                            "Reset Password"
-                        )
-                    )
-                )
-            )
-        )
-    );
-};
-
-exports.default = (0, _ModalHoc2.default)(ForgotPasswordModal);
-
-/***/ }),
-/* 165 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _hyperapp = __webpack_require__(1);
-
-var _Links = __webpack_require__(3);
-
-var _Links2 = _interopRequireDefault(_Links);
-
-var _ModalHoc = __webpack_require__(6);
-
-var _ModalHoc2 = _interopRequireDefault(_ModalHoc);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var localState = {};
-var ForgotPasswordModal = function ForgotPasswordModal(_ref) {
-    var state = _ref.state,
-        actions = _ref.actions;
-
-    var onBlur = function onBlur(e, key) {
-        localState[key] = e.target.value.trim();
-    };
-    return (0, _hyperapp.h)(
-        "div",
-        { model: "modals.profile.links", "class": "row" },
-        (0, _hyperapp.h)(
-            "div",
-            { "class": " form-horizontal" },
-            (0, _hyperapp.h)(
-                "div",
-                { "class": "col-xs-12" },
-                (0, _hyperapp.h)(
-                    "p",
-                    null,
-                    "Edit your comment"
-                ),
-                (0, _hyperapp.h)(
-                    "div",
-                    { "class": "form-group" },
-                    (0, _hyperapp.h)(
-                        "div",
-                        { "class": "col-sm-12" },
-                        (0, _hyperapp.h)("input", {
-                            "class": "form-control",
-                            type: "text",
-                            value: state.modals.comment.data.comment
-                        })
-                    ),
-                    (0, _hyperapp.h)(
-                        "div",
-                        { "class": "col-sm-9 col-sm-offset-3" },
-                        (0, _hyperapp.h)("br", null),
-                        (0, _hyperapp.h)(
-                            "button",
-                            {
-                                type: "submit",
-                                "class": "login-btn btn btn-default btn-xs",
-                                onclick: function onclick() {
-                                    return actions.saveEditedComment(localState);
-                                }
-                            },
-                            "Save"
-                        )
-                    )
-                )
-            )
-        )
-    );
-};
-
-exports.default = (0, _ModalHoc2.default)(ForgotPasswordModal);
-
-/***/ }),
-/* 166 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-/**
- * There are no events for this application
- * But this is an example of directory and file structure for events
- * Seperation of concerns are key in functional paradigms!
-*/
-var ResizeObserver = __webpack_require__(167).default;
+var ResizeObserver = __webpack_require__(156).default;
 var $bgEle = void 0,
     $container = void 0;
 
-var changeSize = function changeSize() {
+var changeBackgroundSize = function changeBackgroundSize() {
     $bgEle.forEach(function (ele) {
         ele.style.width = $container.offsetWidth + "px";
         ele.style.height = $container.offsetHeight + "px";
@@ -22999,14 +22623,15 @@ var changeSize = function changeSize() {
 var observeSizeChanges = function observeSizeChanges() {
     $bgEle = document.querySelectorAll(".background");
     $container = document.querySelector(".container");
-    changeSize();
-    new ResizeObserver(changeSize).observe($container);
+    new ResizeObserver(changeBackgroundSize).observe($container);
 };
-exports.default = {
-    load: function load(state, actions) {
+
+var init = exports.init = function init(state, actions) {
+    return function (data) {
         setTimeout(observeSizeChanges, 100);
+        state.modals.notification.open = false;
         if (localStorage.chrome_id) {
-            actions.initialize({
+            actions.fetchUserInfo({
                 chrome_id: localStorage.chrome_id,
                 callback: function callback() {
                     if (chrome.extension) {
@@ -23018,14 +22643,18 @@ exports.default = {
                         actions.setVersion(version);
                     }
                     actions.onTabChange({
-                        stateKey: "notificationTabs",
-                        tab_id: "notLinks"
+                        stateKey: "mainNav",
+                        tab_id: state.mainNav.active
                     });
                     actions.fetchGroups();
-                    actions.detectSite();
+
+                    state.user.customize.sound = parseInt(_common.Storage.get("sound"));
+                    state.user.customize.notification = parseInt(_common.Storage.get("notification"));
+                    state.user.customize.offline = parseInt(_common.Storage.get("offline"));
+                    actions.updateState(state);
                 }
             });
-            if (new Date().getDate() == 31) {
+            if (false) {
                 if (!localStorage.counter || parseInt(localStorage.counter) <= 4) {
                     document.querySelector("body").classList.add("halloween");
                     if (!localStorage.counter) {
@@ -23039,11 +22668,11 @@ exports.default = {
             state.settingsTabs.active = "profile";
             actions.updateState(state);
         }
-    }
+    };
 };
 
 /***/ }),
-/* 167 */
+/* 156 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24081,276 +23710,5546 @@ var index = function () {
 exports.default = index;
 
 /***/ }),
+/* 157 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.notificationJoinedGroup = exports.setNotificationCount = exports.notificationClicked = exports.fetchNotifications = undefined;
+
+var _request = __webpack_require__(2);
+
+var fetchNotifications = exports.fetchNotifications = function fetchNotifications(state, actions) {
+    return function (tab_id) {
+        var tab = state.notificationTabs.tabs[tab_id];
+
+        var params = {
+            queryParams: {
+                handle: "tab-" + tab_id,
+                page: 1,
+                chrome_id: state.user.data.chrome_id,
+                group: state.groups.defaultGroup,
+                action: "readTracks",
+                count: null
+            }
+        };
+        if (tab.initialized) {
+            params.queryParams.lastId = tab.data.rows[0].id;
+        }
+        (0, _request.request)(params).then(function (result) {
+            if (tab.initialized) {
+                result.rows.length > 0 && tab.data.rows.unshift(result.rows);
+            } else {
+                result.page = tab.data.page;
+                tab.data = result;
+                tab.initialized = true;
+            }
+            tab.isFetching = false;
+            state.notificationTabs.tabs[tab_id] = tab;
+            actions.updateState(state);
+        });
+    };
+};
+
+var notificationClicked = exports.notificationClicked = function notificationClicked(state, actions) {
+    return function (_ref) {
+        var active = _ref.active,
+            index = _ref.index;
+
+        if (active == "notGroups") return;
+        var item = state.notificationTabs.tabs[active].data.rows[index];
+        var params = {
+            queryParams: {
+                handle: "itemId",
+                chrome_id: state.user.data.chrome_id,
+                group: item.group_id,
+                action: "readTracks",
+                item_id: item.item_id
+            }
+        };
+        (0, _request.request)(params).then(function (result) {
+            state.modals.notification.open = true;
+            state.modals.notification.title = result.rows[0].title;
+            state.modals.notification.data = result;
+            actions.updateState(state);
+        });
+    };
+};
+
+var setNotificationCount = exports.setNotificationCount = function setNotificationCount(state, actions) {
+    return function (data) {
+        state.notificationStatus = data;
+        actions.updateState(state);
+    };
+};
+
+var notificationJoinedGroup = exports.notificationJoinedGroup = function notificationJoinedGroup(state, actions) {
+    return function (index) {
+        state.notificationTabs.tabs.notGroups.data.rows[index].accepted = 1;
+        actions.updateState(state);
+    };
+};
+
+/***/ }),
+/* 158 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.createNewGroup = exports.removeUserFromGroup = exports.changePublicRights = exports.saveEditedGroup = exports.rejectGroupRequest = exports.approveGroupRequest = exports.rejectGroupInvite = exports.acceptGroupInvite = exports.joinGroup = exports.leaveGroup = exports.setDefaultGroup = exports.setGroups = exports.fetchGroupUsers = exports.fetchAllGroups = exports.fetchGroups = undefined;
+
+var _request = __webpack_require__(2);
+
+var _utils = __webpack_require__(24);
+
+// fetch all groups of logged in user
+var fetchGroups = exports.fetchGroups = function fetchGroups(state, actions) {
+    return function (callback) {
+        var params = {
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                action: "fetchUserGroups"
+            }
+        };
+        (0, _request.request)(params).then(function (result) {
+            var groupsData = result.map(function (group) {
+                group.name = group.gname;
+                delete group["gname"];
+                return group;
+            });
+            actions.setGroups({
+                action: "",
+                payload: groupsData
+            });
+            if (typeof callback == "function") {
+                callback();
+            }
+        });
+    };
+};
+
+// fetch all linkcast groups for a user to join.
+var fetchAllGroups = exports.fetchAllGroups = function fetchAllGroups(state, actions) {
+    return function () {
+        var params = {
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                action: "getAllGroups"
+            }
+        };
+        (0, _request.request)(params).then(function (result) {
+            state.allGroups.isFetching = false;
+            state.allGroups.data = result;
+            actions.updateState(state);
+        });
+    };
+};
+
+var fetchGroupUsers = exports.fetchGroupUsers = function fetchGroupUsers(state, actions) {
+    return function (e) {
+        var params = {
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                action: "getGroupUsers",
+                group: e.currentTarget.value
+            }
+        };
+        (0, _request.request)(params).then(function (result) {
+            state.groupUsers.isFetching = false;
+            state.groupUsers.data = result;
+            state.groupUsers.group_id = e.target.value;
+            state.groupUsers.admin_id = state.allGroups.data[e.target.options.selectedIndex].admin;
+            actions.updateState(state);
+        });
+    };
+};
+
+var setGroups = exports.setGroups = function setGroups(state, actions) {
+    return function (data) {
+        state.groups.isFetching = false;
+        data.payload.unshift({
+            group_id: 0,
+            name: "All"
+        });
+        state.groups.data = data.payload;
+        state.groups.selected = data.payload[0] ? data.payload[0].id : null;
+        actions.updateState(state);
+    };
+};
+
+var setDefaultGroup = exports.setDefaultGroup = function setDefaultGroup(state, actions) {
+    return function (index) {
+        state.groups.defaultGroup = parseInt(state.groups.data[index].group_id);
+        localStorage.defaultGroup = state.groups.defaultGroup;
+        state.mainNav.tabs.feed.initialized = false;
+        state.mainNav.tabs.feed.data = {
+            rows: [],
+            page: 1,
+            pages: 0,
+            total: 0
+        };
+        actions.fetchItems({ stateKey: "mainNav", tab_id: "feed" });
+        state.message = "Default group set to " + state.groups.data[index].name;
+
+        actions.updateState(state);
+    };
+};
+
+var leaveGroup = exports.leaveGroup = function leaveGroup(state, actions) {
+    return function (_ref) {
+        var e = _ref.e,
+            key = _ref.key;
+
+        var group = state.allGroups.data[key];
+
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                action: "leaveGroup",
+                group_id: group.id
+            }
+        };
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag == 1) {
+                actions.fetchAllGroups();
+                actions.fetchGroups();
+                actions.fetchNotifications("notLinks");
+            }
+        });
+    };
+};
+var joinGroup = exports.joinGroup = function joinGroup(state, actions) {
+    return function (_ref2) {
+        var group = _ref2.group,
+            callback = _ref2.callback;
+
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                action: parseInt(group.is_public) ? "joinPublicGroup" : "joinPrivateGroupRequest",
+                group_id: group.group_id
+            }
+        };
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag == 1) {
+                actions.fetchAllGroups();
+                actions.fetchGroups();
+                actions.fetchNotifications("notLinks");
+                if (typeof callback == "function") callback();
+            }
+        });
+    };
+};
+
+var acceptGroupInvite = exports.acceptGroupInvite = function acceptGroupInvite(state, actions) {
+    return function (_ref3) {
+        var e = _ref3.e,
+            index = _ref3.index,
+            activity = _ref3.activity;
+
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                action: "acceptGroupInvite",
+                group_id: activity.group_id,
+                activity_id: activity.activity_id
+            }
+        };
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag == 1) {
+                delete state.notificationTabs.tabs.notGroups.data.rows[index];
+                actions.updateState(state);
+            }
+        });
+    };
+};
+var rejectGroupInvite = exports.rejectGroupInvite = function rejectGroupInvite(state, actions) {
+    return function (_ref4) {
+        var e = _ref4.e,
+            index = _ref4.index,
+            activity = _ref4.activity;
+
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                action: "rejectGroupInvite",
+                group_id: activity.group_id,
+                activity_id: activity.activity_id
+            }
+        };
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag == 1) {
+                delete state.notificationTabs.tabs.notGroups.data.rows[index];
+                actions.updateState(state);
+            }
+        });
+    };
+};
+var approveGroupRequest = exports.approveGroupRequest = function approveGroupRequest(state, actions) {
+    return function (_ref5) {
+        var e = _ref5.e,
+            index = _ref5.index,
+            activity = _ref5.activity;
+
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                action: "approveGroupRequest",
+                group_id: activity.group_id,
+                activity_id: activity.activity_id
+            }
+        };
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag == 1) {
+                delete state.notificationTabs.tabs.notGroups.data.rows[index];
+                actions.updateState(state);
+            }
+        });
+    };
+};
+var rejectGroupRequest = exports.rejectGroupRequest = function rejectGroupRequest(state, actions) {
+    return function (_ref6) {
+        var e = _ref6.e,
+            index = _ref6.index,
+            activity = _ref6.activity;
+
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                action: "rejectGroupRequest",
+                group_id: activity.group_id,
+                activity_id: activity.activity_id
+            }
+        };
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag == 1) {
+                delete state.notificationTabs.tabs.notGroups.data.rows[index];
+                actions.updateState(state);
+            }
+        });
+    };
+};
+
+var saveEditedGroup = exports.saveEditedGroup = function saveEditedGroup(state, actions) {
+    return function (data) {
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                is_public: data.is_public,
+                action: "createEditGroup",
+                desc: data.desc,
+                mode: data.mode,
+                name: data.name,
+                group_id: data.id,
+                group_rights: data.group_rights
+            }
+        };
+
+        (0, _request.request)(params).then(function (result) {
+            state.message = result.msg;
+            actions.updateState(state);
+        });
+    };
+};
+var changePublicRights = exports.changePublicRights = function changePublicRights(state, actions) {
+    return function (data) {
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                action: "changePublicRights",
+                user_id: data.user_id,
+                group_id: data.group_id,
+                group_rights: data.group_rights
+            }
+        };
+
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag == 1) {
+                state.groupUsers.data[data.index].group_rights = data.group_rights;
+                state.message = result.msg;
+                actions.updateState(state);
+            }
+        });
+    };
+};
+var removeUserFromGroup = exports.removeUserFromGroup = function removeUserFromGroup(state, actions) {
+    return function (data) {
+        var user = state.groupUsers.data[data.index];
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                action: "removeUserFromGroup",
+                user_id: user.id,
+                group_id: data.group_id
+            }
+        };
+
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag == 1) {
+                delete state.groupUsers.data[data.index];
+                state.message = result.msg;
+                actions.updateState(state);
+            }
+        });
+    };
+};
+
+var createNewGroup = exports.createNewGroup = function createNewGroup(state, actions) {
+    return function (data) {
+        if (data.name.length == 0 || data.desc.length == 0) {
+            state.message = "All fields are mandatory";
+            actions.updateState(state);
+        }
+
+        var user = state.groupUsers.data[data.index];
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                is_public: data.is_public,
+                action: "createEditGroup",
+                desc: data.desc,
+                mode: data.mode,
+                name: data.name,
+                group_rights: data.group_rights
+            }
+        };
+
+        (0, _request.request)(params).then(function (result) {
+            state.message = result.msg;
+            if (result.flag == 1) {
+                state.groupTabs.active = "manage";
+                actions.fetchAllGroups();
+                actions.fetchGroups(function () {
+                    actions.updateState(state);
+                    document.querySelector(".manage-gdd").value = result.group_id;
+                    (0, _utils.trigger)(".manage-gdd", "change");
+                });
+                return false;
+            }
+            actions.updateState(state);
+        });
+    };
+};
+
+// export const refreshGroup = (state, actions) => {
+
+// }
+
+/***/ }),
+/* 159 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+var onTabChange = exports.onTabChange = function onTabChange(state, actions) {
+    return function (_ref) {
+        var stateKey = _ref.stateKey,
+            tab_id = _ref.tab_id;
+
+        if (state[stateKey].tabs[tab_id].hasOwnProperty("isFetching")) {
+            state[stateKey].tabs[tab_id].isFetching = true;
+        }
+        state.message = "";
+        state[stateKey].active = tab_id;
+        var params = { stateKey: stateKey, tab_id: tab_id };
+        _gaq.push(["_trackPageview", "/" + state[stateKey].tabs[tab_id].name]);
+        switch (tab_id) {
+            case "notification":
+                actions.onTabChange({
+                    stateKey: "notificationTabs",
+                    tab_id: state.notificationTabs.active
+                });
+                break;
+            case "notLinks":
+                actions.fetchNotifications(tab_id);
+                break;
+            case "notGroups":
+                actions.fetchNotifications(tab_id);
+                break;
+            case "feed":
+                actions.fetchItems(params);
+                break;
+            case "search":
+                state[stateKey].tabs[tab_id].q = "";
+                state[stateKey].tabs[tab_id].isFetching = false;
+                state[stateKey].tabs[tab_id].data = {
+                    rows: [],
+                    page: 1,
+                    pages: 0,
+                    total: 0
+                };
+                break;
+            case "links":
+                actions.onTabChange({
+                    stateKey: "linkTabs",
+                    tab_id: state.linkTabs.active
+                });
+                break;
+            case "groups":
+                actions.onTabChange({
+                    stateKey: "groupTabs",
+                    tab_id: state.groupTabs.active
+                });
+                break;
+            case "favourites":
+                actions.fetchItems(params);
+                break;
+            case "sent":
+                actions.fetchItems(params);
+                break;
+            case "public":
+                actions.fetchAllGroups(params);
+                break;
+            case "manage":
+                break;
+            case "post":
+                actions.detectSite();
+                break;
+            //actions.fetchAllGroups(params);
+        }
+
+        actions.updateState(state);
+    };
+};
+
+/***/ }),
+/* 160 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.cancelCommentEdit = exports.deleteComment = exports.saveEditedComment = exports.editComment = exports.lazyLoad = exports.itemClicked = exports.handleCommentInput = exports.handleDelete = exports.handleShare = exports.showComments = exports.handleLike = exports.handleFavourite = exports.fetchComments = exports.loadMore = exports.fetchItems = undefined;
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+var _request = __webpack_require__(2);
+
+var _common = __webpack_require__(8);
+
+var fetchItems = exports.fetchItems = function fetchItems(state, actions) {
+    return function (_ref) {
+        var stateKey = _ref.stateKey,
+            tab_id = _ref.tab_id,
+            q = _ref.q;
+
+        var tab = state[stateKey].tabs[tab_id];
+        if (tab_id == "search") {
+            tab.data.rows = [];
+        }
+        var params = {
+            queryParams: {
+                handle: "tab-" + tab_id,
+                page: 1,
+                chrome_id: state.user.data.chrome_id,
+                group: state.groups.defaultGroup,
+                action: "readTracks",
+                count: null
+            }
+        };
+        if (q) {
+            tab.initialized = false;
+            params.queryParams.q = q;
+            state[stateKey].tabs[tab_id].q = q;
+            _gaq.push(["_trackEvent", q, "searched"]);
+        }
+        if (tab.initialized && tab.data.rows.length > 0) {
+            params.queryParams.lastId = tab.data.rows[0].id;
+        }
+        (0, _request.request)(params).then(function (result) {
+            if (tab.initialized) {
+                result.rows.length > 0 && tab.data.rows.unshift(result.rows);
+            } else {
+                result.page = tab.data.page;
+                tab.data = result;
+                tab.initialized = true;
+            }
+            tab.isFetching = false;
+            state[stateKey].tabs[tab_id] = tab;
+            actions.updateState(state);
+        });
+    };
+};
+
+var loadMore = exports.loadMore = function loadMore(state, actions) {
+    return function (e) {
+        var modelStr = e.currentTarget.getAttribute("model");
+        var tab = (0, _common.deepFind)(state, modelStr);
+
+        if (parseInt(tab.data.pages) < parseInt(tab.data.page)) {
+            // enough.. dont fetch any more. because there is none.
+            return;
+        }
+
+        var tabName = modelStr.split(".").pop();
+        tab.loadMore = true;
+        state[modelStr.split(".")[0]].tabs[tabName] = tab;
+        actions.updateState(state);
+        var $preloader = document.querySelector(".preloader");
+        var params = {
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                group: state.groups.defaultGroup,
+                action: "readTracks",
+                handle: "tab-" + tabName,
+                page: tab.data.page + 1,
+                count: null
+            }
+        };
+        if (tabName == "search") {
+            params.queryParams.q = tab.q;
+        }
+        $preloader.classList.remove("invisible");
+        (0, _request.request)(params).then(function (result) {
+            tab.data.page++;
+            tab.data.rows = tab.data.rows.concat(result.rows);
+            tab.loadMore = false;
+            state[modelStr.split(".")[0]].tabs[tabName] = tab;
+            actions.updateState(state);
+            setTimeout(function () {
+                return $preloader.classList.add("invisible");
+            }, 0);
+        });
+    };
+};
+
+var fetchComments = exports.fetchComments = function fetchComments(state, actions) {
+    return function (_ref2) {
+        var item = _ref2.item,
+            model = _ref2.model,
+            key = _ref2.key;
+
+        var params = {
+            queryParams: {
+                commentsPage: 1,
+                item_id: item.id,
+                chrome_id: state.user.data.chrome_id,
+                action: "commentsItem"
+            }
+        };
+        _gaq.push(["_trackEvent", "clicked", "comments"]);
+        (0, _request.request)(params).then(function (result) {
+            var _model$split = model.split("."),
+                _model$split2 = _slicedToArray(_model$split, 1),
+                root = _model$split2[0];
+
+            item.commentList = result.rows;
+            if (root == "modals") {
+                state[root].notification.data.rows[key] = item;
+            } else {
+                state[root].tabs[state[root].active].data.rows[key] = item;
+            }
+            actions.updateState(state);
+        });
+    };
+};
+
+var handleFavourite = exports.handleFavourite = function handleFavourite(state, actions) {
+    return function (_ref3) {
+        var e = _ref3.e,
+            key = _ref3.key;
+
+        var model = e.target.parentElement.closest("[model]").model;
+        var item = (0, _common.deepFind)(state, model).data.rows[key];
+        var favourite = !parseInt(item.favourite);
+        item.favourite = favourite ? 1 : 0;
+
+        var tabs = ["mainNav.tabs.feed", "linkTabs.tabs.sent"];
+
+        tabs.forEach(function (tab) {
+            (0, _common.deepFind)(state, tab).data.rows.forEach(function (sent, idx, arr) {
+                if (sent.id == item.id) {
+                    arr[idx].favourite = favourite ? 1 : 0;
+                    return;
+                }
+            });
+        });
+
+        var _model$split3 = model.split("."),
+            _model$split4 = _slicedToArray(_model$split3, 1),
+            root = _model$split4[0];
+
+        if (root == "modals") {
+            state[root].notification.data.rows[key] = item;
+        }
+        var params = {
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                item_id: item.id,
+                action: favourite ? "addToFavourite" : "removeFromFavourite"
+            }
+        };
+        _gaq.push(["_trackEvent", "clicked", "favourite"]);
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag) {
+                var favData = state.linkTabs.tabs.favourites.data.rows;
+                if (favourite) {
+                    favData.push(item);
+                } else {
+                    favData = favData.filter(function (fav) {
+                        return fav.id != item.id;
+                    });
+                }
+                state.linkTabs.tabs.favourites.data.rows = favData;
+                actions.updateState(state);
+            }
+        });
+    };
+};
+var handleLike = exports.handleLike = function handleLike(state, actions) {
+    return function (_ref4) {
+        var e = _ref4.e,
+            key = _ref4.key;
+
+        var model = e.target.parentElement.closest("[model]").model;
+        var item = (0, _common.deepFind)(state, model).data.rows[key];
+        item.liked = parseInt(item.liked) ? 0 : 1;
+        item.likes_count = parseInt(item.likes_count) + (item.liked ? 1 : -1);
+
+        var _model$split5 = model.split("."),
+            _model$split6 = _slicedToArray(_model$split5, 1),
+            root = _model$split6[0];
+
+        if (root == "modals") {
+            state[root].notification.data.rows[key] = item;
+        } else {
+            state[root].tabs[state[root].active].data.rows[key] = item;
+        }
+        var params = {
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                item_id: item.id,
+                action: "likeClicked"
+            }
+        };
+        _gaq.push(["_trackEvent", "clicked", "like"]);
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag) {
+                actions.updateState(state);
+            }
+        });
+    };
+};
+
+var showComments = exports.showComments = function showComments(state, actions) {
+    return function (_ref5) {
+        var e = _ref5.e,
+            key = _ref5.key;
+
+        var model = e.target.parentElement.closest("[model]").model;
+        var item = (0, _common.deepFind)(state, model).data.rows[key];
+        item.showComments = 1;
+
+        var _model$split7 = model.split("."),
+            _model$split8 = _slicedToArray(_model$split7, 1),
+            root = _model$split8[0];
+
+        if (root == "modals") {
+            state[root].notification.data.rows[key] = item;
+        } else {
+            state[root].tabs[state[root].active].data.rows[key] = item;
+        }
+        actions.fetchComments({ item: item, model: model, key: key });
+
+        actions.updateState(state);
+    };
+};
+var handleShare = exports.handleShare = function handleShare(state, actions) {
+    return function (_ref6) {
+        var e = _ref6.e,
+            key = _ref6.key;
+
+        var model = e.target.parentElement.closest("[model]").model;
+        var item = (0, _common.deepFind)(state, model).data.rows[key];
+        state.post.title = item.title;
+        state.post.url = item.url;
+        state.post.thumbnail = item.thumbnail;
+        state.mainNav.active = "post";
+        state.modals.notification.open = false;
+        _gaq.push(["_trackEvent", "clicked", "share"]);
+        actions.updateState(state);
+    };
+};
+var handleDelete = exports.handleDelete = function handleDelete(state, actions) {
+    return function (_ref7) {
+        var e = _ref7.e,
+            key = _ref7.key;
+
+        var model = e.target.parentElement.closest("[model]").model;
+        var item = (0, _common.deepFind)(state, model).data.rows[key];
+
+        var _model$split9 = model.split("."),
+            _model$split10 = _slicedToArray(_model$split9, 1),
+            root = _model$split10[0];
+
+        if (root == "modals") {
+            delete state[root].notification.data.rows[key];
+            state[root].notification.open = false;
+        } else {
+            delete state[root].tabs[state[root].active].data.rows[key];
+        }
+
+        var params = {
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                item_id: item.id,
+                action: "deleteItem"
+            }
+        };
+        _gaq.push(["_trackEvent", "clicked", "delete"]);
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag) {
+                actions.updateState(state);
+            }
+        });
+    };
+};
+
+var handleCommentInput = exports.handleCommentInput = function handleCommentInput(state, actions) {
+    return function (_ref8) {
+        var e = _ref8.e,
+            key = _ref8.key;
+
+        if (e.keyCode != 13) return;
+        var comment = e.target.value;
+        // if edit comment then cancel this process
+        if (state.editComment.open) {
+            actions.saveEditedComment(comment);
+            actions.updateState(state);
+        }
+        var model = e.target.parentElement.closest("[model]").model;
+        var item = (0, _common.deepFind)(state, model).data.rows[key];
+
+        var _model$split11 = model.split("."),
+            _model$split12 = _slicedToArray(_model$split11, 1),
+            root = _model$split12[0];
+
+        if (!item.commentList) {
+            item.commentList = [];
+        }
+        e.target.value = "";
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                item_id: item.id,
+                comment: comment,
+                action: "insertComment"
+            }
+        };
+        _gaq.push(["_trackEvent", "clicked", "newComment"]);
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag == 1) {
+                var newComment = {
+                    color: state.user.data.color,
+                    comment: (0, _common.escape)(comment),
+                    created_at: "now",
+                    id: result.id,
+                    item_id: item.id,
+                    nickname: state.user.data.nickname,
+                    user_id: state.user.data.id
+                };
+                if (root == "modals") {
+                    state[root].notification.data.rows[key].commentList.unshift(newComment);
+                } else {
+                    state[root].tabs[state[root].active].data.rows[key].commentList.unshift(newComment);
+                }
+                actions.updateState(state);
+            }
+        });
+    };
+};
+
+var itemClicked = exports.itemClicked = function itemClicked(state, actions) {
+    return function (_ref9) {
+        var e = _ref9.e,
+            key = _ref9.key;
+
+        e.preventDefault();
+        var model = e.target.parentElement.closest("[model]").model;
+        var item = (0, _common.deepFind)(state, model).data.rows[key];
+
+        var _model$split13 = model.split("."),
+            _model$split14 = _slicedToArray(_model$split13, 1),
+            root = _model$split14[0];
+
+        if (item.uid != state.user.data.id) {
+            var count = parseInt(item.times_clicked) + 1;
+            if (root == "modals") {
+                state[root].notification.data.rows[key].times_clicked = count;
+            } else {
+                state[root].tabs[state[root].active].data.rows[key].times_clicked = count;
+            }
+        }
+        var params = {
+            chrome_id: state.user.data.chrome_id,
+            item_id: item.id,
+            action: "itemClicked"
+        };
+        _gaq.push(["_trackEvent", "clicked", "itemClicked"]);
+        if (chrome.extension) {
+            var bgPage = chrome.extension.getBackgroundPage();
+            bgPage.sendClickedStat(params);
+        }
+        window.open(e.target.href);
+        actions.updateState(state);
+    };
+};
+
+var lazyLoad = exports.lazyLoad = function lazyLoad(state, actions) {
+    return function (_ref10) {
+        var e = _ref10.e,
+            image = _ref10.image;
+
+        var ele = document.createElement("img");
+        ele.src = image;
+        ele.onload = function () {
+            e.src = image;
+        };
+    };
+};
+
+var editComment = exports.editComment = function editComment(state, actions) {
+    return function (_ref11) {
+        var model = _ref11.model,
+            itemKey = _ref11.itemKey,
+            commentKey = _ref11.commentKey;
+
+        state.editComment.open = true;
+        state.editComment.cursor = { model: model, itemKey: itemKey, commentKey: commentKey };
+        var item = (0, _common.deepFind)(state, model).data.rows[itemKey];
+
+        var _model$split15 = model.split("."),
+            _model$split16 = _slicedToArray(_model$split15, 1),
+            root = _model$split16[0];
+
+        var comment = void 0;
+        if (root == "modals") {
+            comment = state[root].notification.data.rows[itemKey].commentList[commentKey];
+        } else {
+            comment = state[root].tabs[state[root].active].data.rows[itemKey].commentList[commentKey];
+        }
+        state.editComment.data = comment;
+        actions.updateState(state);
+    };
+};
+
+var saveEditedComment = exports.saveEditedComment = function saveEditedComment(state, actions) {
+    return function (comment) {
+        var _state$editComment$cu = state.editComment.cursor,
+            model = _state$editComment$cu.model,
+            itemKey = _state$editComment$cu.itemKey,
+            commentKey = _state$editComment$cu.commentKey;
+
+        var item = (0, _common.deepFind)(state, model).data.rows[itemKey];
+
+        var _model$split17 = model.split("."),
+            _model$split18 = _slicedToArray(_model$split17, 1),
+            root = _model$split18[0];
+
+        var commentObj = null;
+        if (root == "modals") {
+            commentObj = state[root].notification.data.rows[itemKey].commentList[commentKey];
+        } else {
+            commentObj = state[root].tabs[state[root].active].data.rows[itemKey].commentList[commentKey];
+        }
+        commentObj.comment = comment;
+        var commentId = commentObj.id;
+
+        var params = {
+            method: "POST",
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                comment_id: commentId,
+                comment: comment,
+                action: "updateComment"
+            }
+        };
+        _gaq.push(["_trackEvent", "clicked", "saveEditedComment"]);
+        actions.cancelCommentEdit();
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag) {
+                actions.updateState(state);
+            }
+        });
+    };
+};
+
+var deleteComment = exports.deleteComment = function deleteComment(state, actions) {
+    var _state$editComment$cu2 = state.editComment.cursor,
+        model = _state$editComment$cu2.model,
+        itemKey = _state$editComment$cu2.itemKey,
+        commentKey = _state$editComment$cu2.commentKey;
+
+    var item = (0, _common.deepFind)(state, model).data.rows[itemKey];
+
+    var _model$split19 = model.split("."),
+        _model$split20 = _slicedToArray(_model$split19, 1),
+        root = _model$split20[0];
+
+    var commentId = null;
+    if (root == "modals") {
+        commentId = state[root].notification.data.rows[itemKey].commentList[commentKey].id;
+        delete state[root].notification.data.rows[itemKey].commentList[commentKey];
+    } else {
+        commentId = state[root].tabs[state[root].active].data.rows[itemKey].commentList[commentKey].id;
+        delete state[root].tabs[state[root].active].data.rows[itemKey].commentList[commentKey];
+    }
+
+    var params = {
+        method: "POST",
+        queryParams: {
+            chrome_id: state.user.data.chrome_id,
+            comment_id: commentId,
+            action: "deleteComment"
+        }
+    };
+    _gaq.push(["_trackEvent", "clicked", "deleteComment"]);
+    (0, _request.request)(params).then(function (result) {
+        if (result.flag) {
+            actions.cancelCommentEdit();
+            actions.updateState(state);
+        }
+    });
+};
+
+var cancelCommentEdit = exports.cancelCommentEdit = function cancelCommentEdit(state, actions) {
+    state.editComment.open = false;
+    state.editComment.data = {};
+    state.editComment.cursor = {};
+    actions.updateState(state);
+};
+
+/***/ }),
+/* 161 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.sendRecoveryEmail = exports.forgotPassword = exports.doRegister = exports.doLogin = exports.doLogout = exports.saveCustomization = exports.fetchUserInfo = exports.getUserLinks = exports.showProfile = exports.saveProfile = undefined;
+
+var _request = __webpack_require__(2);
+
+var _common = __webpack_require__(8);
+
+var saveProfile = exports.saveProfile = function saveProfile(state, actions) {
+    return function (_ref) {
+        var e = _ref.e,
+            data = _ref.data;
+
+        e.preventDefault();
+        data = Object.assign(state.user.data, data);
+
+        var params = {
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                nickname: data.nickname,
+                color: data.color,
+                bio: data.bio,
+                action: "saveProfile"
+            }
+        };
+        (0, _request.request)(params).then(function (result) {
+            state.user.data = data;
+            state.message = result.msg;
+            actions.updateState(state);
+        });
+    };
+};
+
+var showProfile = exports.showProfile = function showProfile(state, actions) {
+    return function (_ref2) {
+        var e = _ref2.e,
+            user_id = _ref2.user_id;
+
+        e.preventDefault();
+
+        state.modals.profile.links.isFetching = true;
+        state.modals.profile.open = 1;
+        actions.updateState(state);
+        var params1 = {
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                target_id: user_id,
+                action: "getProfile"
+            }
+        };
+        (0, _request.request)(params1).then(function (result) {
+            state.modals.profile.user = result;
+            state.modals.profile.user.id = user_id;
+            state.modals.profile.links.data.page = 0;
+            actions.updateState(state);
+        });
+        actions.getUserLinks({ e: e, user_id: user_id });
+    };
+};
+
+var getUserLinks = exports.getUserLinks = function getUserLinks(state, actions) {
+    return function (_ref3) {
+        var e = _ref3.e,
+            user_id = _ref3.user_id;
+
+        e.preventDefault();
+
+        state.modals.profile.links.isFetching = true;
+        state.modals.profile.open = 1;
+        actions.updateState(state);
+        var newPage = parseInt(state.modals.profile.links.data.page) + 1;
+        var params2 = {
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                target_id: user_id,
+                action: "getOtherUserTracks",
+                page: newPage,
+                count: 5
+            }
+        };
+
+        (0, _request.request)(params2).then(function (result) {
+            state.modals.profile.links.isFetching = false;
+            if (newPage == 1) {
+                state.modals.profile.links.data.rows = result.rows;
+            } else {
+                state.modals.profile.links.data.rows = state.modals.profile.links.data.rows.concat(result.rows);
+            }
+            state.modals.profile.links.data.page = newPage;
+            actions.updateState(state);
+        });
+    };
+};
+
+var fetchUserInfo = exports.fetchUserInfo = function fetchUserInfo(state, actions) {
+    return function (_ref4) {
+        var chrome_id = _ref4.chrome_id,
+            callback = _ref4.callback;
+
+        var params = {
+            queryParams: {
+                chrome_id: chrome_id,
+                action: "fetchUserInfo"
+            }
+        };
+        (0, _request.request)(params).then(function (result) {
+            if (result.flag == 1) {
+                result.data.chrome_id = chrome_id;
+                state.user.data = result.data;
+                state.user.loggedIn = true;
+                state.groups.defaultGroup = localStorage.defaultGroup;
+                actions.updateState(state);
+                callback();
+            }
+        });
+    };
+};
+
+var saveCustomization = exports.saveCustomization = function saveCustomization(state, actions) {
+    return function (_ref5) {
+        var e = _ref5.e,
+            key = _ref5.key;
+
+        e.preventDefault();
+        var value = parseInt(e.target.value);
+        state.user.customize[key] = value;
+        localStorage[key] = value;
+        if (key == "offline") {
+            !value && actions.__removePersist() || value && actions.__initPersist();
+        }
+        actions.updateState(state);
+    };
+};
+var doLogout = exports.doLogout = function doLogout(state, actions) {
+    return function (data) {
+        state.user.loggedIn = false;
+        localStorage.clear();
+        actions.updateState(state);
+    };
+};
+
+var doLogin = exports.doLogin = function doLogin(state, actions) {
+    return function (data) {
+        var params = {
+            method: "POST",
+            queryParams: {
+                nickname: data.nickname,
+                password: data.password,
+                action: "loginUser"
+            }
+        };
+
+        if (data.nickname.length > 0 && data.password.length > 0) {
+            state.user.login.requesting = true;
+            actions.updateState(state);
+            (0, _request.request)(params).then(function (result) {
+                if (result.flag == 1) {
+                    var lsData = {
+                        defaultGroup: 1,
+                        nickname: data.nickname,
+                        loggedIn: true,
+                        chrome_id: result.chrome_id
+                    };
+                    _common.Storage.set(lsData); //overwrite
+                    _common.Storage.set({
+                        sound: 1,
+                        notification: 1,
+                        offline: 0
+                    }, false // dont overwrite
+                    );
+                    //update the state
+                    state.user.data = result.data;
+                    state.user.loggedIn = true;
+                    state.user.customize.sound = parseInt(_common.Storage.get("sound"));
+                    state.user.customize.notification = parseInt(_common.Storage.get("notification"));
+                    state.user.customize.offline = parseInt(_common.Storage.get("offline"));
+                    if (chrome.storage) {
+                        chrome.storage.sync.set({
+                            userid: result.data.chrome_id
+                        });
+                    }
+                    actions.updateState(state);
+                    actions.fetchGroups();
+                    actions.fetchAllGroups();
+                } else {
+                    state.message = result.msg;
+                }
+                state.user.login.requesting = false;
+                state.user.login.msg = result.msg;
+                state.user.login.flag = result.flag;
+                state.groups.defaultGroup = localStorage.defaultGroup;
+                actions.updateState(state);
+            });
+        } else {
+            state.message = "All fields are required";
+            actions.updateState(state);
+        }
+    };
+};
+
+var doRegister = exports.doRegister = function doRegister(state, actions) {
+    return function (data) {
+        var chrome_id = (0, _common.getRandomToken)();
+        var params = {
+            queryParams: {
+                chrome_id: chrome_id,
+                nickname: data.nickname,
+                password: data.password,
+                email: data.email,
+                action: "registerUser"
+            }
+        };
+        if (data.nickname.length > 0 && data.password.length > 0) {
+            state.user.register.requesting = true;
+            actions.updateState(state);
+            (0, _request.request)(params).then(function (result) {
+                if (result.flag == 1) {
+                    actions.doLogin(data);
+                }
+            });
+        }
+    };
+};
+
+var forgotPassword = exports.forgotPassword = function forgotPassword(state, actions) {
+    state.modals.forgotPassword.open = true;
+    actions.updateState(state);
+};
+
+var sendRecoveryEmail = exports.sendRecoveryEmail = function sendRecoveryEmail(state, actions) {
+    return function (data) {
+        if (data.email.length == 0) {
+            state.message = "Enter an email";
+            actions.updateState(state);
+        }
+        var valid = (0, _common.validateEmail)(data.email);
+        if (valid) {
+            var params = {
+                method: "POST",
+                queryParams: {
+                    email: data.email,
+                    action: "forgotPassword"
+                }
+            };
+            (0, _request.request)(params).then(function (result) {
+                if (result.flag == 1) {
+                    state.modals.forgotPassword.open = false;
+                    state.message = "Check your email";
+                }
+                state.message = result.msg;
+                actions.updateState(state);
+            });
+        } else {
+            state.message = "Invalid Email";
+            actions.updateState(state);
+        }
+    };
+};
+
+/***/ }),
+/* 162 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.detectSite = exports.setPost = exports.doPost = undefined;
+
+var _request = __webpack_require__(2);
+
+var doPost = exports.doPost = function doPost(state, actions) {
+    return function (data) {
+        state.post = Object.assign(state.post, data);
+        state.post.posting = true;
+        if (data.title.length == 0) {
+            state.message = "Please enter a title";
+            return actions.updateState(state);
+        }
+        if (data.url.length == 0) {
+            state.message = "Please enter an url";
+            return actions.updateState(state);
+        }
+        actions.updateState(state);
+        data.action = "insertTrack";
+        data.chrome_id = state.user.data.chrome_id;
+        var params = {
+            method: "POST",
+            queryParams: data
+        };
+        (0, _request.request)(params).then(function (result) {
+            _gaq.push(["_trackEvent", "posted", "link"]);
+            state.post.posting = false;
+            state.groups.defaultGroup = data.group;
+            state.mainNav.active = "feed";
+            state.post = {
+                title: "",
+                url: "",
+                comments: "",
+                thumbnail: "",
+                posting: false
+            };
+            actions.fetchItems({ stateKey: "mainNav", tab_id: "feed" });
+            actions.updateState(state);
+        });
+    };
+};
+
+var setPost = exports.setPost = function setPost(state, actions) {
+    return function (data) {
+        state.post = Object.assign(state.post, data);
+        actions.updateState(state);
+    };
+};
+
+var detectSite = exports.detectSite = function detectSite(state, actions) {
+    if (chrome.tabs) {
+        chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
+            //var url = tabs[0].url;
+            var payload = { action: "get-meta" };
+            chrome.extension.getBackgroundPage().retrieveSiteMeta(payload, function (data) {
+                if (data && data.url) {
+                    state.post.title = data.title;
+                    state.post.url = data.url;
+                    state.post.thumbnail = data.thumbUrl;
+                    actions.updateState(state);
+                }
+            });
+        });
+    }
+};
+
+/***/ }),
+/* 163 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.sendInvites = exports.withdrawInvite = exports.setInviteList = exports.showInviteModal = undefined;
+
+var _request = __webpack_require__(2);
+
+var invites = [];
+
+var showInviteModal = exports.showInviteModal = function showInviteModal(state, actions) {
+    return function (_ref) {
+        var e = _ref.e,
+            group_id = _ref.group_id,
+            title = _ref.title;
+
+        e.preventDefault();
+        state.modals.invite.open = true;
+        state.modals.invite.group_id = group_id;
+        actions.updateState(state);
+        var params = {
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                group_id: group_id,
+                action: "getUsersToInvite"
+            }
+        };
+        (0, _request.request)(params).then(function (result) {
+            state.modals.invite.data = result;
+            state.modals.invite.title = title;
+            actions.updateState(state);
+            actions.setInviteList({
+                data: state.modals.invite.data.users,
+                resetInvites: true
+            });
+            //actions.editInvites({ data: data.invites });
+        });
+    };
+};
+
+var ele = function ele(selector) {
+    return document.querySelector(selector);
+};
+var setInviteList = exports.setInviteList = function setInviteList(state, actions) {
+    return function (_ref2) {
+        var data = _ref2.data,
+            resetInvites = _ref2.resetInvites;
+
+        var dataClone = data;
+        if (resetInvites) {
+            invites = [];
+        }
+        var init = function init() {
+            dataClone = dataClone.sort(function (a, b) {
+                return b.nickname - a.nickname;
+            });
+            var list = ele(".token-input-list-facebook");
+            var dd = ele(".token-input-dropdown-facebook");
+            list && list.remove();
+            dd && dd.remove();
+
+            $("#tags-input-send-invites").tokenInput(dataClone, {
+                theme: "facebook",
+                preventDuplicates: true,
+                searchDelay: 0,
+                propertyToSearch: "nickname",
+                prePopulate: invites,
+                resultsLimit: 5,
+                onAdd: function onAdd(user) {
+                    dataClone = dataClone.filter(function (item) {
+                        return item.id != user.id;
+                    });
+                    invites.push(user);
+                    init();
+                },
+                onDelete: function onDelete(user) {
+                    invites = invites.filter(function (item) {
+                        return user.id !== item.id;
+                    });
+                    data.map(function (item) {
+                        if (item.id == user.id) {
+                            dataClone.push(item);
+                            init();
+                            return false;
+                        }
+                    });
+                },
+                onResult: function onResult(results) {
+                    var tagsearch = $("#token-input-tags-input-send-invites").val();
+                    return results.filter(function (item) {
+                        return item.nickname.toLowerCase().indexOf(tagsearch.toLowerCase()) === 0;
+                    });
+                }
+            });
+            $("#tags-input-send-invites").focus();
+        };
+        init();
+    };
+};
+
+var withdrawInvite = exports.withdrawInvite = function withdrawInvite(state, actions) {
+    return function (_ref3) {
+        var e = _ref3.e,
+            invite_id = _ref3.invite_id,
+            index = _ref3.index;
+
+        var user = state.modals.invite.data.invites[index];
+        delete state.modals.invite.data.invites[index];
+
+        var params = {
+            queryParams: {
+                chrome_id: state.user.data.chrome_id,
+                group_id: state.modals.invite.group_id,
+                invite_id: invite_id,
+                action: "withdrawInvite"
+            }
+        };
+        (0, _request.request)(params).then(function (result) {
+            state.modals.invite.data.users.push(user);
+            actions.updateState(state);
+            actions.setInviteList({
+                data: state.modals.invite.data.users,
+                resetInvites: false
+            });
+        });
+    };
+};
+
+var sendInvites = exports.sendInvites = function sendInvites(state, actions) {
+    if (invites.length == 0) {
+        state.message = "No users to invite";
+        actions.updateState(state);
+    }
+
+    var data = invites.map(function (user) {
+        return user.id;
+    });
+
+    var params = {
+        queryParams: {
+            chrome_id: state.user.data.chrome_id,
+            group_id: state.modals.invite.group_id,
+            users: JSON.stringify(data),
+            action: "sendInvites"
+        }
+    };
+    (0, _request.request)(params).then(function (result) {
+        state.modals.invite.open = false;
+        actions.updateState(state);
+    });
+};
+
+/***/ }),
+/* 164 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+var mainNav = {
+    tabs: {
+        notification: {
+            name: "Notifications",
+            authorized: true
+        },
+        feed: {
+            name: "Feed",
+            isFetching: false,
+            loadMore: false,
+            initialized: false,
+            data: {
+                rows: [],
+                page: 1,
+                pages: 0,
+                total: 0
+            },
+            authorized: true
+        },
+        post: {
+            name: "Post",
+            authorized: true
+        },
+        links: {
+            name: "Links",
+            authorized: true
+        },
+        search: {
+            name: "Search",
+            isFetching: false,
+            loadMore: false,
+            q: "",
+            data: {
+                rows: [],
+                page: 1,
+                pages: 0,
+                total: 0
+            },
+            authorized: true
+        },
+        groups: {
+            name: "Groups",
+            data: [],
+            authorized: true
+        },
+        settings: {
+            name: "Settings",
+            data: []
+        }
+    },
+    active: "notification"
+};
+var notificationTabs = {
+    tabs: {
+        notLinks: {
+            name: "Links",
+            isFetching: true,
+            loadMore: false,
+            initialized: false,
+            data: {
+                rows: [],
+                page: 1,
+                pages: 0,
+                total: 0
+            }
+        },
+        notGroups: {
+            name: "Groups",
+            isFetching: false,
+            loadMore: false,
+            initialized: false,
+            data: {
+                rows: [],
+                page: 1,
+                pages: 0,
+                total: 0
+            }
+        }
+    },
+    active: "notLinks"
+};
+var linkTabs = {
+    tabs: {
+        sent: {
+            name: "Sent",
+            isFetching: false,
+            loadMore: false,
+            data: {
+                rows: [],
+                page: 1,
+                pages: 0,
+                total: 0
+            }
+        },
+        favourites: {
+            name: "Favourites",
+            isFetching: true,
+            loadMore: false,
+            data: {
+                rows: [],
+                page: 1,
+                pages: 0,
+                total: 0
+            }
+        }
+    },
+    active: "sent"
+};
+
+var settingsTabs = {
+    tabs: {
+        profile: {
+            name: "Profile",
+            data: []
+        },
+        customize: {
+            name: "Customize",
+            data: []
+        },
+        about: {
+            name: "About",
+            data: []
+        }
+    },
+    active: "profile"
+};
+
+var groupTabs = {
+    tabs: {
+        public: {
+            name: "Groups",
+            data: {
+                rows: [],
+                page: 1,
+                pages: 0,
+                total: 0
+            }
+        },
+        manage: {
+            name: "Manage",
+            data: {
+                rows: [],
+                page: 1,
+                pages: 0,
+                total: 0
+            }
+        },
+        create: {
+            name: "Create"
+        }
+    },
+    active: "public"
+};
+
+exports.default = {
+    stateVersion: 1.0,
+    num: 0,
+    mainNav: mainNav,
+    notificationTabs: notificationTabs,
+    linkTabs: linkTabs,
+    groupTabs: groupTabs,
+    settingsTabs: settingsTabs,
+    message: "",
+    version: "1.0.0",
+    notificationStatus: {
+        count: 0,
+        links: { rows: [] },
+        groups: { rows: [] },
+        lastUpdateId: 0
+    },
+    modals: {
+        notification: {
+            open: false,
+            data: [],
+            title: ""
+        },
+        forgotPassword: {
+            open: false
+        },
+        invite: {
+            open: false,
+            group_id: 0,
+            data: {
+                users: [],
+                invites: []
+            },
+            title: "Invite Users"
+        },
+        profile: {
+            open: false,
+            links: {
+                data: {
+                    rows: [],
+                    page: 0,
+                    pages: 0,
+                    total: 0
+                }
+            },
+            user: {
+                id: 0
+            }
+        }
+    },
+    editComment: {
+        open: false,
+        data: {},
+        cursor: {}
+    },
+    allGroups: {
+        data: [],
+        isFetching: false,
+        selected: null
+    },
+    groupUsers: {
+        isFetching: false,
+        data: [],
+        group_id: 0,
+        admin_id: 0
+    },
+    groups: {
+        loadMore: false,
+        defaultGroup: 1,
+        data: [],
+        selected: null
+    },
+    chrome_id: null,
+    user: {
+        login: {
+            requesting: false,
+            msg: "",
+            flag: 1
+        },
+        register: {
+            requesting: false,
+            msg: "",
+            flag: 1
+        },
+        data: {
+            id: "0",
+            nickname: "Anonymous",
+            last_seen: "2017-09-30 11:25:05",
+            color: "hsl(138, 69%, 53%)",
+            bio: "",
+            email: "",
+            verified: "0"
+        },
+        customize: {
+            sound: 1,
+            notification: 1,
+            offline: 0,
+            theme: "dark"
+        },
+        loggedIn: false,
+        isFetching: false
+    },
+    post: {
+        title: "",
+        url: "",
+        comments: "",
+        thumbnail: "",
+        group: 2,
+        posting: false
+    }
+};
+
+/***/ }),
+/* 165 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var _TabComponent = __webpack_require__(9);
+
+var _Notifications = __webpack_require__(166);
+
+var _Notifications2 = _interopRequireDefault(_Notifications);
+
+var _Feed = __webpack_require__(169);
+
+var _Feed2 = _interopRequireDefault(_Feed);
+
+var _Post = __webpack_require__(170);
+
+var _Post2 = _interopRequireDefault(_Post);
+
+var _MyLinks = __webpack_require__(171);
+
+var _MyLinks2 = _interopRequireDefault(_MyLinks);
+
+var _Groups = __webpack_require__(172);
+
+var _Groups2 = _interopRequireDefault(_Groups);
+
+var _Settings = __webpack_require__(177);
+
+var _Settings2 = _interopRequireDefault(_Settings);
+
+var _Search = __webpack_require__(182);
+
+var _Search2 = _interopRequireDefault(_Search);
+
+var _ProfileModal = __webpack_require__(183);
+
+var _ProfileModal2 = _interopRequireDefault(_ProfileModal);
+
+var _InviteModal = __webpack_require__(184);
+
+var _InviteModal2 = _interopRequireDefault(_InviteModal);
+
+var _ForgotPasswordModal = __webpack_require__(185);
+
+var _ForgotPasswordModal2 = _interopRequireDefault(_ForgotPasswordModal);
+
+var _EditCommentModal = __webpack_require__(186);
+
+var _EditCommentModal2 = _interopRequireDefault(_EditCommentModal);
+
+var _dark = __webpack_require__(18);
+
+var _dark2 = _interopRequireDefault(_dark);
+
+var _style = __webpack_require__(19);
+
+var _style2 = _interopRequireDefault(_style);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+window.moment = __webpack_require__(0);
+__webpack_require__(188);
+__webpack_require__(189);
+__webpack_require__(190);
+
+var main = function main(state, actions) {
+    var data = null;
+    var appHeight = document.body.clientHeight;
+    var msgTopSpace = appHeight - 80;
+    actions.resetMessage();
+    switch (state.mainNav.active) {
+        case "notification":
+            data = (0, _hyperapp.h)(_Notifications2.default, {
+                tabs: state.notificationTabs.tabs,
+                active: state.notificationTabs.active,
+                state: state,
+                loadMore: actions.loadMore,
+                onScroll: actions.onScroll,
+                onTabChange: actions.onTabChange,
+                actions: actions,
+                name: "notification"
+            });
+            break;
+        case "feed":
+            data = (0, _hyperapp.h)(_Feed2.default, {
+                tab: state.mainNav.tabs[state.mainNav.active],
+                actions: actions,
+                onScroll: actions.onScroll,
+                loadMore: actions.loadMore,
+                state: state
+            });
+            break;
+        case "search":
+            data = (0, _hyperapp.h)(_Search2.default, {
+                tab: state.mainNav.tabs[state.mainNav.active],
+                actions: actions,
+                onScroll: actions.onScroll,
+                loadMore: actions.loadMore,
+                state: state
+            });
+            break;
+        case "post":
+            data = (0, _hyperapp.h)(_Post2.default, { state: state, actions: actions });
+            break;
+        case "links":
+            data = (0, _hyperapp.h)(_MyLinks2.default, {
+                tabs: state.linkTabs.tabs,
+                active: state.linkTabs.active,
+                state: state,
+                loadMore: actions.loadMore,
+                onScroll: actions.onScroll,
+                onTabChange: actions.onTabChange,
+                actions: actions
+            });
+            break;
+        case "groups":
+            data = (0, _hyperapp.h)(_Groups2.default, {
+                actions: actions,
+                tabs: state.groupTabs.tabs,
+                active: state.groupTabs.active,
+                state: state
+            });
+            break;
+        case "settings":
+            data = (0, _hyperapp.h)(_Settings2.default, {
+                tabs: state.settingsTabs.tabs,
+                active: state.settingsTabs.active,
+                state: state,
+                actions: actions
+            });
+            break;
+        default:
+            console.log(state);
+    }
+
+    return (0, _hyperapp.h)(
+        "div",
+        { "class": "container" },
+        (0, _hyperapp.h)(_TabComponent.TabComponent, {
+            classes: "main-nav",
+            type: "nav-tabs",
+            state: state,
+            stateKey: "mainNav",
+            onChange: actions.onTabChange,
+            html: data
+        }),
+        state.modals.profile.open && (0, _hyperapp.h)(_ProfileModal2.default, {
+            onScroll: actions.onScroll,
+            state: state,
+            actions: actions,
+            name: "profile"
+        }),
+        state.modals.invite.open && (0, _hyperapp.h)(_InviteModal2.default, { state: state, actions: actions, name: "invite" }),
+        state.modals.forgotPassword.open && (0, _hyperapp.h)(_ForgotPasswordModal2.default, {
+            state: state,
+            actions: actions,
+            name: "forgotPassword"
+        }),
+        state.message != "" && (0, _hyperapp.h)(
+            "div",
+            {
+                id: "msg",
+                "class": "alert alert-warning",
+                style: { top: msgTopSpace + "px" }
+            },
+            state.message
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "preloader center processor invisible" },
+            (0, _hyperapp.h)("div", {
+                "class": "progress-bar progress-bar-striped active",
+                role: "progressbar",
+                "aria-valuenow": "70",
+                "aria-valuemin": "0",
+                "aria-valuemax": "100",
+                style: "width:100%"
+            })
+        ),
+        (0, _hyperapp.h)(
+            "footer",
+            { id: "footer" },
+            "Linkcast v",
+            state.version
+        )
+    );
+};
+
+exports.default = main;
+
+/***/ }),
+/* 166 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.NotificationItem = undefined;
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _hyperapp = __webpack_require__(1);
+
+var _NotificationItems = __webpack_require__(167);
+
+var _TabComponent = __webpack_require__(9);
+
+var _ScrollHoc = __webpack_require__(10);
+
+var _ScrollHoc2 = _interopRequireDefault(_ScrollHoc);
+
+var _ModalHoc = __webpack_require__(11);
+
+var _ModalHoc2 = _interopRequireDefault(_ModalHoc);
+
+var _LinkItem = __webpack_require__(13);
+
+var _LinkItem2 = _interopRequireDefault(_LinkItem);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Notifications = function Notifications(props) {
+    var data = null;
+    var status = props.state.notificationStatus;
+
+    var joinGroup = function joinGroup(_ref) {
+        var e = _ref.e,
+            index = _ref.index,
+            group = _ref.group;
+
+        e.preventDefault();
+        props.actions.joinGroup({
+            group: group,
+            callback: function callback() {
+                props.actions.notificationJoinedGroup(index);
+            }
+        });
+    };
+    switch (props.active) {
+        case "notLinks":
+            data = props.tabs[props.active].data.rows.map(function (item, i) {
+                var className = i < status.links.rows.length ? "highlight" : "";
+                return (0, _hyperapp.h)(
+                    "div",
+                    {
+                        key: i,
+                        "class": "notification-item clearfix " + className,
+                        "data-id": item.id,
+                        onclick: function onclick(e) {
+                            e.preventDefault();
+                            props.actions.notificationClicked({
+                                active: props.active,
+                                index: i
+                            });
+                        }
+                    },
+                    (0, _hyperapp.h)(NotificationItem, item)
+                );
+            });
+            data = (0, _hyperapp.h)(
+                "div",
+                {
+                    model: "notificationTabs.tabs.notLinks",
+                    "class": "scroll",
+                    onscroll: props.onScroll
+                },
+                data,
+                props.state.modals.notification.open && (0, _ModalHoc2.default)(function () {
+                    return (0, _hyperapp.h)(
+                        "div",
+                        { model: "modals.notification" },
+                        (0, _hyperapp.h)(_LinkItem2.default, {
+                            state: props.state,
+                            key: "0",
+                            actions: props.actions,
+                            user_id: props.state.user.data.id,
+                            item: props.state.modals.notification.data.rows[0]
+                        })
+                    );
+                })(props)
+            );
+            break;
+        case "notGroups":
+            data = props.tabs[props.active].data.rows.map(function (item, i) {
+                var className = i < status.groups.rows.length ? "highlight" : "";
+                return (0, _hyperapp.h)(
+                    "div",
+                    {
+                        key: i,
+                        "class": "notification-item clearfix " + className,
+                        "data-id": item.id,
+                        onclick: function onclick() {
+                            return props.actions.notificationClicked({
+                                active: props.active,
+                                index: i
+                            });
+                        }
+                    },
+                    (0, _hyperapp.h)(NotificationItem, _extends({
+                        key: i,
+                        acceptGroupInvite: props.actions.acceptGroupInvite,
+                        rejectGroupInvite: props.actions.rejectGroupInvite,
+                        approveGroupRequest: props.actions.approveGroupRequest,
+                        rejectGroupRequest: props.actions.rejectGroupRequest,
+                        joinGroupFromNotification: joinGroup
+                    }, item))
+                );
+            });
+            data = (0, _hyperapp.h)(
+                "div",
+                {
+                    model: "notificationTabs.tabs.notGroups",
+                    "class": "scroll",
+                    onscroll: props.onScroll
+                },
+                data
+            );
+            break;
+        default:
+        //console.log(state);
+    }
+
+    return (0, _hyperapp.h)(_TabComponent.TabComponent, {
+        classes: "secondary-nav",
+        type: "nav-pills",
+        state: props.state,
+        stateKey: "notificationTabs",
+        onChange: props.onTabChange,
+        html: data,
+        onBeforeLabelSet: function onBeforeLabelSet(label) {
+            if (label == "Links" && status.links.rows.length > 0) {
+                return label + " (" + status.links.rows.length + ")";
+            } else if (label == "Groups" && status.groups.rows.length > 0) {
+                return label + " (" + status.groups.rows.length + ")";
+            }
+            return label;
+        }
+    });
+};
+
+var NotificationItem = exports.NotificationItem = function NotificationItem(item) {
+    if (item.type == "joined_group") return (0, _hyperapp.h)(_NotificationItems.JoinedGroup, item);else if (item.type == "link") return (0, _hyperapp.h)(_NotificationItems.Link, item);else if (item.type == "like") return (0, _hyperapp.h)(_NotificationItems.Like, item);else if (item.type == "comment") return (0, _hyperapp.h)(_NotificationItems.Comment, item);else if (item.type == "joined_linkcast") return (0, _hyperapp.h)(_NotificationItems.JoinedLinkcast, item);else if (item.type == "new_group") return (0, _hyperapp.h)(_NotificationItems.NewGroup, item);else if (item.type == "group_invite") return (0, _hyperapp.h)(_NotificationItems.GroupInvite, item);else if (item.type == "request_private_group_join") return (0, _hyperapp.h)(_NotificationItems.PrivateGroupRequest, item);
+};
+
+exports.default = (0, _ScrollHoc2.default)(Notifications);
+
+/***/ }),
+/* 167 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Linkcast = exports.PrivateGroupRequest = exports.GroupInvite = exports.NewGroup = exports.JoinedLinkcast = exports.JoinedGroup = exports.Like = exports.Comment = exports.Link = undefined;
+
+var _hyperapp = __webpack_require__(1);
+
+var getTimeAgo = function getTimeAgo(created_at) {
+    return moment(created_at).add(moment().utcOffset(), "minutes").fromNow();
+};
+var Link = exports.Link = function Link(data) {
+    return (0, _hyperapp.h)(
+        "div",
+        null,
+        (0, _hyperapp.h)(
+            "a",
+            { href: "", "class": "link", "data-id": "{ITEM_ID}" },
+            (0, _hyperapp.h)(
+                "div",
+                null,
+                (0, _hyperapp.h)(
+                    "span",
+                    { "class": "strong" },
+                    data.actors,
+                    " "
+                ),
+                (0, _hyperapp.h)(
+                    "span",
+                    { "class": "activity" },
+                    "posted a link",
+                    (0, _hyperapp.h)(
+                        "span",
+                        { "class": "link strong" },
+                        " ",
+                        data.title
+                    ),
+                    (0, _hyperapp.h)(
+                        "span",
+                        { "class": "group" },
+                        " ",
+                        "in ",
+                        (0, _hyperapp.h)("i", { "class": "fa fa-users", "aria-hidden": "true" }),
+                        " ",
+                        data.group_name
+                    )
+                )
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "item-meta" },
+                (0, _hyperapp.h)("i", { "class": "fa fa-link", "aria-hidden": "true" }),
+                (0, _hyperapp.h)(
+                    "span",
+                    { "class": "comment-date grey" },
+                    getTimeAgo(data.created_at)
+                )
+            )
+        )
+    );
+};
+
+var Comment = exports.Comment = function Comment(data) {
+    return (0, _hyperapp.h)(
+        "div",
+        null,
+        (0, _hyperapp.h)(
+            "a",
+            { href: "", "class": "link", "data-id": "{ITEM_ID}" },
+            (0, _hyperapp.h)(
+                "div",
+                null,
+                (0, _hyperapp.h)(
+                    "span",
+                    { "class": "strong" },
+                    data.actors,
+                    " "
+                ),
+                (0, _hyperapp.h)(
+                    "span",
+                    { "class": "activity" },
+                    "commented on ",
+                    (0, _hyperapp.h)(
+                        "span",
+                        { "class": "strong" },
+                        data.poster,
+                        "'s"
+                    ),
+                    " ",
+                    "link",
+                    (0, _hyperapp.h)(
+                        "span",
+                        {
+                            style: "font-weight: bold; color: #CECECE",
+                            "class": "comment"
+                        },
+                        " ",
+                        data.comment,
+                        " "
+                    ),
+                    (0, _hyperapp.h)(
+                        "span",
+                        { "class": "group" },
+                        "in ",
+                        (0, _hyperapp.h)("i", { "class": "fa fa-users", "aria-hidden": "true" }),
+                        " ",
+                        " ",
+                        data.group_name,
+                        " "
+                    )
+                )
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "item-meta" },
+                (0, _hyperapp.h)("i", { "class": "fa fa-comment", "aria-hidden": "true" }),
+                (0, _hyperapp.h)(
+                    "span",
+                    { "class": "comment-date grey" },
+                    getTimeAgo(data.created_at)
+                )
+            )
+        )
+    );
+};
+
+var Like = exports.Like = function Like(data) {
+    return (0, _hyperapp.h)(
+        "div",
+        null,
+        (0, _hyperapp.h)(
+            "a",
+            { href: "", "class": "link", "data-id": "{ITEM_ID}" },
+            (0, _hyperapp.h)(
+                "div",
+                null,
+                (0, _hyperapp.h)(
+                    "span",
+                    { "class": "strong" },
+                    data.actors,
+                    " "
+                ),
+                (0, _hyperapp.h)(
+                    "span",
+                    { "class": "activity" },
+                    "liked ",
+                    (0, _hyperapp.h)(
+                        "span",
+                        { "class": "strong" },
+                        data.poster,
+                        "'s"
+                    ),
+                    " link",
+                    (0, _hyperapp.h)(
+                        "span",
+                        {
+                            style: "font-weight: bold; color: #CECECE",
+                            "class": "link"
+                        },
+                        " ",
+                        "\"",
+                        data.title,
+                        "\""
+                    ),
+                    (0, _hyperapp.h)(
+                        "span",
+                        { "class": "group" },
+                        "in ",
+                        (0, _hyperapp.h)("i", { "class": "fa fa-users", "aria-hidden": "true" }),
+                        " ",
+                        data.group_name
+                    )
+                )
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "item-meta" },
+                (0, _hyperapp.h)("i", { "class": "fa fa-heart", "aria-hidden": "true" }),
+                (0, _hyperapp.h)(
+                    "span",
+                    { "class": "comment-date grey" },
+                    getTimeAgo(data.created_at)
+                )
+            )
+        )
+    );
+};
+
+var JoinedGroup = exports.JoinedGroup = function JoinedGroup(data) {
+    return (0, _hyperapp.h)(
+        "div",
+        null,
+        (0, _hyperapp.h)(
+            "div",
+            null,
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "strong" },
+                data.actors,
+                " "
+            ),
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "activity" },
+                "joined",
+                (0, _hyperapp.h)(
+                    "span",
+                    { "class": "group" },
+                    " ",
+                    (0, _hyperapp.h)("i", { "class": "fa fa-users", "aria-hidden": "true" }),
+                    " ",
+                    data.group_name
+                )
+            )
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "item-meta" },
+            (0, _hyperapp.h)("i", { "class": "fa fa-sign-in", "aria-hidden": "true" }),
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "comment-date grey" },
+                getTimeAgo(data.created_at)
+            )
+        )
+    );
+};
+
+var JoinedLinkcast = exports.JoinedLinkcast = function JoinedLinkcast(data) {
+    return (0, _hyperapp.h)(
+        "div",
+        null,
+        (0, _hyperapp.h)(
+            "div",
+            null,
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "strong" },
+                data.actors
+            ),
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "activity" },
+                " ",
+                "joined",
+                " ",
+                (0, _hyperapp.h)(
+                    "span",
+                    { style: "color:#c53333; font-weight: bold" },
+                    " LinkCast"
+                )
+            )
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "item-meta" },
+            (0, _hyperapp.h)("i", { "class": "fa fa-user", "aria-hidden": "true" }),
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "comment-date grey" },
+                getTimeAgo(data.created_at)
+            )
+        )
+    );
+};
+
+var NewGroup = exports.NewGroup = function NewGroup(data) {
+    return (0, _hyperapp.h)(
+        "div",
+        null,
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "group_row" },
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "strong" },
+                data.actors,
+                " "
+            ),
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "activity" },
+                "created a new group ",
+                (0, _hyperapp.h)("i", {
+                    "class": "fa fa-users",
+                    "aria-hidden": "true"
+                }),
+                " ",
+                (0, _hyperapp.h)(
+                    "span",
+                    { style: "color:#c53333; font-weight: bold" },
+                    " ",
+                    data.group_name,
+                    ".",
+                    " "
+                ),
+                data.accepted == "0" && (0, _hyperapp.h)(
+                    "a",
+                    {
+                        href: "#",
+                        "class": "group-join green",
+                        onclick: function onclick(e) {
+                            return data.joinGroupFromNotification({
+                                e: e,
+                                index: data.key,
+                                group: {
+                                    group_id: data.group_id,
+                                    is_public: 1
+                                }
+                            });
+                        }
+                    },
+                    "Join Now"
+                )
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                null,
+                (0, _hyperapp.h)(
+                    "i",
+                    null,
+                    data.desc
+                )
+            )
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "item-meta" },
+            (0, _hyperapp.h)("i", { "class": "fa fa-users", "aria-hidden": "true" }),
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "comment-date grey" },
+                getTimeAgo(data.created_at)
+            )
+        )
+    );
+};
+
+var GroupInvite = exports.GroupInvite = function GroupInvite(data) {
+    return (0, _hyperapp.h)(
+        "div",
+        null,
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "group_row", "data-aid": "{ID}", "data-group_id": "{group_id}" },
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "strong" },
+                data.admin
+            ),
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "activity" },
+                " ",
+                "invited you to join",
+                " ",
+                (0, _hyperapp.h)(
+                    "span",
+                    { style: "font-weight: bold" },
+                    " ",
+                    data.group_name,
+                    "."
+                ),
+                (0, _hyperapp.h)(
+                    "a",
+                    {
+                        href: "#",
+                        "class": "group-accept green",
+                        onclick: function onclick(e) {
+                            return data.acceptGroupInvite({
+                                e: e,
+                                index: data.key,
+                                activity: {
+                                    group_id: data.group_id,
+                                    activity_id: data.id
+                                }
+                            });
+                        }
+                    },
+                    " ",
+                    "Accept"
+                ),
+                " ",
+                "|",
+                (0, _hyperapp.h)(
+                    "a",
+                    {
+                        href: "#",
+                        "class": "group-reject red",
+                        onclick: function onclick(e) {
+                            return data.rejectGroupInvite({
+                                e: e,
+                                index: data.key,
+                                activity: {
+                                    group_id: data.group_id,
+                                    activity_id: data.id
+                                }
+                            });
+                        }
+                    },
+                    " ",
+                    "Reject"
+                )
+            )
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "item-meta" },
+            (0, _hyperapp.h)("i", { "class": "fa fa-users", "aria-hidden": "true" }),
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "comment-date grey" },
+                getTimeAgo(data.created_at)
+            )
+        )
+    );
+};
+
+var PrivateGroupRequest = exports.PrivateGroupRequest = function PrivateGroupRequest(data) {
+    return (0, _hyperapp.h)(
+        "div",
+        null,
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "group_row", "data-aid": "{ID}", "data-group_id": "{group_id}" },
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "strong" },
+                data.actors
+            ),
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "activity" },
+                " ",
+                "wants to join",
+                " ",
+                (0, _hyperapp.h)(
+                    "span",
+                    { style: "font-weight: bold" },
+                    " ",
+                    data.group_name,
+                    "."
+                ),
+                (0, _hyperapp.h)(
+                    "a",
+                    {
+                        href: "#",
+                        "class": "group-accept green",
+                        onclick: function onclick(e) {
+                            return data.approveGroupRequest({
+                                e: e,
+                                index: data.key,
+                                activity: {
+                                    group_id: data.group_id,
+                                    activity_id: data.id
+                                }
+                            });
+                        }
+                    },
+                    " ",
+                    "Approve"
+                ),
+                " ",
+                "|",
+                (0, _hyperapp.h)(
+                    "a",
+                    {
+                        href: "#",
+                        "class": "group-reject red",
+                        onclick: function onclick(e) {
+                            return data.rejectGroupRequest({
+                                e: e,
+                                index: data.key,
+                                activity: {
+                                    group_id: data.group_id,
+                                    activity_id: data.id
+                                }
+                            });
+                        }
+                    },
+                    " ",
+                    "Reject"
+                )
+            )
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "item-meta" },
+            (0, _hyperapp.h)("i", { "class": "fa fa-users", "aria-hidden": "true" }),
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "comment-date grey" },
+                getTimeAgo(data.created_at)
+            )
+        )
+    );
+};
+
+var Linkcast = exports.Linkcast = function Linkcast(data) {
+    return (0, _hyperapp.h)(
+        "div",
+        { "class": "announcement" },
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "linkcast-msg", style: "color:{LCOLOR}" },
+            data.actors,
+            " - ",
+            data.title
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "item-meta" },
+            (0, _hyperapp.h)("i", { "class": "fa fa-bullhorn blink_me", "aria-hidden": "true" }),
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "comment-date grey" },
+                getTimeAgo(data.created_at)
+            )
+        )
+    );
+};
+
+/***/ }),
 /* 168 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-module.exports = function (module) {
-	if (!module.webpackPolyfill) {
-		module.deprecate = function () {};
-		module.paths = [];
-		// module.parent = undefined by default
-		if (!module.children) module.children = [];
-		Object.defineProperty(module, "loaded", {
-			enumerable: true,
-			get: function get() {
-				return module.l;
-			}
-		});
-		Object.defineProperty(module, "id", {
-			enumerable: true,
-			get: function get() {
-				return module.i;
-			}
-		});
-		module.webpackPolyfill = 1;
-	}
-	return module;
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var Comments = function Comments(props) {
+    var comments = typeof props.data == "undefined" ? [] : props.data;
+
+    var markup = comments.map(function (item, index) {
+        return (0, _hyperapp.h)(
+            "div",
+            { "class": "left clearfix" },
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "comment-user", style: { color: item.color } },
+                item.nickname
+            ),
+            " ",
+            "- ",
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "user-comment" },
+                item.comment
+            ),
+            (0, _hyperapp.h)(
+                "span",
+                { "class": "comment-meta" },
+                (0, _hyperapp.h)(
+                    "span",
+                    { "class": "comment-date grey" },
+                    "  ",
+                    props.user_id == item.user_id && (0, _hyperapp.h)(
+                        "span",
+                        {
+                            "class": "comment-edit",
+                            onclick: function onclick(e) {
+                                var model = e.target.closest("[model]").model;
+                                var itemKey = props.key;
+                                var commentKey = index;
+                                props.actions.editComment({
+                                    model: model,
+                                    itemKey: itemKey,
+                                    commentKey: commentKey
+                                });
+                            }
+                        },
+                        (0, _hyperapp.h)("i", { "class": "red fa fa-pencil" })
+                    ),
+                    (0, _hyperapp.h)(
+                        "span",
+                        { "class": "date" },
+                        function () {
+                            var d = "now";
+                            if (item.created_at != "now") {
+                                d = moment(item.created_at).add(moment().utcOffset(), "minutes").fromNow();
+                            }
+                            return d;
+                        }()
+                    )
+                )
+            )
+        );
+    });
+
+    return (0, _hyperapp.h)(
+        "div",
+        { "class": "comments" },
+        markup
+    );
 };
+exports.default = Comments;
 
 /***/ }),
 /* 169 */
 /***/ (function(module, exports, __webpack_require__) {
 
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var _DropDown = __webpack_require__(14);
+
+var _DropDown2 = _interopRequireDefault(_DropDown);
+
+var _LinkItem = __webpack_require__(13);
+
+var _LinkItem2 = _interopRequireDefault(_LinkItem);
+
+var _Links = __webpack_require__(3);
+
+var _Links2 = _interopRequireDefault(_Links);
+
+var _ScrollHoc = __webpack_require__(10);
+
+var _ScrollHoc2 = _interopRequireDefault(_ScrollHoc);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Feed = function Feed(props) {
+    var onGroupChange = function onGroupChange(e) {
+        props.actions.setDefaultGroup(e.target.options.selectedIndex);
+    };
+    var invite = function invite(e) {
+        var selectedGroup = props.state.groups.data.filter(function (group) {
+            return group.group_id == props.state.groups.defaultGroup;
+        })[0];
+        if (selectedGroup.group_id == 0) {
+            return props.actions.setMessage("Change the group to invite");
+        }
+        if (selectedGroup.is_public == "0" && selectedGroup.admin !== props.state.user.data.id) {
+            return props.actions.setMessage("Only admin can invite in Private groups");
+        }
+        props.actions.showInviteModal({
+            e: e,
+            group_id: props.state.groups.defaultGroup,
+            title: "Invite users in " + selectedGroup.name
+        });
+    };
+
+    return (0, _hyperapp.h)(
+        "div",
+        null,
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "footer" },
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "pull-left" },
+                "Switch Group: "
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "pull-left" },
+                (0, _hyperapp.h)(_DropDown2.default, {
+                    classes: "groups-dd",
+                    identifier: "group_id",
+                    selected: props.state.groups.defaultGroup,
+                    data: props.state.groups.data,
+                    onChange: onGroupChange
+                })
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "pull-right" },
+                (0, _hyperapp.h)(
+                    "a",
+                    { "class": "invite-link", href: "#", onclick: invite },
+                    "Invite"
+                )
+            ),
+            (0, _hyperapp.h)("span", { "class": "clearfix" })
+        ),
+        (0, _hyperapp.h)(_Links2.default, {
+            model: "mainNav.tabs.feed",
+            tab: props.tab,
+            actions: props.actions,
+            loadMore: props.actions.loadMore,
+            onScroll: props.onScroll,
+            state: props.state
+        })
+    );
+};
+exports.default = (0, _ScrollHoc2.default)(Feed);
+
+/***/ }),
+/* 170 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var _DropDown = __webpack_require__(14);
+
+var _DropDown2 = _interopRequireDefault(_DropDown);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Post = function Post(_ref) {
+    var state = _ref.state,
+        actions = _ref.actions;
+
+    var params = {
+        title: state.post.title,
+        url: state.post.url,
+        comments: state.post.comments,
+        thumbnail: state.post.thumbnail,
+        group: state.groups.defaultGroup
+    };
+    var _onChange = function _onChange(e, key) {
+        params[key] = e.target.value.trim();
+
+        if (e.target.tagName == "SELECT") {
+            var selectedIdx = e.target.options.selectedIndex;
+            params[key] = state.groups.data[selectedIdx].group_id;
+        }
+        actions.setPost(params);
+    };
+    var handlePost = function handlePost(e) {
+        e.preventDefault();
+        actions.doPost(params);
+    };
+
+    return (0, _hyperapp.h)(
+        "div",
+        { "class": "col-sm-12 pt20 form-horizontal" },
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "form-group" },
+            (0, _hyperapp.h)(
+                "label",
+                { "class": "control-label col-sm-3 required", "for": "item-name" },
+                "Name"
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "col-sm-9" },
+                (0, _hyperapp.h)("input", {
+                    type: "text",
+                    "class": "form-control",
+                    value: state.post.title,
+                    onkeyup: function onkeyup(e) {
+                        return _onChange(e, "title");
+                    }
+                })
+            )
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "form-group" },
+            (0, _hyperapp.h)(
+                "label",
+                { "class": "control-label col-sm-3 required", "for": "item-url" },
+                "URL"
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "col-sm-9" },
+                (0, _hyperapp.h)("input", {
+                    name: "url",
+                    type: "text",
+                    "class": "form-control",
+                    value: state.post.url,
+                    onkeyup: function onkeyup(e) {
+                        return _onChange(e, "url");
+                    }
+                })
+            )
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "form-group" },
+            (0, _hyperapp.h)(
+                "label",
+                { "class": "control-label col-sm-3", "for": "item-comments" },
+                "Comments"
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "col-sm-9" },
+                (0, _hyperapp.h)("input", {
+                    name: "comments",
+                    type: "text",
+                    "class": "form-control",
+                    value: state.post.comments,
+                    onkeyup: function onkeyup(e) {
+                        return _onChange(e, "comments");
+                    }
+                })
+            )
+        ),
+        (0, _hyperapp.h)("input", { type: "hidden", id: "item-thumb" }),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "form-group" },
+            (0, _hyperapp.h)(
+                "label",
+                { "for": "groups-dd", "class": "control-label col-sm-3" },
+                "Select Group"
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "col-sm-9" },
+                (0, _hyperapp.h)(_DropDown2.default, {
+                    classes: "form-control groups-dd",
+                    data: state.groups.data,
+                    selected: state.groups.defaultGroup,
+                    onChange: function onChange(e) {
+                        return _onChange(e, "group");
+                    },
+                    identifier: "group_id"
+                })
+            )
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "col-sm-9 col-sm-offset-3" },
+            (0, _hyperapp.h)(
+                "button",
+                {
+                    id: "post-btn",
+                    type: "submit",
+                    "class": "btn btn-default btn-sm",
+                    onclick: handlePost
+                },
+                "Post"
+            )
+        )
+    );
+};
+exports.default = Post;
+
+/***/ }),
+/* 171 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var _Links = __webpack_require__(3);
+
+var _Links2 = _interopRequireDefault(_Links);
+
+var _TabComponent = __webpack_require__(9);
+
+var _ScrollHoc = __webpack_require__(10);
+
+var _ScrollHoc2 = _interopRequireDefault(_ScrollHoc);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var MyLinks = function MyLinks(props) {
+    var onGroupChange = function onGroupChange(e) {
+        return (0, _hyperapp.h)("div", null);
+    };
+    var data = null;
+    switch (props.active) {
+        case "favourites":
+            data = (0, _hyperapp.h)(_Links2.default, {
+                model: "linkTabs.tabs.favourites",
+                tab: props.tabs[props.active],
+                onScroll: props.onScroll,
+                loadMore: props.actions.loadMore,
+                state: props.state,
+                actions: props.actions
+            });
+            break;
+        case "sent":
+            data = (0, _hyperapp.h)(
+                "div",
+                null,
+                (0, _hyperapp.h)(_Links2.default, {
+                    model: "linkTabs.tabs.sent",
+                    tab: props.tabs[props.active],
+                    onScroll: props.onScroll,
+                    loadMore: props.actions.loadMore,
+                    state: props.state,
+                    actions: props.actions
+                })
+            );
+            break;
+        default:
+            console.log(state);
+    }
+
+    return (0, _hyperapp.h)(_TabComponent.TabComponent, {
+        classes: "secondary-nav",
+        type: "nav-pills",
+        state: props.state,
+        stateKey: "linkTabs",
+        onChange: props.onTabChange,
+        html: data
+    });
+};
+exports.default = (0, _ScrollHoc2.default)(MyLinks);
+
+/***/ }),
+/* 172 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var _Links = __webpack_require__(3);
+
+var _Links2 = _interopRequireDefault(_Links);
+
+var _TabComponent = __webpack_require__(9);
+
+var _ScrollHoc = __webpack_require__(10);
+
+var _ScrollHoc2 = _interopRequireDefault(_ScrollHoc);
+
+var _PublicGroups = __webpack_require__(173);
+
+var _PublicGroups2 = _interopRequireDefault(_PublicGroups);
+
+var _ManageGroups = __webpack_require__(174);
+
+var _ManageGroups2 = _interopRequireDefault(_ManageGroups);
+
+var _CreateGroup = __webpack_require__(176);
+
+var _CreateGroup2 = _interopRequireDefault(_CreateGroup);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Groups = function Groups(_ref) {
+    var active = _ref.active,
+        actions = _ref.actions,
+        tabs = _ref.tabs,
+        state = _ref.state;
+
+    var onGroupChange = function onGroupChange(e) {
+        return (0, _hyperapp.h)("div", null);
+    };
+    var data = null;
+    switch (active) {
+        case "manage":
+            data = (0, _hyperapp.h)(_ManageGroups2.default, {
+                actions: actions,
+                state: state,
+                tab: tabs[active]
+            });
+            break;
+        case "public":
+            data = (0, _hyperapp.h)(_PublicGroups2.default, {
+                actions: actions,
+                state: state,
+                tab: tabs[active]
+            });
+            break;
+        case "create":
+            data = (0, _hyperapp.h)(_CreateGroup2.default, {
+                actions: actions,
+                state: state,
+                tab: tabs[active]
+            });
+            break;
+    }
+
+    return (0, _hyperapp.h)(_TabComponent.TabComponent, {
+        classes: "secondary-nav",
+        state: state,
+        type: "nav-pills",
+        stateKey: "groupTabs",
+        onChange: actions.onTabChange,
+        html: data
+    });
+};
+exports.default = Groups;
+
+/***/ }),
+/* 173 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var PublicGroups = function PublicGroups(_ref) {
+    var actions = _ref.actions,
+        state = _ref.state,
+        tab = _ref.tab;
+
+    var groups = state.allGroups.data.map(function (group, key) {
+        return (0, _hyperapp.h)(PublicGroupsTable, {
+            user_id: state.user.data.id,
+            actions: actions,
+            key: key,
+            item: group
+        });
+    });
+    return (0, _hyperapp.h)(
+        "div",
+        null,
+        (0, _hyperapp.h)(
+            "p",
+            null,
+            "These are the public group. You can join and start posting links if you have the permission."
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "scroll" },
+            (0, _hyperapp.h)(
+                "table",
+                {
+                    style: "margin-bottom:0px;",
+                    "class": "table table-hover",
+                    id: "groups-table"
+                },
+                (0, _hyperapp.h)(
+                    "thead",
+                    null,
+                    (0, _hyperapp.h)(
+                        "tr",
+                        null,
+                        (0, _hyperapp.h)(
+                            "th",
+                            { width: "160" },
+                            "Name"
+                        ),
+                        (0, _hyperapp.h)(
+                            "th",
+                            null,
+                            "Type"
+                        ),
+                        (0, _hyperapp.h)(
+                            "th",
+                            null,
+                            "Description"
+                        ),
+                        (0, _hyperapp.h)(
+                            "th",
+                            null,
+                            "Admin"
+                        ),
+                        (0, _hyperapp.h)(
+                            "th",
+                            null,
+                            "Access"
+                        ),
+                        (0, _hyperapp.h)(
+                            "th",
+                            null,
+                            "Users"
+                        ),
+                        (0, _hyperapp.h)(
+                            "th",
+                            null,
+                            "Action"
+                        )
+                    )
+                ),
+                (0, _hyperapp.h)(
+                    "tbody",
+                    { "class": "items" },
+                    groups
+                )
+            )
+        )
+    );
+};
+
+var PublicGroupsTable = function PublicGroupsTable(_ref2) {
+    var actions = _ref2.actions,
+        item = _ref2.item,
+        user_id = _ref2.user_id,
+        key = _ref2.key;
+
+    var isPublic = parseInt(item.is_public);
+    var joinGroup = function joinGroup(_ref3) {
+        var e = _ref3.e,
+            group = _ref3.group;
+
+        e.preventDefault();
+        actions.joinGroup({ group: group });
+    };
+
+    return (0, _hyperapp.h)(
+        "tr",
+        { "class": "group_row" },
+        (0, _hyperapp.h)(
+            "td",
+            null,
+            (0, _hyperapp.h)(
+                "a",
+                { href: "#", "class": "group-name" },
+                (0, _hyperapp.h)(
+                    "strong",
+                    null,
+                    item.name
+                )
+            )
+        ),
+        (0, _hyperapp.h)(
+            "td",
+            { align: "center", style: { color: isPublic ? "" : "red" } },
+            isPublic ? (0, _hyperapp.h)("i", { "class": "fa fa-unlock", "aria-hidden": "true" }) : (0, _hyperapp.h)("i", { "class": "fa fa-lock", "aria-hidden": "true" })
+        ),
+        (0, _hyperapp.h)(
+            "td",
+            null,
+            item.desc
+        ),
+        (0, _hyperapp.h)(
+            "td",
+            null,
+            item.adminName
+        ),
+        (0, _hyperapp.h)(
+            "td",
+            null,
+            item.group_rights
+        ),
+        (0, _hyperapp.h)(
+            "td",
+            { align: "center" },
+            item.total
+        ),
+        (0, _hyperapp.h)(
+            "td",
+            { align: "center" },
+            function () {
+                var action = "Leave";
+                if (item.total == 1 && item.admin == user_id) {
+                    action = "Delete";
+                }
+                if (item.status == "1") {
+                    return (0, _hyperapp.h)(
+                        "a",
+                        {
+                            href: "#",
+                            "class": "red group-leave",
+                            onclick: function onclick(e) {
+                                return actions.leaveGroup({ e: e, key: key });
+                            }
+                        },
+                        action
+                    );
+                } else if (item.status == "0") {
+                    return (0, _hyperapp.h)(
+                        "a",
+                        {
+                            href: "#",
+                            "class": "green group-join",
+                            onclick: function onclick(e) {
+                                return joinGroup({
+                                    e: e,
+                                    group: {
+                                        group_id: item.id,
+                                        is_public: item.is_public
+                                    }
+                                });
+                            }
+                        },
+                        isPublic ? "Join" : "Request"
+                    );
+                } else if (item.status == "2") {
+                    return (0, _hyperapp.h)(
+                        "span",
+                        null,
+                        "Pending"
+                    );
+                }
+            }()
+        )
+    );
+};
+exports.default = PublicGroups;
+
+/***/ }),
+/* 174 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var _Users = __webpack_require__(175);
+
+var _Users2 = _interopRequireDefault(_Users);
+
+var _DropDown = __webpack_require__(14);
+
+var _DropDown2 = _interopRequireDefault(_DropDown);
+
+var _Radio = __webpack_require__(15);
+
+var _utils = __webpack_require__(24);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var ManageGroups = function ManageGroups(_ref) {
+    var state = _ref.state,
+        actions = _ref.actions;
+
+    var GroupUsers = state.groupUsers.data.map(function (item, index) {
+        return (0, _hyperapp.h)(_Users2.default, {
+            actions: actions,
+            index: index,
+            group_id: state.groupUsers.group_id,
+            item: item,
+            isAdmin: item.id == state.groupUsers.admin_id
+        });
+    });
+    var groups = [];
+    var selectedIndex = 0;
+    state.allGroups.data.map(function (item) {
+        if (item.admin == state.user.data.id) {
+            groups.push(item);
+        }
+    });
+    var selected = groups[0] ? groups[0].id : 0;
+
+    if (groups.length == 0) return (0, _hyperapp.h)(
+        "p",
+        null,
+        "You are not an admin of any group."
+    );
+
+    var getSelectedGroup = function getSelectedGroup() {
+        return document.querySelector(".manage-gdd option:checked").innerHTML;
+    };
+
+    return (0, _hyperapp.h)(
+        "div",
+        { "class": "tab-pane", id: "tab-manage-groups" },
+        (0, _hyperapp.h)(
+            "p",
+            null,
+            "You can manage the groups for which are you are the admin.",
+            (0, _hyperapp.h)(
+                "button",
+                {
+                    "class": "invite-btn btn btn-xs btn-success pull-right",
+                    onclick: function onclick(e) {
+                        return actions.showInviteModal({
+                            e: e,
+                            group_id: state.groupUsers.group_id,
+                            title: "Invite users in " + getSelectedGroup()
+                        });
+                    }
+                },
+                "Invite"
+            )
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "row" },
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "col-sm-6 form-horizontal" },
+                (0, _hyperapp.h)(
+                    "div",
+                    {
+                        "class": "form-group",
+                        oncreate: function oncreate() {
+                            return (0, _utils.trigger)(".manage-gdd", "change");
+                        }
+                    },
+                    (0, _hyperapp.h)(
+                        "label",
+                        { "class": "control-label col-sm-3" },
+                        "Groups:"
+                    ),
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "col-sm-9" },
+                        (0, _hyperapp.h)(_DropDown2.default, {
+                            classes: "form-control manage-gdd",
+                            identifier: "id",
+                            data: groups,
+                            selected: selected,
+                            onChange: actions.fetchGroupUsers
+                        })
+                    )
+                ),
+                (0, _hyperapp.h)(GroupEditForm, {
+                    saveEditedGroup: actions.saveEditedGroup,
+                    state: state
+                })
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "col-sm-6 form-group scroll", id: "group-users-block" },
+                (0, _hyperapp.h)(
+                    "label",
+                    null,
+                    "Group Users:"
+                ),
+                (0, _hyperapp.h)(
+                    "table",
+                    { "class": "table table-hover", id: "group-users-table" },
+                    (0, _hyperapp.h)(
+                        "thead",
+                        null,
+                        (0, _hyperapp.h)(
+                            "tr",
+                            null,
+                            (0, _hyperapp.h)(
+                                "th",
+                                null,
+                                "Name"
+                            ),
+                            (0, _hyperapp.h)(
+                                "th",
+                                null,
+                                "Access"
+                            ),
+                            (0, _hyperapp.h)(
+                                "th",
+                                null,
+                                "Remove"
+                            )
+                        )
+                    ),
+                    (0, _hyperapp.h)(
+                        "tbody",
+                        null,
+                        GroupUsers
+                    )
+                )
+            )
+        )
+    );
+};
+var GroupEditForm = function GroupEditForm(_ref2) {
+    var state = _ref2.state,
+        saveEditedGroup = _ref2.saveEditedGroup;
+
+    var selectedGroup = {};
+    state.allGroups.data.map(function (group, i) {
+        if (state.groupUsers.group_id == group.id) {
+            selectedGroup = group;
+        }
+    });
+
+    var localState = { mode: "edit" };
+
+    var onBlur = function onBlur(e, key) {
+        localState[key] = e.target.value;
+    };
+    var saveGroup = function saveGroup() {
+        var data = Object.assign(selectedGroup, localState);
+        saveEditedGroup(data);
+    };
+
+    return (0, _hyperapp.h)(
+        "div",
+        { "class": "editgroup-block" },
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "form-group" },
+            (0, _hyperapp.h)(
+                "label",
+                {
+                    "class": "control-label col-sm-3 required",
+                    "for": "inputGroupCreate"
+                },
+                "Name"
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "col-sm-9" },
+                (0, _hyperapp.h)("input", {
+                    "class": "form-control",
+                    value: selectedGroup.name,
+                    type: "text",
+                    onblur: function onblur(e) {
+                        return onBlur(e, "name");
+                    }
+                })
+            )
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "form-group" },
+            (0, _hyperapp.h)(
+                "label",
+                {
+                    "class": "control-label col-sm-3 required",
+                    "for": "inputGrpDesc"
+                },
+                "Desc"
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "col-sm-9" },
+                (0, _hyperapp.h)("input", {
+                    size: "140",
+                    "class": "form-control",
+                    value: selectedGroup.desc,
+                    type: "text",
+                    onblur: function onblur(e) {
+                        return onBlur(e, "desc");
+                    }
+                })
+            )
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "form-group", id: "group-visibility" },
+            (0, _hyperapp.h)(
+                "label",
+                { "class": "control-label col-sm-3", "for": "inputDefault" },
+                "Visibility"
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "col-sm-9" },
+                (0, _hyperapp.h)(
+                    "label",
+                    { "class": "radio-inline" },
+                    (0, _hyperapp.h)(_Radio.Radio, {
+                        "class": "radio",
+                        type: "radio",
+                        value: "1",
+                        name: "group-visibility",
+                        checked: selectedGroup.is_public == "1",
+                        onclick: function onclick(e) {
+                            return onBlur(e, "is_public");
+                        }
+                    }),
+                    "Public"
+                ),
+                (0, _hyperapp.h)(
+                    "label",
+                    { "class": "radio-inline" },
+                    (0, _hyperapp.h)(_Radio.Radio, {
+                        "class": "radio",
+                        type: "radio",
+                        value: "0",
+                        name: "group-visibility",
+                        checked: selectedGroup.is_public == "0",
+                        onclick: function onclick(e) {
+                            return onBlur(e, "is_public");
+                        }
+                    }),
+                    "Private"
+                )
+            )
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "form-group", id: "group-rights" },
+            (0, _hyperapp.h)(
+                "label",
+                { "class": "control-label col-sm-3" },
+                "Permissions:"
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "col-sm-9" },
+                (0, _hyperapp.h)(
+                    "label",
+                    { "class": "radio-inline" },
+                    (0, _hyperapp.h)(_Radio.Radio, {
+                        "class": "radio",
+                        type: "radio",
+                        value: "can_post",
+                        name: "group_rights",
+                        checked: selectedGroup.group_rights == "can_post",
+                        onclick: function onclick(e) {
+                            return onBlur(e, "group_rights");
+                        }
+                    }),
+                    "Can Post"
+                ),
+                (0, _hyperapp.h)(
+                    "label",
+                    { "class": "radio-inline" },
+                    (0, _hyperapp.h)(_Radio.Radio, {
+                        "class": "radio",
+                        type: "radio",
+                        value: "can_read",
+                        name: "group_rights",
+                        checked: selectedGroup.group_rights == "can_read",
+                        onclick: function onclick(e) {
+                            return onBlur(e, "group_rights");
+                        }
+                    }),
+                    "Can Read"
+                )
+            )
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "col-xs-offset-3 col-xs-9" },
+            (0, _hyperapp.h)(
+                "button",
+                {
+                    type: "submit",
+                    onclick: saveGroup,
+                    "class": "btn btn-default btn-sm"
+                },
+                "Save"
+            )
+        )
+    );
+};
+
+exports.default = ManageGroups;
+
+/***/ }),
+/* 175 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var _Radio = __webpack_require__(15);
+
+var Users = function Users(_ref) {
+    var actions = _ref.actions,
+        item = _ref.item,
+        isAdmin = _ref.isAdmin,
+        group_id = _ref.group_id,
+        index = _ref.index;
+
+    var remove = isAdmin ? "" : "remove";
+    var can_post = item.group_rights == "can_post";
+    var can_read = item.group_rights == "can_read";
+    var changePermission = function changePermission(group_rights) {
+        actions.changePublicRights({
+            user_id: item.id,
+            group_rights: group_rights,
+            group_id: group_id,
+            index: index
+        });
+    };
+    var style = {
+        verticalAlign: "middle"
+    };
+    return (0, _hyperapp.h)(
+        "tr",
+        { "class": "user-item", "data-id": "{USER_ID}" },
+        (0, _hyperapp.h)(
+            "td",
+            { style: style },
+            (0, _hyperapp.h)(
+                "span",
+                { style: { color: item.color } },
+                item.nickname
+            )
+        ),
+        (0, _hyperapp.h)(
+            "td",
+            { style: style },
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "btn-group", "data-toggle": "buttons" },
+                (0, _hyperapp.h)(
+                    "label",
+                    { "class": "radio" },
+                    (0, _hyperapp.h)(_Radio.Radio, {
+                        "class": "radio",
+                        type: "radio",
+                        value: "can_post",
+                        name: "item-" + item.id,
+                        checked: can_post,
+                        onclick: function onclick(e) {
+                            return changePermission("can_post");
+                        }
+                    }),
+                    "Can Post"
+                ),
+                (0, _hyperapp.h)(
+                    "label",
+                    { "class": "radio" },
+                    (0, _hyperapp.h)(_Radio.Radio, {
+                        "class": "radio",
+                        type: "radio",
+                        value: "can_read",
+                        name: "item-" + item.id,
+                        checked: can_read,
+                        onclick: function onclick(e) {
+                            return changePermission("can_read");
+                        }
+                    }),
+                    "Can Read"
+                )
+            )
+        ),
+        (0, _hyperapp.h)(
+            "td",
+            { style: style },
+            (0, _hyperapp.h)(
+                "a",
+                {
+                    href: "#",
+                    "class": "remove-user",
+                    onclick: function onclick(e) {
+                        actions.removeUserFromGroup({ index: index, group_id: group_id });
+                    }
+                },
+                remove
+            )
+        )
+    );
+};
+exports.default = Users;
+
+/***/ }),
+/* 176 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var _Radio = __webpack_require__(15);
+
+var localState = {
+    name: "",
+    desc: "",
+    mode: "create",
+    group_rights: "can_post",
+    is_public: 1
+};
+var CreateGroup = function CreateGroup(props) {
+    var onBlur = function onBlur(e, key) {
+        localState[key] = e.target.value;
+    };
+    var createGroup = function createGroup() {
+        props.actions.createNewGroup(localState);
+    };
+    return (0, _hyperapp.h)(
+        "div",
+        null,
+        (0, _hyperapp.h)(
+            "p",
+            null,
+            "You can create a public group which is visible to all users. Any body will be able to join and see the links being shared. For privacy, you can create a private group."
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            null,
+            (0, _hyperapp.h)(
+                "div",
+                { "class": " form-horizontal", id: "create-group-block" },
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "form-group" },
+                    (0, _hyperapp.h)(
+                        "label",
+                        {
+                            "class": "control-label col-sm-3 required",
+                            "for": "inputGroupCreate"
+                        },
+                        "Name"
+                    ),
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "col-sm-9" },
+                        (0, _hyperapp.h)("input", {
+                            size: "30",
+                            "class": "form-control",
+                            id: "inputGroupCreate",
+                            type: "text",
+                            onblur: function onblur(e) {
+                                return onBlur(e, "name");
+                            },
+                            placeholder: "Enter a group name"
+                        })
+                    )
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "form-group" },
+                    (0, _hyperapp.h)(
+                        "label",
+                        {
+                            "class": "control-label col-sm-3 required",
+                            "for": "inputGrpDesc"
+                        },
+                        "Desc"
+                    ),
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "col-sm-9" },
+                        (0, _hyperapp.h)("input", {
+                            size: "140",
+                            "class": "form-control",
+                            id: "inputGrpDesc",
+                            type: "text",
+                            onblur: function onblur(e) {
+                                return onBlur(e, "desc");
+                            },
+                            placeholder: "Enter a group description"
+                        })
+                    )
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "form-group", id: "group-visibility" },
+                    (0, _hyperapp.h)(
+                        "label",
+                        {
+                            "class": "control-label col-sm-3",
+                            "for": "inputDefault"
+                        },
+                        "Visibility"
+                    ),
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "col-sm-9" },
+                        (0, _hyperapp.h)(
+                            "label",
+                            { "class": "radio-inline" },
+                            (0, _hyperapp.h)(_Radio.Radio, {
+                                "class": "radio",
+                                type: "radio",
+                                value: "1",
+                                name: "group-visibility",
+                                checked: "true",
+                                onclick: function onclick(e) {
+                                    return onBlur(e, "is_public");
+                                }
+                            }),
+                            "Public"
+                        ),
+                        (0, _hyperapp.h)(
+                            "label",
+                            { "class": "radio-inline" },
+                            (0, _hyperapp.h)(_Radio.Radio, {
+                                "class": "radio",
+                                type: "radio",
+                                value: "0",
+                                name: "group-visibility",
+                                onclick: function onclick(e) {
+                                    return onBlur(e, "is_public");
+                                }
+                            }),
+                            "Private"
+                        )
+                    )
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "form-group", id: "group-rights" },
+                    (0, _hyperapp.h)(
+                        "label",
+                        { "class": "control-label col-sm-3" },
+                        "Permissions:"
+                    ),
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "col-sm-9" },
+                        (0, _hyperapp.h)(
+                            "label",
+                            { "class": "radio-inline" },
+                            (0, _hyperapp.h)(_Radio.Radio, {
+                                "class": "radio",
+                                type: "radio",
+                                value: "can_post",
+                                name: "group_rights",
+                                checked: "true",
+                                onclick: function onclick(e) {
+                                    return onBlur(e, "group_rights");
+                                }
+                            }),
+                            "Can Post"
+                        ),
+                        (0, _hyperapp.h)(
+                            "label",
+                            { "class": "radio-inline" },
+                            (0, _hyperapp.h)(_Radio.Radio, {
+                                "class": "radio",
+                                type: "radio",
+                                value: "can_read",
+                                name: "group_rights",
+                                checked: "false",
+                                onclick: function onclick(e) {
+                                    return onBlur(e, "group_rights");
+                                }
+                            }),
+                            "Can Read"
+                        )
+                    )
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "col-xs-offset-3 col-xs-9" },
+                    (0, _hyperapp.h)("br", null),
+                    (0, _hyperapp.h)(
+                        "button",
+                        {
+                            type: "submit",
+                            "data-action": "create",
+                            id: "create-group",
+                            "class": "actionBtn btn btn-default btn-sm",
+                            onclick: createGroup
+                        },
+                        "Create Group"
+                    )
+                )
+            ),
+            (0, _hyperapp.h)("br", null)
+        )
+    );
+};
+
+exports.default = CreateGroup;
+
+/***/ }),
+/* 177 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var _Links = __webpack_require__(3);
+
+var _Links2 = _interopRequireDefault(_Links);
+
+var _TabComponent = __webpack_require__(9);
+
+var _Profile = __webpack_require__(178);
+
+var _Profile2 = _interopRequireDefault(_Profile);
+
+var _Customize = __webpack_require__(180);
+
+var _Customize2 = _interopRequireDefault(_Customize);
+
+var _About = __webpack_require__(181);
+
+var _About2 = _interopRequireDefault(_About);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Settings = function Settings(_ref) {
+    var active = _ref.active,
+        state = _ref.state,
+        actions = _ref.actions,
+        tabs = _ref.tabs;
+
+    var onGroupChange = function onGroupChange(e) {
+        return (0, _hyperapp.h)("div", null);
+    };
+    var data = null;
+    switch (active) {
+        case "profile":
+            data = (0, _hyperapp.h)(_Profile2.default, {
+                state: state,
+                model: "settingsTabs.tabs.profile",
+                tab: tabs[active],
+                actions: actions
+            });
+            break;
+        case "customize":
+            data = (0, _hyperapp.h)(
+                "div",
+                null,
+                (0, _hyperapp.h)(_Customize2.default, {
+                    state: state,
+                    model: "settingsTabs.tabs.customize",
+                    tab: tabs[active],
+                    actions: actions
+                })
+            );
+            break;
+        case "about":
+            data = (0, _hyperapp.h)(
+                "div",
+                null,
+                (0, _hyperapp.h)(_About2.default, {
+                    model: "settingsTabs.tabs.about",
+                    state: state,
+                    tab: tabs[active]
+                })
+            );
+            break;
+        default:
+            // onTabChange({
+            //     stateKey: "settingsTabs",
+            //     tab_id: active
+            // });
+            break;
+    }
+    return (0, _hyperapp.h)(_TabComponent.TabComponent, {
+        classes: "secondary-nav",
+        type: "nav-pills",
+        state: state,
+        stateKey: "settingsTabs",
+        onChange: actions.onTabChange,
+        html: data
+    });
+};
+exports.default = Settings;
+
+/***/ }),
+/* 178 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+__webpack_require__(179);
+
+var Profile = function Profile(_ref) {
+    var state = _ref.state,
+        actions = _ref.actions;
+
+    return (0, _hyperapp.h)(
+        "div",
+        null,
+        (0, _hyperapp.h)(Info, {
+            actions: actions,
+            state: state,
+            loggedIn: state.user.loggedIn
+        }),
+        (0, _hyperapp.h)(LoginRegistration, {
+            actions: actions,
+            state: state,
+            loggedIn: state.user.loggedIn
+        })
+    );
+};
+
+var Info = function Info(_ref2) {
+    var state = _ref2.state,
+        actions = _ref2.actions,
+        loggedIn = _ref2.loggedIn;
+
+    if (!loggedIn) return null;
+
+    var localState = {};
+
+    var onBlur = function onBlur(e, key) {
+        localState[key] = e.target.value;
+    };
+    return state.user.loggedIn && (0, _hyperapp.h)(
+        "div",
+        { "class": "authorized " },
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "status" },
+            (0, _hyperapp.h)(
+                "div",
+                null,
+                "Connected as",
+                (0, _hyperapp.h)(
+                    "strong",
+                    null,
+                    " ",
+                    state.user.data.nickname
+                ),
+                ",",
+                " ",
+                (0, _hyperapp.h)(
+                    "a",
+                    { href: "#", onclick: actions.doLogout },
+                    "Logout"
+                )
+            )
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { id: "edit-profile" },
+            (0, _hyperapp.h)(
+                "form",
+                {
+                    "class": "form-horizontal",
+                    oncreate: function oncreate(e) {
+                        var nicknameStyle = document.querySelector("#nickname").style;
+                        nicknameStyle.color = state.user.data.color;
+                        ColorPicker(document.getElementById("slide"), document.getElementById("picker"), function (hex, hsv, rgb) {
+                            nicknameStyle.color = hex;
+                            var e = {
+                                target: {
+                                    value: hex
+                                }
+                            };
+                            onBlur(e, "color");
+                        });
+                    }
+                },
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "form-group", style: "line-height: 44px;" },
+                    (0, _hyperapp.h)(
+                        "label",
+                        {
+                            "class": "control-label col-sm-3",
+                            "for": "profile-color"
+                        },
+                        "Profile Color"
+                    ),
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "col-sm-9", style: { display: "flex" } },
+                        (0, _hyperapp.h)("div", { id: "picker" }),
+                        (0, _hyperapp.h)("div", { id: "slide" })
+                    )
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "form-group" },
+                    (0, _hyperapp.h)(
+                        "label",
+                        {
+                            "class": "control-label col-sm-3",
+                            "for": "new-nickname"
+                        },
+                        "Nickname"
+                    ),
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "col-sm-9" },
+                        (0, _hyperapp.h)("input", {
+                            "class": "form-control",
+                            id: "nickname",
+                            onblur: function onblur(e) {
+                                return onBlur(e, "nickname");
+                            },
+                            type: "text",
+                            value: state.user.data.nickname
+                        })
+                    )
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "form-group" },
+                    (0, _hyperapp.h)(
+                        "label",
+                        { "class": "control-label col-sm-3", "for": "bio" },
+                        "Short Bio"
+                    ),
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "col-sm-9" },
+                        (0, _hyperapp.h)("input", {
+                            "class": "form-control",
+                            onblur: function onblur(e) {
+                                return onBlur(e, "bio");
+                            },
+                            type: "text",
+                            value: state.user.data.bio
+                        })
+                    )
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "col-xs-offset-3 col-xs-12" },
+                    (0, _hyperapp.h)(
+                        "button",
+                        {
+                            type: "submit",
+                            style: "margin-left: 14px;",
+                            onclick: function onclick(e) {
+                                return actions.saveProfile({
+                                    e: e,
+                                    data: localState
+                                });
+                            },
+                            "class": "profile-btn btn btn-default btn-sm"
+                        },
+                        "Save"
+                    )
+                )
+            )
+        )
+    );
+};
+var initialState = {
+    nickname: "",
+    password: "",
+    email: ""
+};
+var LoginRegistration = function LoginRegistration(_ref3) {
+    var actions = _ref3.actions,
+        state = _ref3.state,
+        loggedIn = _ref3.loggedIn;
+
+    if (loggedIn) return null;
+
+    var onBlur = function onBlur(e, key) {
+        initialState[key] = e.target.value;
+    };
+    var handleLogin = function handleLogin() {
+        actions.doLogin(initialState);
+    };
+    var handleRegistration = function handleRegistration(e, key) {
+        actions.doRegister(initialState);
+    };
+
+    return (0, _hyperapp.h)(
+        "div",
+        { "class": "step form-horizontal" },
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "col-xs-6" },
+            (0, _hyperapp.h)(
+                "p",
+                null,
+                "Login"
+            ),
+            (0, _hyperapp.h)("br", null),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "form-group" },
+                (0, _hyperapp.h)(
+                    "label",
+                    { "class": "control-label col-sm-3", "for": "nickname" },
+                    "Nickname"
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "col-sm-9" },
+                    (0, _hyperapp.h)("input", {
+                        "class": "form-control",
+                        onblur: function onblur(e) {
+                            return onBlur(e, "nickname");
+                        },
+                        type: "text"
+                    })
+                )
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "form-group" },
+                (0, _hyperapp.h)(
+                    "label",
+                    { "class": "control-label  col-sm-3", "for": "password" },
+                    "Password"
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "col-sm-9" },
+                    (0, _hyperapp.h)("input", {
+                        "class": "form-control",
+                        onblur: function onblur(e) {
+                            return onBlur(e, "password");
+                        },
+                        type: "password"
+                    })
+                )
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "col-sm-9 col-sm-offset-3" },
+                (0, _hyperapp.h)(
+                    "a",
+                    { href: "#", onclick: actions.forgotPassword },
+                    "Forgot Password"
+                )
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "col-sm-9 col-sm-offset-3" },
+                (0, _hyperapp.h)("br", null),
+                (0, _hyperapp.h)(
+                    "button",
+                    {
+                        type: "submit",
+                        "class": "login-btn btn btn-default btn-sm",
+                        onclick: handleLogin
+                    },
+                    "Login"
+                )
+            )
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "col-xs-6" },
+            (0, _hyperapp.h)(
+                "p",
+                null,
+                "Register"
+            ),
+            (0, _hyperapp.h)("br", null),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "form-group" },
+                (0, _hyperapp.h)(
+                    "label",
+                    { "class": "control-label col-sm-3", "for": "r-email" },
+                    "Email"
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "col-sm-9" },
+                    (0, _hyperapp.h)("input", {
+                        onblur: function onblur(e) {
+                            return onBlur(e, "email");
+                        },
+                        "class": "form-control",
+                        id: "r-email",
+                        type: "email"
+                    })
+                )
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "form-group" },
+                (0, _hyperapp.h)(
+                    "label",
+                    { "class": "control-label  col-sm-3", "for": "r-nickname" },
+                    "Nickname"
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "col-sm-9" },
+                    (0, _hyperapp.h)("input", {
+                        "class": "form-control",
+                        id: "r-nickname",
+                        type: "text",
+                        onblur: function onblur(e) {
+                            return onBlur(e, "nickname");
+                        }
+                    })
+                )
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "form-group" },
+                (0, _hyperapp.h)(
+                    "label",
+                    { "class": "control-label col-sm-3", "for": "r-password" },
+                    "Password"
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "col-sm-9" },
+                    (0, _hyperapp.h)("input", {
+                        "class": "form-control",
+                        id: "r-password",
+                        type: "password",
+                        onblur: function onblur(e) {
+                            return onBlur(e, "password");
+                        }
+                    })
+                )
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "col-sm-9 col-sm-offset-3" },
+                (0, _hyperapp.h)(
+                    "button",
+                    {
+                        type: "submit",
+                        "class": "register-btn btn btn-default btn-sm",
+                        onclick: handleRegistration
+                    },
+                    "Register"
+                )
+            )
+        )
+    );
+};
+exports.default = Profile;
+
+/***/ }),
+/* 179 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+(function (g, p, n) {
+    function v(a) {
+        if (g.event && g.event.contentOverflow !== n) return { x: g.event.offsetX, y: g.event.offsetY };if (a.offsetX !== n && a.offsetY !== n) return { x: a.offsetX, y: a.offsetY };var b = a.target.parentNode.parentNode;return { x: a.layerX - b.offsetLeft, y: a.layerY - b.offsetTop };
+    }function e(a, b, c) {
+        a = p.createElementNS(z, a);for (var d in b) {
+            a.setAttribute(d, b[d]);
+        }"[object Array]" != Object.prototype.toString.call(c) && (c = [c]);b = 0;for (d = c[0] && c.length || 0; b < d; b++) {
+            a.appendChild(c[b]);
+        }return a;
+    }function h(a) {
+        var b,
+            c,
+            d,
+            j,
+            e = a.h % 360 / 60;j = a.v * a.s;d = j * (1 - Math.abs(e % 2 - 1));b = c = a = a.v - j;e = ~~e;b += [j, d, 0, 0, d, j][e];c += [d, j, j, d, 0, 0][e];a += [0, 0, d, j, j, d][e];d = Math.floor(255 * b);c = Math.floor(255 * c);a = Math.floor(255 * a);return { r: d, g: c, b: a, hex: "#" + (16777216 | a | c << 8 | d << 16).toString(16).slice(1) };
+    }function q(a) {
+        var b = a.r,
+            c = a.g,
+            d = a.b;if (1 < a.r || 1 < a.g || 1 < a.b) b /= 255, c /= 255, d /= 255;var e;a = Math.max(b, c, d);e = a - Math.min(b, c, d);b = 60 * ((0 == e ? 0 : a == b ? (c - d) / e + (c < d ? 6 : 0) : a == c ? (d - b) / e + 2 : (b - c) / e + 4) % 6);return { h: b, s: 0 == e ? 0 : e / a, v: a };
+    }function w(a, b, c) {
+        return function (d) {
+            d = d || g.event;d = v(d);a.h = 360 * (d.y / b.offsetHeight) + s;a.s = a.v = 1;var e = h({ h: a.h, s: 1, v: 1 });c.style.backgroundColor = e.hex;a.callback && a.callback(e.hex, { h: a.h - s, s: a.s, v: a.v }, { r: e.r, g: e.g, b: e.b }, n, d);
+        };
+    }function x(a, b) {
+        return function (c) {
+            c = c || g.event;c = v(c);var d = b.offsetHeight;a.s = c.x / b.offsetWidth;a.v = (d - c.y) / d;d = h(a);a.callback && a.callback(d.hex, { h: a.h - s, s: a.s, v: a.v }, { r: d.r, g: d.g, b: d.b }, c);
+        };
+    }function f(a, b, c) {
+        if (!(this instanceof f)) return new f(a, b, c);this.h = 0;this.v = this.s = 1;if (c) this.callback = c, this.pickerElement = b, this.slideElement = a;else {
+            a.innerHTML = A;this.slideElement = a.getElementsByClassName("slide")[0];this.pickerElement = a.getElementsByClassName("picker")[0];var d = a.getElementsByClassName("slide-indicator")[0],
+                e = a.getElementsByClassName("picker-indicator")[0];f.fixIndicators(d, e);this.callback = function (a, c, g, h, k) {
+                f.positionIndicators(d, e, k, h);b(a, c, g);
+            };
+        }"SVG" == t ? (a = k.getElementsByTagName("linearGradient")[0], c = k.getElementsByTagName("rect")[0], a.id = "gradient-hsv-" + r, c.setAttribute("fill", "url(#" + a.id + ")"), a = l.getElementsByTagName("linearGradient"), c = l.getElementsByTagName("rect"), a[0].id = "gradient-black-" + r, a[1].id = "gradient-white-" + r, c[0].setAttribute("fill", "url(#" + a[1].id + ")"), c[1].setAttribute("fill", "url(#" + a[0].id + ")"), this.slideElement.appendChild(k.cloneNode(!0)), this.pickerElement.appendChild(l.cloneNode(!0)), r++) : (this.slideElement.innerHTML = k, this.pickerElement.innerHTML = l);m(this.slideElement, "click", w(this, this.slideElement, this.pickerElement));m(this.pickerElement, "click", x(this, this.pickerElement));y(this, this.slideElement, w(this, this.slideElement, this.pickerElement));y(this, this.pickerElement, x(this, this.pickerElement));
+    }function m(a, b, c) {
+        a.attachEvent ? a.attachEvent("on" + b, c) : a.addEventListener && a.addEventListener(b, c, !1);
+    }function y(a, b, c) {
+        var d = !1;m(b, "mousedown", function () {
+            d = !0;
+        });m(b, "mouseup", function () {
+            d = !1;
+        });m(b, "mouseout", function () {
+            d = !1;
+        });m(b, "mousemove", function (a) {
+            d && c(a);
+        });
+    }function u(a, b, c, d) {
+        a.h = b.h % 360;a.s = b.s;a.v = b.v;b = h(a);var e = { y: a.h * a.slideElement.offsetHeight / 360, x: 0 },
+            f = a.pickerElement.offsetHeight,
+            f = { x: a.s * a.pickerElement.offsetWidth, y: f - a.v * f };a.pickerElement.style.backgroundColor = h({ h: a.h, s: 1, v: 1 }).hex;a.callback && a.callback(d || b.hex, { h: a.h, s: a.s, v: a.v }, c || { r: b.r, g: b.g, b: b.b }, f, e);return a;
+    }var t = g.SVGAngle || p.implementation.hasFeature("http://www.w3.org/TR/SVG11/feature#BasicStructure", "1.1") ? "SVG" : "VML",
+        l,
+        k,
+        s = 15,
+        z = "http://www.w3.org/2000/svg",
+        A = '<div class="picker-wrapper"><div class="picker"></div><div class="picker-indicator"></div></div><div class="slide-wrapper"><div class="slide"></div><div class="slide-indicator"></div></div>';
+    "SVG" == t ? (k = e("svg", { xmlns: "http://www.w3.org/2000/svg", version: "1.1", width: "100%", height: "100%" }, [e("defs", {}, e("linearGradient", { id: "gradient-hsv", x1: "0%", y1: "100%", x2: "0%", y2: "0%" }, [e("stop", { offset: "0%", "stop-color": "#FF0000", "stop-opacity": "1" }), e("stop", { offset: "13%", "stop-color": "#FF00FF", "stop-opacity": "1" }), e("stop", { offset: "25%", "stop-color": "#8000FF", "stop-opacity": "1" }), e("stop", { offset: "38%", "stop-color": "#0040FF", "stop-opacity": "1" }), e("stop", { offset: "50%", "stop-color": "#00FFFF", "stop-opacity": "1" }), e("stop", { offset: "63%", "stop-color": "#00FF40", "stop-opacity": "1" }), e("stop", { offset: "75%", "stop-color": "#0BED00", "stop-opacity": "1" }), e("stop", { offset: "88%", "stop-color": "#FFFF00", "stop-opacity": "1" }), e("stop", { offset: "100%", "stop-color": "#FF0000", "stop-opacity": "1" })])), e("rect", { x: "0", y: "0", width: "100%", height: "100%", fill: "url(#gradient-hsv)" })]), l = e("svg", { xmlns: "http://www.w3.org/2000/svg", version: "1.1", width: "100%", height: "100%" }, [e("defs", {}, [e("linearGradient", { id: "gradient-black", x1: "0%",
+        y1: "100%", x2: "0%", y2: "0%" }, [e("stop", { offset: "0%", "stop-color": "#000000", "stop-opacity": "1" }), e("stop", { offset: "100%", "stop-color": "#CC9A81", "stop-opacity": "0" })]), e("linearGradient", { id: "gradient-white", x1: "0%", y1: "100%", x2: "100%", y2: "100%" }, [e("stop", { offset: "0%", "stop-color": "#FFFFFF", "stop-opacity": "1" }), e("stop", { offset: "100%", "stop-color": "#CC9A81", "stop-opacity": "0" })])]), e("rect", { x: "0", y: "0", width: "100%", height: "100%", fill: "url(#gradient-white)" }), e("rect", { x: "0", y: "0", width: "100%", height: "100%",
+        fill: "url(#gradient-black)" })])) : "VML" == t && (k = '<DIV style="position: relative; width: 100%; height: 100%"><v:rect style="position: absolute; top: 0; left: 0; width: 100%; height: 100%" stroked="f" filled="t"><v:fill type="gradient" method="none" angle="0" color="red" color2="red" colors="8519f fuchsia;.25 #8000ff;24903f #0040ff;.5 aqua;41287f #00ff40;.75 #0bed00;57671f yellow"></v:fill></v:rect></DIV>', l = '<DIV style="position: relative; width: 100%; height: 100%"><v:rect style="position: absolute; left: -1px; top: -1px; width: 101%; height: 101%" stroked="f" filled="t"><v:fill type="gradient" method="none" angle="270" color="#FFFFFF" opacity="100%" color2="#CC9A81" o:opacity2="0%"></v:fill></v:rect><v:rect style="position: absolute; left: 0px; top: 0px; width: 100%; height: 101%" stroked="f" filled="t"><v:fill type="gradient" method="none" angle="0" color="#000000" opacity="100%" color2="#CC9A81" o:opacity2="0%"></v:fill></v:rect></DIV>', p.namespaces.v || p.namespaces.add("v", "urn:schemas-microsoft-com:vml", "#default#VML"));var r = 0;f.hsv2rgb = function (a) {
+        a = h(a);delete a.hex;return a;
+    };f.hsv2hex = function (a) {
+        return h(a).hex;
+    };f.rgb2hsv = q;f.rgb2hex = function (a) {
+        return h(q(a)).hex;
+    };f.hex2hsv = function (a) {
+        return q(f.hex2rgb(a));
+    };f.hex2rgb = function (a) {
+        return { r: parseInt(a.substr(1, 2), 16), g: parseInt(a.substr(3, 2), 16), b: parseInt(a.substr(5, 2), 16) };
+    };f.prototype.setHsv = function (a) {
+        return u(this, a);
+    };f.prototype.setRgb = function (a) {
+        return u(this, q(a), a);
+    };f.prototype.setHex = function (a) {
+        return u(this, f.hex2hsv(a), n, a);
+    };f.positionIndicators = function (a, b, c, d) {
+        c && (b.style.left = "auto", b.style.right = "0px", b.style.top = "0px", a.style.top = c.y - a.offsetHeight / 2 + "px");d && (b.style.top = d.y - b.offsetHeight / 2 + "px", b.style.left = d.x - b.offsetWidth / 2 + "px");
+    };f.fixIndicators = function (a, b) {
+        b.style.pointerEvents = "none";a.style.pointerEvents = "none";
+    };g.ColorPicker = f;
+})(window, window.document);
+
+/***/ }),
+/* 180 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var _Radio = __webpack_require__(15);
+
+var Customize = function Customize(_ref) {
+    var state = _ref.state,
+        actions = _ref.actions;
+
+    var itemClicked = function itemClicked(e, key) {
+        actions.saveCustomization({ e: e, key: key });
+    };
+    var initialState = state.user.customize;
+    return (0, _hyperapp.h)(
+        "div",
+        null,
+        (0, _hyperapp.h)(
+            "div",
+            { "class": " form-horizontal" },
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "form-group", id: "sound-setting" },
+                (0, _hyperapp.h)(
+                    "label",
+                    { "class": "control-label col-sm-3" },
+                    "Sound"
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "col-sm-9" },
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "btn-group", "data-toggle": "buttons" },
+                        (0, _hyperapp.h)(
+                            "label",
+                            {
+                                "data-val": "1",
+                                "class": "btn btn-default btn-sm " + (initialState.sound && "active")
+                            },
+                            (0, _hyperapp.h)(_Radio.Radio, {
+                                "class": "radio",
+                                type: "radio",
+                                value: "1",
+                                name: "sound",
+                                onclick: function onclick(e) {
+                                    return itemClicked(e, "sound");
+                                },
+                                checked: initialState.sound
+                            }),
+                            "On"
+                        ),
+                        (0, _hyperapp.h)(
+                            "label",
+                            {
+                                "data-val": "0",
+                                "class": "btn btn-default btn-sm " + (!initialState.sound && "active")
+                            },
+                            (0, _hyperapp.h)(_Radio.Radio, {
+                                "class": "radio",
+                                type: "radio",
+                                value: "0",
+                                name: "sound",
+                                onclick: function onclick(e) {
+                                    return itemClicked(e, "sound");
+                                },
+                                checked: !initialState.sound
+                            }),
+                            "Off"
+                        )
+                    )
+                )
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "form-group hide", id: "persist-setting" },
+                (0, _hyperapp.h)(
+                    "label",
+                    { "class": "control-label col-sm-3" },
+                    "Allow offline"
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "col-sm-9" },
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "btn-group", "data-toggle": "buttons" },
+                        (0, _hyperapp.h)(
+                            "label",
+                            {
+                                "data-val": "1",
+                                "class": "btn btn-default btn-sm " + (initialState.offline && "active")
+                            },
+                            (0, _hyperapp.h)(_Radio.Radio, {
+                                "class": "radio",
+                                type: "radio",
+                                value: "1",
+                                name: "offline",
+                                onclick: function onclick(e) {
+                                    return itemClicked(e, "offline");
+                                },
+                                checked: initialState.offline
+                            }),
+                            "On"
+                        ),
+                        (0, _hyperapp.h)(
+                            "label",
+                            {
+                                "data-val": "0",
+                                "class": "btn btn-default btn-sm " + (!initialState.offline && "active")
+                            },
+                            (0, _hyperapp.h)(_Radio.Radio, {
+                                "class": "radio",
+                                type: "radio",
+                                value: "0",
+                                name: "offline",
+                                onclick: function onclick(e) {
+                                    return itemClicked(e, "offline");
+                                },
+                                checked: !initialState.offline
+                            }),
+                            "Off"
+                        )
+                    )
+                )
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "form-group", id: "rich-notification" },
+                (0, _hyperapp.h)(
+                    "label",
+                    { "class": "control-label col-sm-3" },
+                    "Notification:"
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "col-sm-9" },
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "btn-group", "data-toggle": "buttons" },
+                        (0, _hyperapp.h)(
+                            "label",
+                            {
+                                "data-val": "1",
+                                "class": "btn btn-default btn-sm " + (initialState.notification && "active")
+                            },
+                            (0, _hyperapp.h)(_Radio.Radio, {
+                                "class": "radio",
+                                type: "radio",
+                                value: "1",
+                                name: "noti",
+                                onclick: function onclick(e) {
+                                    return itemClicked(e, "notification");
+                                },
+                                checked: initialState.notification
+                            }),
+                            "On"
+                        ),
+                        (0, _hyperapp.h)(
+                            "label",
+                            {
+                                "data-val": "0",
+                                "class": "btn btn-default btn-sm " + (!initialState.notification && "active")
+                            },
+                            (0, _hyperapp.h)(_Radio.Radio, {
+                                "class": "radio",
+                                type: "radio",
+                                value: "0",
+                                name: "noti",
+                                onclick: function onclick(e) {
+                                    return itemClicked(e, "notification");
+                                },
+                                checked: !initialState.notification
+                            }),
+                            "Off"
+                        )
+                    )
+                )
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "form-group", id: "theme-setting" },
+                (0, _hyperapp.h)(
+                    "label",
+                    { "class": "control-label col-sm-3" },
+                    "Theme:"
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "col-sm-9" },
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "btn-group", "data-toggle": "buttons" },
+                        (0, _hyperapp.h)(
+                            "label",
+                            {
+                                "data-val": "1",
+                                "class": "btn btn-default btn-sm active"
+                            },
+                            (0, _hyperapp.h)("input", {
+                                "class": "radio",
+                                type: "radio",
+                                value: "1",
+                                name: "noti"
+                            }),
+                            "Dark"
+                        )
+                    )
+                )
+            )
+        )
+    );
+};
+
+exports.default = Customize;
+
+/***/ }),
+/* 181 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var About = function About(_ref) {
+    var state = _ref.state;
+
+    return (0, _hyperapp.h)(
+        "div",
+        { "class": "" },
+        "Linkcast v",
+        state.version,
+        (0, _hyperapp.h)("p", null),
+        (0, _hyperapp.h)(
+            "p",
+            null,
+            "Web Linkcast:",
+            " ",
+            (0, _hyperapp.h)(
+                "a",
+                {
+                    target: "_blank",
+                    href: "chrome-extension://" + chrome.runtime.id + "/popup.html",
+                    id: "linkcast-web"
+                },
+                "Click here"
+            )
+        ),
+        (0, _hyperapp.h)("p", null),
+        (0, _hyperapp.h)("p", null),
+        (0, _hyperapp.h)("span", { id: "random_quote" }),
+        (0, _hyperapp.h)(
+            "div",
+            { style: "position:absolute;bottom: 42px;" },
+            "For any bugs, log them",
+            " ",
+            (0, _hyperapp.h)(
+                "a",
+                {
+                    target: "_blank",
+                    href: "https://github.com/ajaxtown/linkcast/issues"
+                },
+                "here"
+            )
+        )
+    );
+};
+
+exports.default = About;
+
+/***/ }),
+/* 182 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var _DropDown = __webpack_require__(14);
+
+var _DropDown2 = _interopRequireDefault(_DropDown);
+
+var _LinkItem = __webpack_require__(13);
+
+var _LinkItem2 = _interopRequireDefault(_LinkItem);
+
+var _Links = __webpack_require__(3);
+
+var _Links2 = _interopRequireDefault(_Links);
+
+var _ScrollHoc = __webpack_require__(10);
+
+var _ScrollHoc2 = _interopRequireDefault(_ScrollHoc);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Search = function Search(props) {
+    var doSearch = function doSearch(e) {
+        if (e.keyCode == 13) {
+            if (e.target.value.length > 0) {
+                props.actions.fetchItems({
+                    stateKey: "mainNav",
+                    q: e.target.value,
+                    tab_id: "search"
+                });
+            }
+        }
+    };
+    return (0, _hyperapp.h)(
+        "div",
+        null,
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "footer" },
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "pull-left" },
+                "Search:"
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "pull-left" },
+                (0, _hyperapp.h)("input", {
+                    type: "text",
+                    "class": "search-box",
+                    placeholder: "Search links, titles, hastags, users...almost everything",
+                    value: props.state.mainNav.tabs.search.q,
+                    onkeypress: doSearch,
+                    oncreate: function oncreate(e) {
+                        return e.focus();
+                    }
+                })
+            ),
+            (0, _hyperapp.h)("span", { "class": "clearfix" })
+        ),
+        (0, _hyperapp.h)(_Links2.default, {
+            model: "mainNav.tabs.search",
+            tab: props.tab,
+            actions: props.actions,
+            loadMore: props.actions.loadMore,
+            onScroll: props.onScroll,
+            state: props.state
+        })
+    );
+};
+exports.default = (0, _ScrollHoc2.default)(Search);
+
+/***/ }),
+/* 183 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var _Links = __webpack_require__(3);
+
+var _Links2 = _interopRequireDefault(_Links);
+
+var _ModalHoc = __webpack_require__(11);
+
+var _ModalHoc2 = _interopRequireDefault(_ModalHoc);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var P = function P(_ref) {
+    var state = _ref.state,
+        actions = _ref.actions,
+        onScroll = _ref.onScroll,
+        loadMore = _ref.loadMore;
+
+    return (0, _hyperapp.h)(
+        "div",
+        { model: "modals.profile.links", "class": "row" },
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "col-sm-3" },
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "user-groups-list" },
+                (0, _hyperapp.h)(
+                    "h5",
+                    { "class": "group-title" },
+                    "Groups"
+                ),
+                (0, _hyperapp.h)("div", { "class": "groups-wrapper" })
+            )
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "col-sm-9" },
+            (0, _hyperapp.h)(_Links2.default, {
+                model: "modals.profile.links",
+                tab: state.modals.profile.links,
+                onScroll: actions.onScroll,
+                state: state,
+                loadMore: function loadMore(e) {
+                    return actions.getUserLinks({
+                        e: e,
+                        user_id: state.modals.profile.user.id
+                    });
+                },
+                actions: actions
+            })
+        )
+    );
+};
+
+exports.default = (0, _ModalHoc2.default)(P);
+
+/***/ }),
+/* 184 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var _ModalHoc = __webpack_require__(11);
+
+var _ModalHoc2 = _interopRequireDefault(_ModalHoc);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var InviteModal = function InviteModal(_ref) {
+    var state = _ref.state,
+        actions = _ref.actions,
+        onScroll = _ref.onScroll,
+        loadMore = _ref.loadMore;
+
+    return (0, _hyperapp.h)(
+        "div",
+        { model: "modals.profile.invite", "class": "row" },
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "col-xs-6" },
+            (0, _hyperapp.h)(
+                "h6",
+                null,
+                "# Send Invites"
+            ),
+            (0, _hyperapp.h)("input", {
+                type: "text",
+                id: "tags-input-send-invites",
+                "class": "form-control",
+                oncreate: function oncreate(e) {
+                    e.focus();
+                }
+            })
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "col-xs-6" },
+            (0, _hyperapp.h)(
+                "h6",
+                null,
+                "# Edit Pending Invites"
+            ),
+            (0, _hyperapp.h)(
+                "div",
+                {
+                    id: "sent-invites",
+                    "class": "scroll",
+                    style: { height: "280px" }
+                },
+                state.modals.invite.data.invites.map(function (user, index) {
+                    return (0, _hyperapp.h)(
+                        "div",
+                        { "class": "invite" },
+                        (0, _hyperapp.h)(
+                            "span",
+                            { style: { color: user.color } },
+                            user.nickname
+                        ),
+                        (0, _hyperapp.h)(
+                            "span",
+                            null,
+                            (0, _hyperapp.h)(
+                                "a",
+                                {
+                                    "class": "withdraw-invite",
+                                    href: "#",
+                                    onclick: function onclick(e) {
+                                        return actions.withdrawInvite({
+                                            e: e,
+                                            index: index,
+                                            invite_id: user.invite_id
+                                        });
+                                    }
+                                },
+                                "Withdraw"
+                            )
+                        )
+                    );
+                })
+            )
+        ),
+        (0, _hyperapp.h)(
+            "div",
+            { "class": "col-xs-12" },
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "modal-footer" },
+                (0, _hyperapp.h)(
+                    "button",
+                    {
+                        type: "button",
+                        onclick: actions.sendInvites,
+                        "class": "btn btn-default btn-xs"
+                    },
+                    "Send Invites"
+                )
+            )
+        )
+    );
+};
+
+exports.default = (0, _ModalHoc2.default)(InviteModal);
+
+/***/ }),
+/* 185 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var _Links = __webpack_require__(3);
+
+var _Links2 = _interopRequireDefault(_Links);
+
+var _ModalHoc = __webpack_require__(11);
+
+var _ModalHoc2 = _interopRequireDefault(_ModalHoc);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var localState = {};
+var ForgotPasswordModal = function ForgotPasswordModal(_ref) {
+    var state = _ref.state,
+        actions = _ref.actions;
+
+    var onBlur = function onBlur(e, key) {
+        localState[key] = e.target.value.trim();
+    };
+    return (0, _hyperapp.h)(
+        "div",
+        { model: "modals.profile.links", "class": "row" },
+        (0, _hyperapp.h)(
+            "div",
+            { "class": " form-horizontal" },
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "col-xs-12" },
+                (0, _hyperapp.h)(
+                    "p",
+                    null,
+                    "Enter your email address to recover your password"
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "form-group" },
+                    (0, _hyperapp.h)(
+                        "label",
+                        { "class": "control-label col-sm-3", "for": "email" },
+                        "Email"
+                    ),
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "col-sm-9" },
+                        (0, _hyperapp.h)("input", {
+                            "class": "form-control",
+                            onblur: function onblur(e) {
+                                return onBlur(e, "email");
+                            },
+                            type: "text",
+                            placeholder: "Enter your email.."
+                        })
+                    ),
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "col-sm-9 col-sm-offset-3" },
+                        (0, _hyperapp.h)("br", null),
+                        (0, _hyperapp.h)(
+                            "button",
+                            {
+                                type: "submit",
+                                "class": "login-btn btn btn-default btn-xs",
+                                onclick: function onclick() {
+                                    return actions.sendRecoveryEmail(localState);
+                                }
+                            },
+                            "Reset Password"
+                        )
+                    )
+                )
+            )
+        )
+    );
+};
+
+exports.default = (0, _ModalHoc2.default)(ForgotPasswordModal);
+
+/***/ }),
+/* 186 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _hyperapp = __webpack_require__(1);
+
+var _Links = __webpack_require__(3);
+
+var _Links2 = _interopRequireDefault(_Links);
+
+var _ModalHoc = __webpack_require__(11);
+
+var _ModalHoc2 = _interopRequireDefault(_ModalHoc);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var localState = {};
+var ForgotPasswordModal = function ForgotPasswordModal(_ref) {
+    var state = _ref.state,
+        actions = _ref.actions;
+
+    var onBlur = function onBlur(e, key) {
+        localState[key] = e.target.value.trim();
+    };
+    return (0, _hyperapp.h)(
+        "div",
+        { model: "modals.profile.links", "class": "row" },
+        (0, _hyperapp.h)(
+            "div",
+            { "class": " form-horizontal" },
+            (0, _hyperapp.h)(
+                "div",
+                { "class": "col-xs-12" },
+                (0, _hyperapp.h)(
+                    "p",
+                    null,
+                    "Edit your comment"
+                ),
+                (0, _hyperapp.h)(
+                    "div",
+                    { "class": "form-group" },
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "col-sm-12" },
+                        (0, _hyperapp.h)("input", {
+                            "class": "form-control",
+                            type: "text",
+                            value: state.modals.comment.data.comment
+                        })
+                    ),
+                    (0, _hyperapp.h)(
+                        "div",
+                        { "class": "col-sm-9 col-sm-offset-3" },
+                        (0, _hyperapp.h)("br", null),
+                        (0, _hyperapp.h)(
+                            "button",
+                            {
+                                type: "submit",
+                                "class": "login-btn btn btn-default btn-xs",
+                                onclick: function onclick() {
+                                    return actions.saveEditedComment(localState);
+                                }
+                            },
+                            "Save"
+                        )
+                    )
+                )
+            )
+        )
+    );
+};
+
+exports.default = (0, _ModalHoc2.default)(ForgotPasswordModal);
+
+/***/ }),
+/* 187 */
+/***/ (function(module, exports, __webpack_require__) {
+
 var map = {
-	"./af": 13,
-	"./af.js": 13,
-	"./ar": 14,
-	"./ar-dz": 15,
-	"./ar-dz.js": 15,
-	"./ar-kw": 16,
-	"./ar-kw.js": 16,
-	"./ar-ly": 17,
-	"./ar-ly.js": 17,
-	"./ar-ma": 18,
-	"./ar-ma.js": 18,
-	"./ar-sa": 19,
-	"./ar-sa.js": 19,
-	"./ar-tn": 20,
-	"./ar-tn.js": 20,
-	"./ar.js": 14,
-	"./az": 21,
-	"./az.js": 21,
-	"./be": 22,
-	"./be.js": 22,
-	"./bg": 23,
-	"./bg.js": 23,
-	"./bm": 24,
-	"./bm.js": 24,
-	"./bn": 25,
-	"./bn.js": 25,
-	"./bo": 26,
-	"./bo.js": 26,
-	"./br": 27,
-	"./br.js": 27,
-	"./bs": 28,
-	"./bs.js": 28,
-	"./ca": 29,
-	"./ca.js": 29,
-	"./cs": 30,
-	"./cs.js": 30,
-	"./cv": 31,
-	"./cv.js": 31,
-	"./cy": 32,
-	"./cy.js": 32,
-	"./da": 33,
-	"./da.js": 33,
-	"./de": 34,
-	"./de-at": 35,
-	"./de-at.js": 35,
-	"./de-ch": 36,
-	"./de-ch.js": 36,
-	"./de.js": 34,
-	"./dv": 37,
-	"./dv.js": 37,
-	"./el": 38,
-	"./el.js": 38,
-	"./en-au": 39,
-	"./en-au.js": 39,
-	"./en-ca": 40,
-	"./en-ca.js": 40,
-	"./en-gb": 41,
-	"./en-gb.js": 41,
-	"./en-ie": 42,
-	"./en-ie.js": 42,
-	"./en-nz": 43,
-	"./en-nz.js": 43,
-	"./eo": 44,
-	"./eo.js": 44,
-	"./es": 45,
-	"./es-do": 46,
-	"./es-do.js": 46,
-	"./es-us": 47,
-	"./es-us.js": 47,
-	"./es.js": 45,
-	"./et": 48,
-	"./et.js": 48,
-	"./eu": 49,
-	"./eu.js": 49,
-	"./fa": 50,
-	"./fa.js": 50,
-	"./fi": 51,
-	"./fi.js": 51,
-	"./fo": 52,
-	"./fo.js": 52,
-	"./fr": 53,
-	"./fr-ca": 54,
-	"./fr-ca.js": 54,
-	"./fr-ch": 55,
-	"./fr-ch.js": 55,
-	"./fr.js": 53,
-	"./fy": 56,
-	"./fy.js": 56,
-	"./gd": 57,
-	"./gd.js": 57,
-	"./gl": 58,
-	"./gl.js": 58,
-	"./gom-latn": 59,
-	"./gom-latn.js": 59,
-	"./gu": 60,
-	"./gu.js": 60,
-	"./he": 61,
-	"./he.js": 61,
-	"./hi": 62,
-	"./hi.js": 62,
-	"./hr": 63,
-	"./hr.js": 63,
-	"./hu": 64,
-	"./hu.js": 64,
-	"./hy-am": 65,
-	"./hy-am.js": 65,
-	"./id": 66,
-	"./id.js": 66,
-	"./is": 67,
-	"./is.js": 67,
-	"./it": 68,
-	"./it.js": 68,
-	"./ja": 69,
-	"./ja.js": 69,
-	"./jv": 70,
-	"./jv.js": 70,
-	"./ka": 71,
-	"./ka.js": 71,
-	"./kk": 72,
-	"./kk.js": 72,
-	"./km": 73,
-	"./km.js": 73,
-	"./kn": 74,
-	"./kn.js": 74,
-	"./ko": 75,
-	"./ko.js": 75,
-	"./ky": 76,
-	"./ky.js": 76,
-	"./lb": 77,
-	"./lb.js": 77,
-	"./lo": 78,
-	"./lo.js": 78,
-	"./lt": 79,
-	"./lt.js": 79,
-	"./lv": 80,
-	"./lv.js": 80,
-	"./me": 81,
-	"./me.js": 81,
-	"./mi": 82,
-	"./mi.js": 82,
-	"./mk": 83,
-	"./mk.js": 83,
-	"./ml": 84,
-	"./ml.js": 84,
-	"./mr": 85,
-	"./mr.js": 85,
-	"./ms": 86,
-	"./ms-my": 87,
-	"./ms-my.js": 87,
-	"./ms.js": 86,
-	"./my": 88,
-	"./my.js": 88,
-	"./nb": 89,
-	"./nb.js": 89,
-	"./ne": 90,
-	"./ne.js": 90,
-	"./nl": 91,
-	"./nl-be": 92,
-	"./nl-be.js": 92,
-	"./nl.js": 91,
-	"./nn": 93,
-	"./nn.js": 93,
-	"./pa-in": 94,
-	"./pa-in.js": 94,
-	"./pl": 95,
-	"./pl.js": 95,
-	"./pt": 96,
-	"./pt-br": 97,
-	"./pt-br.js": 97,
-	"./pt.js": 96,
-	"./ro": 98,
-	"./ro.js": 98,
-	"./ru": 99,
-	"./ru.js": 99,
-	"./sd": 100,
-	"./sd.js": 100,
-	"./se": 101,
-	"./se.js": 101,
-	"./si": 102,
-	"./si.js": 102,
-	"./sk": 103,
-	"./sk.js": 103,
-	"./sl": 104,
-	"./sl.js": 104,
-	"./sq": 105,
-	"./sq.js": 105,
-	"./sr": 106,
-	"./sr-cyrl": 107,
-	"./sr-cyrl.js": 107,
-	"./sr.js": 106,
-	"./ss": 108,
-	"./ss.js": 108,
-	"./sv": 109,
-	"./sv.js": 109,
-	"./sw": 110,
-	"./sw.js": 110,
-	"./ta": 111,
-	"./ta.js": 111,
-	"./te": 112,
-	"./te.js": 112,
-	"./tet": 113,
-	"./tet.js": 113,
-	"./th": 114,
-	"./th.js": 114,
-	"./tl-ph": 115,
-	"./tl-ph.js": 115,
-	"./tlh": 116,
-	"./tlh.js": 116,
-	"./tr": 117,
-	"./tr.js": 117,
-	"./tzl": 118,
-	"./tzl.js": 118,
-	"./tzm": 119,
-	"./tzm-latn": 120,
-	"./tzm-latn.js": 120,
-	"./tzm.js": 119,
-	"./uk": 121,
-	"./uk.js": 121,
-	"./ur": 122,
-	"./ur.js": 122,
-	"./uz": 123,
-	"./uz-latn": 124,
-	"./uz-latn.js": 124,
-	"./uz.js": 123,
-	"./vi": 125,
-	"./vi.js": 125,
-	"./x-pseudo": 126,
-	"./x-pseudo.js": 126,
-	"./yo": 127,
-	"./yo.js": 127,
-	"./zh-cn": 128,
-	"./zh-cn.js": 128,
-	"./zh-hk": 129,
-	"./zh-hk.js": 129,
-	"./zh-tw": 130,
-	"./zh-tw.js": 130
+	"./af": 26,
+	"./af.js": 26,
+	"./ar": 27,
+	"./ar-dz": 28,
+	"./ar-dz.js": 28,
+	"./ar-kw": 29,
+	"./ar-kw.js": 29,
+	"./ar-ly": 30,
+	"./ar-ly.js": 30,
+	"./ar-ma": 31,
+	"./ar-ma.js": 31,
+	"./ar-sa": 32,
+	"./ar-sa.js": 32,
+	"./ar-tn": 33,
+	"./ar-tn.js": 33,
+	"./ar.js": 27,
+	"./az": 34,
+	"./az.js": 34,
+	"./be": 35,
+	"./be.js": 35,
+	"./bg": 36,
+	"./bg.js": 36,
+	"./bm": 37,
+	"./bm.js": 37,
+	"./bn": 38,
+	"./bn.js": 38,
+	"./bo": 39,
+	"./bo.js": 39,
+	"./br": 40,
+	"./br.js": 40,
+	"./bs": 41,
+	"./bs.js": 41,
+	"./ca": 42,
+	"./ca.js": 42,
+	"./cs": 43,
+	"./cs.js": 43,
+	"./cv": 44,
+	"./cv.js": 44,
+	"./cy": 45,
+	"./cy.js": 45,
+	"./da": 46,
+	"./da.js": 46,
+	"./de": 47,
+	"./de-at": 48,
+	"./de-at.js": 48,
+	"./de-ch": 49,
+	"./de-ch.js": 49,
+	"./de.js": 47,
+	"./dv": 50,
+	"./dv.js": 50,
+	"./el": 51,
+	"./el.js": 51,
+	"./en-au": 52,
+	"./en-au.js": 52,
+	"./en-ca": 53,
+	"./en-ca.js": 53,
+	"./en-gb": 54,
+	"./en-gb.js": 54,
+	"./en-ie": 55,
+	"./en-ie.js": 55,
+	"./en-nz": 56,
+	"./en-nz.js": 56,
+	"./eo": 57,
+	"./eo.js": 57,
+	"./es": 58,
+	"./es-do": 59,
+	"./es-do.js": 59,
+	"./es-us": 60,
+	"./es-us.js": 60,
+	"./es.js": 58,
+	"./et": 61,
+	"./et.js": 61,
+	"./eu": 62,
+	"./eu.js": 62,
+	"./fa": 63,
+	"./fa.js": 63,
+	"./fi": 64,
+	"./fi.js": 64,
+	"./fo": 65,
+	"./fo.js": 65,
+	"./fr": 66,
+	"./fr-ca": 67,
+	"./fr-ca.js": 67,
+	"./fr-ch": 68,
+	"./fr-ch.js": 68,
+	"./fr.js": 66,
+	"./fy": 69,
+	"./fy.js": 69,
+	"./gd": 70,
+	"./gd.js": 70,
+	"./gl": 71,
+	"./gl.js": 71,
+	"./gom-latn": 72,
+	"./gom-latn.js": 72,
+	"./gu": 73,
+	"./gu.js": 73,
+	"./he": 74,
+	"./he.js": 74,
+	"./hi": 75,
+	"./hi.js": 75,
+	"./hr": 76,
+	"./hr.js": 76,
+	"./hu": 77,
+	"./hu.js": 77,
+	"./hy-am": 78,
+	"./hy-am.js": 78,
+	"./id": 79,
+	"./id.js": 79,
+	"./is": 80,
+	"./is.js": 80,
+	"./it": 81,
+	"./it.js": 81,
+	"./ja": 82,
+	"./ja.js": 82,
+	"./jv": 83,
+	"./jv.js": 83,
+	"./ka": 84,
+	"./ka.js": 84,
+	"./kk": 85,
+	"./kk.js": 85,
+	"./km": 86,
+	"./km.js": 86,
+	"./kn": 87,
+	"./kn.js": 87,
+	"./ko": 88,
+	"./ko.js": 88,
+	"./ky": 89,
+	"./ky.js": 89,
+	"./lb": 90,
+	"./lb.js": 90,
+	"./lo": 91,
+	"./lo.js": 91,
+	"./lt": 92,
+	"./lt.js": 92,
+	"./lv": 93,
+	"./lv.js": 93,
+	"./me": 94,
+	"./me.js": 94,
+	"./mi": 95,
+	"./mi.js": 95,
+	"./mk": 96,
+	"./mk.js": 96,
+	"./ml": 97,
+	"./ml.js": 97,
+	"./mr": 98,
+	"./mr.js": 98,
+	"./ms": 99,
+	"./ms-my": 100,
+	"./ms-my.js": 100,
+	"./ms.js": 99,
+	"./my": 101,
+	"./my.js": 101,
+	"./nb": 102,
+	"./nb.js": 102,
+	"./ne": 103,
+	"./ne.js": 103,
+	"./nl": 104,
+	"./nl-be": 105,
+	"./nl-be.js": 105,
+	"./nl.js": 104,
+	"./nn": 106,
+	"./nn.js": 106,
+	"./pa-in": 107,
+	"./pa-in.js": 107,
+	"./pl": 108,
+	"./pl.js": 108,
+	"./pt": 109,
+	"./pt-br": 110,
+	"./pt-br.js": 110,
+	"./pt.js": 109,
+	"./ro": 111,
+	"./ro.js": 111,
+	"./ru": 112,
+	"./ru.js": 112,
+	"./sd": 113,
+	"./sd.js": 113,
+	"./se": 114,
+	"./se.js": 114,
+	"./si": 115,
+	"./si.js": 115,
+	"./sk": 116,
+	"./sk.js": 116,
+	"./sl": 117,
+	"./sl.js": 117,
+	"./sq": 118,
+	"./sq.js": 118,
+	"./sr": 119,
+	"./sr-cyrl": 120,
+	"./sr-cyrl.js": 120,
+	"./sr.js": 119,
+	"./ss": 121,
+	"./ss.js": 121,
+	"./sv": 122,
+	"./sv.js": 122,
+	"./sw": 123,
+	"./sw.js": 123,
+	"./ta": 124,
+	"./ta.js": 124,
+	"./te": 125,
+	"./te.js": 125,
+	"./tet": 126,
+	"./tet.js": 126,
+	"./th": 127,
+	"./th.js": 127,
+	"./tl-ph": 128,
+	"./tl-ph.js": 128,
+	"./tlh": 129,
+	"./tlh.js": 129,
+	"./tr": 130,
+	"./tr.js": 130,
+	"./tzl": 131,
+	"./tzl.js": 131,
+	"./tzm": 132,
+	"./tzm-latn": 133,
+	"./tzm-latn.js": 133,
+	"./tzm.js": 132,
+	"./uk": 134,
+	"./uk.js": 134,
+	"./ur": 135,
+	"./ur.js": 135,
+	"./uz": 136,
+	"./uz-latn": 137,
+	"./uz-latn.js": 137,
+	"./uz.js": 136,
+	"./vi": 138,
+	"./vi.js": 138,
+	"./x-pseudo": 139,
+	"./x-pseudo.js": 139,
+	"./yo": 140,
+	"./yo.js": 140,
+	"./zh-cn": 141,
+	"./zh-cn.js": 141,
+	"./zh-hk": 142,
+	"./zh-hk.js": 142,
+	"./zh-tw": 143,
+	"./zh-tw.js": 143
 };
 function webpackContext(req) {
 	return __webpack_require__(webpackContextResolve(req));
@@ -24366,10 +29265,10 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = 169;
+webpackContext.id = 187;
 
 /***/ }),
-/* 170 */
+/* 188 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26756,14 +31655,14 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         }, c, g ? e : b, g, null);
       };
     });
-  }), a.jQuery = a.$ = p, "function" == "function" && __webpack_require__(131) && __webpack_require__(131).jQuery && !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
+  }), a.jQuery = a.$ = p, "function" == "function" && __webpack_require__(144) && __webpack_require__(144).jQuery && !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
     return p;
   }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 })(window);
 
 /***/ }),
-/* 171 */
+/* 189 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27838,7 +32737,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 })($);
 
 /***/ }),
-/* 172 */
+/* 190 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27857,10 +32756,10 @@ if (process.env.NODE_ENV) {
         s.parentNode.insertBefore(ga, s);
     })();
 }
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ }),
-/* 173 */
+/* 191 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27909,120 +32808,13 @@ function log(prevState, action, nextState) {
 }
 
 /***/ }),
-/* 174 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 175 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 176 */,
-/* 177 */,
-/* 178 */,
-/* 179 */,
-/* 180 */,
-/* 181 */,
-/* 182 */,
-/* 183 */,
-/* 184 */,
-/* 185 */,
-/* 186 */,
-/* 187 */,
-/* 188 */,
-/* 189 */,
-/* 190 */,
-/* 191 */,
-/* 192 */,
-/* 193 */,
-/* 194 */,
-/* 195 */
+/* 192 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.init = undefined;
-
-var _common = __webpack_require__(10);
-
-var ResizeObserver = __webpack_require__(167).default;
-var $bgEle = void 0,
-    $container = void 0;
-
-var changeBackgroundSize = function changeBackgroundSize() {
-    $bgEle.forEach(function (ele) {
-        ele.style.width = $container.offsetWidth + "px";
-        ele.style.height = $container.offsetHeight + "px";
-    });
-};
-var observeSizeChanges = function observeSizeChanges() {
-    $bgEle = document.querySelectorAll(".background");
-    $container = document.querySelector(".container");
-    new ResizeObserver(changeBackgroundSize).observe($container);
-};
-
-var init = exports.init = function init(state, actions) {
-    return function (data) {
-        setTimeout(observeSizeChanges, 100);
-
-        if (localStorage.chrome_id) {
-            actions.fetchUserInfo({
-                chrome_id: localStorage.chrome_id,
-                callback: function callback() {
-                    if (chrome.extension) {
-                        var bgPage = chrome.extension.getBackgroundPage();
-                        actions.setNotificationCount(bgPage.countData);
-                        bgPage.updateNotification(0);
-                        var manifest = chrome.runtime.getManifest();
-                        var version = manifest.version;
-                        actions.setVersion(version);
-                    }
-                    actions.onTabChange({
-                        stateKey: "notificationTabs",
-                        tab_id: "notLinks"
-                    });
-                    actions.fetchGroups();
-                    actions.detectSite();
-
-                    state.user.customize.sound = parseInt(_common.Storage.get("sound"));
-                    state.user.customize.notification = parseInt(_common.Storage.get("notification"));
-                    state.user.customize.offline = parseInt(_common.Storage.get("offline"));
-                    actions.updateState(state);
-                }
-            });
-            if (false) {
-                if (!localStorage.counter || parseInt(localStorage.counter) <= 4) {
-                    document.querySelector("body").classList.add("halloween");
-                    if (!localStorage.counter) {
-                        localStorage.counter = 0;
-                    }
-                    localStorage.counter = parseInt(localStorage.counter) + 1;
-                }
-            }
-        } else {
-            state.mainNav.active = "settings";
-            state.settingsTabs.active = "profile";
-            actions.updateState(state);
-        }
-    };
-};
-
-/***/ }),
-/* 196 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var LZUTF8 = __webpack_require__(218);
+var LZUTF8 = __webpack_require__(193);
 module.exports = function (props, params) {
     params = typeof params == "undefined" ? {} : params;
     var defaults = {
@@ -28069,4892 +32861,7 @@ module.exports = function (props, params) {
 };
 
 /***/ }),
-/* 197 */,
-/* 198 */,
-/* 199 */,
-/* 200 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-// a duplex stream is just a stream that is both readable and writable.
-// Since JS doesn't have multiple prototypal inheritance, this class
-// prototypally inherits from Readable, and then parasitically from
-// Writable.
-
-
-
-/*<replacement>*/
-
-var processNextTick = __webpack_require__(205);
-/*</replacement>*/
-
-/*<replacement>*/
-var objectKeys = Object.keys || function (obj) {
-  var keys = [];
-  for (var key in obj) {
-    keys.push(key);
-  }return keys;
-};
-/*</replacement>*/
-
-module.exports = Duplex;
-
-/*<replacement>*/
-var util = __webpack_require__(203);
-util.inherits = __webpack_require__(202);
-/*</replacement>*/
-
-var Readable = __webpack_require__(213);
-var Writable = __webpack_require__(209);
-
-util.inherits(Duplex, Readable);
-
-var keys = objectKeys(Writable.prototype);
-for (var v = 0; v < keys.length; v++) {
-  var method = keys[v];
-  if (!Duplex.prototype[method]) Duplex.prototype[method] = Writable.prototype[method];
-}
-
-function Duplex(options) {
-  if (!(this instanceof Duplex)) return new Duplex(options);
-
-  Readable.call(this, options);
-  Writable.call(this, options);
-
-  if (options && options.readable === false) this.readable = false;
-
-  if (options && options.writable === false) this.writable = false;
-
-  this.allowHalfOpen = true;
-  if (options && options.allowHalfOpen === false) this.allowHalfOpen = false;
-
-  this.once('end', onend);
-}
-
-// the no-half-open enforcer
-function onend() {
-  // if we allow half-open state, or if the writable side ended,
-  // then we're ok.
-  if (this.allowHalfOpen || this._writableState.ended) return;
-
-  // no more data can be written.
-  // But allow more writes to happen in this tick.
-  processNextTick(onEndNT, this);
-}
-
-function onEndNT(self) {
-  self.end();
-}
-
-Object.defineProperty(Duplex.prototype, 'destroyed', {
-  get: function get() {
-    if (this._readableState === undefined || this._writableState === undefined) {
-      return false;
-    }
-    return this._readableState.destroyed && this._writableState.destroyed;
-  },
-  set: function set(value) {
-    // we ignore the value if the stream
-    // has not been initialized yet
-    if (this._readableState === undefined || this._writableState === undefined) {
-      return;
-    }
-
-    // backward compatibility, the user is explicitly
-    // managing destroyed
-    this._readableState.destroyed = value;
-    this._writableState.destroyed = value;
-  }
-});
-
-Duplex.prototype._destroy = function (err, cb) {
-  this.push(null);
-  this.end();
-
-  processNextTick(cb, err);
-};
-
-function forEach(xs, f) {
-  for (var i = 0, l = xs.length; i < l; i++) {
-    f(xs[i], i);
-  }
-}
-
-/***/ }),
-/* 201 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-var g;
-
-// This works in non-strict mode
-g = function () {
-	return this;
-}();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1, eval)("this");
-} catch (e) {
-	// This works if the window reference is available
-	if ((typeof window === "undefined" ? "undefined" : _typeof(window)) === "object") g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-/***/ }),
-/* 202 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-if (typeof Object.create === 'function') {
-  // implementation from standard node.js 'util' module
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor;
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  };
-} else {
-  // old school shim for old browsers
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor;
-    var TempCtor = function TempCtor() {};
-    TempCtor.prototype = superCtor.prototype;
-    ctor.prototype = new TempCtor();
-    ctor.prototype.constructor = ctor;
-  };
-}
-
-/***/ }),
-/* 203 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(Buffer) {
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-// NOTE: These type checking functions intentionally don't use `instanceof`
-// because it is fragile and can be easily faked with `Object.create()`.
-
-function isArray(arg) {
-  if (Array.isArray) {
-    return Array.isArray(arg);
-  }
-  return objectToString(arg) === '[object Array]';
-}
-exports.isArray = isArray;
-
-function isBoolean(arg) {
-  return typeof arg === 'boolean';
-}
-exports.isBoolean = isBoolean;
-
-function isNull(arg) {
-  return arg === null;
-}
-exports.isNull = isNull;
-
-function isNullOrUndefined(arg) {
-  return arg == null;
-}
-exports.isNullOrUndefined = isNullOrUndefined;
-
-function isNumber(arg) {
-  return typeof arg === 'number';
-}
-exports.isNumber = isNumber;
-
-function isString(arg) {
-  return typeof arg === 'string';
-}
-exports.isString = isString;
-
-function isSymbol(arg) {
-  return (typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) === 'symbol';
-}
-exports.isSymbol = isSymbol;
-
-function isUndefined(arg) {
-  return arg === void 0;
-}
-exports.isUndefined = isUndefined;
-
-function isRegExp(re) {
-  return objectToString(re) === '[object RegExp]';
-}
-exports.isRegExp = isRegExp;
-
-function isObject(arg) {
-  return (typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) === 'object' && arg !== null;
-}
-exports.isObject = isObject;
-
-function isDate(d) {
-  return objectToString(d) === '[object Date]';
-}
-exports.isDate = isDate;
-
-function isError(e) {
-  return objectToString(e) === '[object Error]' || e instanceof Error;
-}
-exports.isError = isError;
-
-function isFunction(arg) {
-  return typeof arg === 'function';
-}
-exports.isFunction = isFunction;
-
-function isPrimitive(arg) {
-  return arg === null || typeof arg === 'boolean' || typeof arg === 'number' || typeof arg === 'string' || (typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) === 'symbol' || // ES6 symbol
-  typeof arg === 'undefined';
-}
-exports.isPrimitive = isPrimitive;
-
-exports.isBuffer = Buffer.isBuffer;
-
-function objectToString(o) {
-  return Object.prototype.toString.call(o);
-}
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(204).Buffer))
-
-/***/ }),
-/* 204 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {/*!
- * The buffer module from node.js, for the browser.
- *
- * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
- * @license  MIT
- */
-/* eslint-disable no-proto */
-
-
-
-var base64 = __webpack_require__(219);
-var ieee754 = __webpack_require__(220);
-var isArray = __webpack_require__(210);
-
-exports.Buffer = Buffer;
-exports.SlowBuffer = SlowBuffer;
-exports.INSPECT_MAX_BYTES = 50;
-
-/**
- * If `Buffer.TYPED_ARRAY_SUPPORT`:
- *   === true    Use Uint8Array implementation (fastest)
- *   === false   Use Object implementation (most compatible, even IE6)
- *
- * Browsers that support typed arrays are IE 10+, Firefox 4+, Chrome 7+, Safari 5.1+,
- * Opera 11.6+, iOS 4.2+.
- *
- * Due to various browser bugs, sometimes the Object implementation will be used even
- * when the browser supports typed arrays.
- *
- * Note:
- *
- *   - Firefox 4-29 lacks support for adding new properties to `Uint8Array` instances,
- *     See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438.
- *
- *   - Chrome 9-10 is missing the `TypedArray.prototype.subarray` function.
- *
- *   - IE10 has a broken `TypedArray.prototype.subarray` function which returns arrays of
- *     incorrect length in some situations.
-
- * We detect these buggy browsers and set `Buffer.TYPED_ARRAY_SUPPORT` to `false` so they
- * get the Object implementation, which is slower but behaves correctly.
- */
-Buffer.TYPED_ARRAY_SUPPORT = global.TYPED_ARRAY_SUPPORT !== undefined ? global.TYPED_ARRAY_SUPPORT : typedArraySupport();
-
-/*
- * Export kMaxLength after typed array support is determined.
- */
-exports.kMaxLength = kMaxLength();
-
-function typedArraySupport() {
-  try {
-    var arr = new Uint8Array(1);
-    arr.__proto__ = { __proto__: Uint8Array.prototype, foo: function foo() {
-        return 42;
-      } };
-    return arr.foo() === 42 && // typed array instances can be augmented
-    typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
-    arr.subarray(1, 1).byteLength === 0; // ie10 has broken `subarray`
-  } catch (e) {
-    return false;
-  }
-}
-
-function kMaxLength() {
-  return Buffer.TYPED_ARRAY_SUPPORT ? 0x7fffffff : 0x3fffffff;
-}
-
-function createBuffer(that, length) {
-  if (kMaxLength() < length) {
-    throw new RangeError('Invalid typed array length');
-  }
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    // Return an augmented `Uint8Array` instance, for best performance
-    that = new Uint8Array(length);
-    that.__proto__ = Buffer.prototype;
-  } else {
-    // Fallback: Return an object instance of the Buffer class
-    if (that === null) {
-      that = new Buffer(length);
-    }
-    that.length = length;
-  }
-
-  return that;
-}
-
-/**
- * The Buffer constructor returns instances of `Uint8Array` that have their
- * prototype changed to `Buffer.prototype`. Furthermore, `Buffer` is a subclass of
- * `Uint8Array`, so the returned instances will have all the node `Buffer` methods
- * and the `Uint8Array` methods. Square bracket notation works as expected -- it
- * returns a single octet.
- *
- * The `Uint8Array` prototype remains unmodified.
- */
-
-function Buffer(arg, encodingOrOffset, length) {
-  if (!Buffer.TYPED_ARRAY_SUPPORT && !(this instanceof Buffer)) {
-    return new Buffer(arg, encodingOrOffset, length);
-  }
-
-  // Common case.
-  if (typeof arg === 'number') {
-    if (typeof encodingOrOffset === 'string') {
-      throw new Error('If encoding is specified then the first argument must be a string');
-    }
-    return allocUnsafe(this, arg);
-  }
-  return from(this, arg, encodingOrOffset, length);
-}
-
-Buffer.poolSize = 8192; // not used by this implementation
-
-// TODO: Legacy, not needed anymore. Remove in next major version.
-Buffer._augment = function (arr) {
-  arr.__proto__ = Buffer.prototype;
-  return arr;
-};
-
-function from(that, value, encodingOrOffset, length) {
-  if (typeof value === 'number') {
-    throw new TypeError('"value" argument must not be a number');
-  }
-
-  if (typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer) {
-    return fromArrayBuffer(that, value, encodingOrOffset, length);
-  }
-
-  if (typeof value === 'string') {
-    return fromString(that, value, encodingOrOffset);
-  }
-
-  return fromObject(that, value);
-}
-
-/**
- * Functionally equivalent to Buffer(arg, encoding) but throws a TypeError
- * if value is a number.
- * Buffer.from(str[, encoding])
- * Buffer.from(array)
- * Buffer.from(buffer)
- * Buffer.from(arrayBuffer[, byteOffset[, length]])
- **/
-Buffer.from = function (value, encodingOrOffset, length) {
-  return from(null, value, encodingOrOffset, length);
-};
-
-if (Buffer.TYPED_ARRAY_SUPPORT) {
-  Buffer.prototype.__proto__ = Uint8Array.prototype;
-  Buffer.__proto__ = Uint8Array;
-  if (typeof Symbol !== 'undefined' && Symbol.species && Buffer[Symbol.species] === Buffer) {
-    // Fix subarray() in ES2016. See: https://github.com/feross/buffer/pull/97
-    Object.defineProperty(Buffer, Symbol.species, {
-      value: null,
-      configurable: true
-    });
-  }
-}
-
-function assertSize(size) {
-  if (typeof size !== 'number') {
-    throw new TypeError('"size" argument must be a number');
-  } else if (size < 0) {
-    throw new RangeError('"size" argument must not be negative');
-  }
-}
-
-function alloc(that, size, fill, encoding) {
-  assertSize(size);
-  if (size <= 0) {
-    return createBuffer(that, size);
-  }
-  if (fill !== undefined) {
-    // Only pay attention to encoding if it's a string. This
-    // prevents accidentally sending in a number that would
-    // be interpretted as a start offset.
-    return typeof encoding === 'string' ? createBuffer(that, size).fill(fill, encoding) : createBuffer(that, size).fill(fill);
-  }
-  return createBuffer(that, size);
-}
-
-/**
- * Creates a new filled Buffer instance.
- * alloc(size[, fill[, encoding]])
- **/
-Buffer.alloc = function (size, fill, encoding) {
-  return alloc(null, size, fill, encoding);
-};
-
-function allocUnsafe(that, size) {
-  assertSize(size);
-  that = createBuffer(that, size < 0 ? 0 : checked(size) | 0);
-  if (!Buffer.TYPED_ARRAY_SUPPORT) {
-    for (var i = 0; i < size; ++i) {
-      that[i] = 0;
-    }
-  }
-  return that;
-}
-
-/**
- * Equivalent to Buffer(num), by default creates a non-zero-filled Buffer instance.
- * */
-Buffer.allocUnsafe = function (size) {
-  return allocUnsafe(null, size);
-};
-/**
- * Equivalent to SlowBuffer(num), by default creates a non-zero-filled Buffer instance.
- */
-Buffer.allocUnsafeSlow = function (size) {
-  return allocUnsafe(null, size);
-};
-
-function fromString(that, string, encoding) {
-  if (typeof encoding !== 'string' || encoding === '') {
-    encoding = 'utf8';
-  }
-
-  if (!Buffer.isEncoding(encoding)) {
-    throw new TypeError('"encoding" must be a valid string encoding');
-  }
-
-  var length = byteLength(string, encoding) | 0;
-  that = createBuffer(that, length);
-
-  var actual = that.write(string, encoding);
-
-  if (actual !== length) {
-    // Writing a hex string, for example, that contains invalid characters will
-    // cause everything after the first invalid character to be ignored. (e.g.
-    // 'abxxcd' will be treated as 'ab')
-    that = that.slice(0, actual);
-  }
-
-  return that;
-}
-
-function fromArrayLike(that, array) {
-  var length = array.length < 0 ? 0 : checked(array.length) | 0;
-  that = createBuffer(that, length);
-  for (var i = 0; i < length; i += 1) {
-    that[i] = array[i] & 255;
-  }
-  return that;
-}
-
-function fromArrayBuffer(that, array, byteOffset, length) {
-  array.byteLength; // this throws if `array` is not a valid ArrayBuffer
-
-  if (byteOffset < 0 || array.byteLength < byteOffset) {
-    throw new RangeError('\'offset\' is out of bounds');
-  }
-
-  if (array.byteLength < byteOffset + (length || 0)) {
-    throw new RangeError('\'length\' is out of bounds');
-  }
-
-  if (byteOffset === undefined && length === undefined) {
-    array = new Uint8Array(array);
-  } else if (length === undefined) {
-    array = new Uint8Array(array, byteOffset);
-  } else {
-    array = new Uint8Array(array, byteOffset, length);
-  }
-
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    // Return an augmented `Uint8Array` instance, for best performance
-    that = array;
-    that.__proto__ = Buffer.prototype;
-  } else {
-    // Fallback: Return an object instance of the Buffer class
-    that = fromArrayLike(that, array);
-  }
-  return that;
-}
-
-function fromObject(that, obj) {
-  if (Buffer.isBuffer(obj)) {
-    var len = checked(obj.length) | 0;
-    that = createBuffer(that, len);
-
-    if (that.length === 0) {
-      return that;
-    }
-
-    obj.copy(that, 0, 0, len);
-    return that;
-  }
-
-  if (obj) {
-    if (typeof ArrayBuffer !== 'undefined' && obj.buffer instanceof ArrayBuffer || 'length' in obj) {
-      if (typeof obj.length !== 'number' || isnan(obj.length)) {
-        return createBuffer(that, 0);
-      }
-      return fromArrayLike(that, obj);
-    }
-
-    if (obj.type === 'Buffer' && isArray(obj.data)) {
-      return fromArrayLike(that, obj.data);
-    }
-  }
-
-  throw new TypeError('First argument must be a string, Buffer, ArrayBuffer, Array, or array-like object.');
-}
-
-function checked(length) {
-  // Note: cannot use `length < kMaxLength()` here because that fails when
-  // length is NaN (which is otherwise coerced to zero.)
-  if (length >= kMaxLength()) {
-    throw new RangeError('Attempt to allocate Buffer larger than maximum ' + 'size: 0x' + kMaxLength().toString(16) + ' bytes');
-  }
-  return length | 0;
-}
-
-function SlowBuffer(length) {
-  if (+length != length) {
-    // eslint-disable-line eqeqeq
-    length = 0;
-  }
-  return Buffer.alloc(+length);
-}
-
-Buffer.isBuffer = function isBuffer(b) {
-  return !!(b != null && b._isBuffer);
-};
-
-Buffer.compare = function compare(a, b) {
-  if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b)) {
-    throw new TypeError('Arguments must be Buffers');
-  }
-
-  if (a === b) return 0;
-
-  var x = a.length;
-  var y = b.length;
-
-  for (var i = 0, len = Math.min(x, y); i < len; ++i) {
-    if (a[i] !== b[i]) {
-      x = a[i];
-      y = b[i];
-      break;
-    }
-  }
-
-  if (x < y) return -1;
-  if (y < x) return 1;
-  return 0;
-};
-
-Buffer.isEncoding = function isEncoding(encoding) {
-  switch (String(encoding).toLowerCase()) {
-    case 'hex':
-    case 'utf8':
-    case 'utf-8':
-    case 'ascii':
-    case 'latin1':
-    case 'binary':
-    case 'base64':
-    case 'ucs2':
-    case 'ucs-2':
-    case 'utf16le':
-    case 'utf-16le':
-      return true;
-    default:
-      return false;
-  }
-};
-
-Buffer.concat = function concat(list, length) {
-  if (!isArray(list)) {
-    throw new TypeError('"list" argument must be an Array of Buffers');
-  }
-
-  if (list.length === 0) {
-    return Buffer.alloc(0);
-  }
-
-  var i;
-  if (length === undefined) {
-    length = 0;
-    for (i = 0; i < list.length; ++i) {
-      length += list[i].length;
-    }
-  }
-
-  var buffer = Buffer.allocUnsafe(length);
-  var pos = 0;
-  for (i = 0; i < list.length; ++i) {
-    var buf = list[i];
-    if (!Buffer.isBuffer(buf)) {
-      throw new TypeError('"list" argument must be an Array of Buffers');
-    }
-    buf.copy(buffer, pos);
-    pos += buf.length;
-  }
-  return buffer;
-};
-
-function byteLength(string, encoding) {
-  if (Buffer.isBuffer(string)) {
-    return string.length;
-  }
-  if (typeof ArrayBuffer !== 'undefined' && typeof ArrayBuffer.isView === 'function' && (ArrayBuffer.isView(string) || string instanceof ArrayBuffer)) {
-    return string.byteLength;
-  }
-  if (typeof string !== 'string') {
-    string = '' + string;
-  }
-
-  var len = string.length;
-  if (len === 0) return 0;
-
-  // Use a for loop to avoid recursion
-  var loweredCase = false;
-  for (;;) {
-    switch (encoding) {
-      case 'ascii':
-      case 'latin1':
-      case 'binary':
-        return len;
-      case 'utf8':
-      case 'utf-8':
-      case undefined:
-        return utf8ToBytes(string).length;
-      case 'ucs2':
-      case 'ucs-2':
-      case 'utf16le':
-      case 'utf-16le':
-        return len * 2;
-      case 'hex':
-        return len >>> 1;
-      case 'base64':
-        return base64ToBytes(string).length;
-      default:
-        if (loweredCase) return utf8ToBytes(string).length; // assume utf8
-        encoding = ('' + encoding).toLowerCase();
-        loweredCase = true;
-    }
-  }
-}
-Buffer.byteLength = byteLength;
-
-function slowToString(encoding, start, end) {
-  var loweredCase = false;
-
-  // No need to verify that "this.length <= MAX_UINT32" since it's a read-only
-  // property of a typed array.
-
-  // This behaves neither like String nor Uint8Array in that we set start/end
-  // to their upper/lower bounds if the value passed is out of range.
-  // undefined is handled specially as per ECMA-262 6th Edition,
-  // Section 13.3.3.7 Runtime Semantics: KeyedBindingInitialization.
-  if (start === undefined || start < 0) {
-    start = 0;
-  }
-  // Return early if start > this.length. Done here to prevent potential uint32
-  // coercion fail below.
-  if (start > this.length) {
-    return '';
-  }
-
-  if (end === undefined || end > this.length) {
-    end = this.length;
-  }
-
-  if (end <= 0) {
-    return '';
-  }
-
-  // Force coersion to uint32. This will also coerce falsey/NaN values to 0.
-  end >>>= 0;
-  start >>>= 0;
-
-  if (end <= start) {
-    return '';
-  }
-
-  if (!encoding) encoding = 'utf8';
-
-  while (true) {
-    switch (encoding) {
-      case 'hex':
-        return hexSlice(this, start, end);
-
-      case 'utf8':
-      case 'utf-8':
-        return utf8Slice(this, start, end);
-
-      case 'ascii':
-        return asciiSlice(this, start, end);
-
-      case 'latin1':
-      case 'binary':
-        return latin1Slice(this, start, end);
-
-      case 'base64':
-        return base64Slice(this, start, end);
-
-      case 'ucs2':
-      case 'ucs-2':
-      case 'utf16le':
-      case 'utf-16le':
-        return utf16leSlice(this, start, end);
-
-      default:
-        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding);
-        encoding = (encoding + '').toLowerCase();
-        loweredCase = true;
-    }
-  }
-}
-
-// The property is used by `Buffer.isBuffer` and `is-buffer` (in Safari 5-7) to detect
-// Buffer instances.
-Buffer.prototype._isBuffer = true;
-
-function swap(b, n, m) {
-  var i = b[n];
-  b[n] = b[m];
-  b[m] = i;
-}
-
-Buffer.prototype.swap16 = function swap16() {
-  var len = this.length;
-  if (len % 2 !== 0) {
-    throw new RangeError('Buffer size must be a multiple of 16-bits');
-  }
-  for (var i = 0; i < len; i += 2) {
-    swap(this, i, i + 1);
-  }
-  return this;
-};
-
-Buffer.prototype.swap32 = function swap32() {
-  var len = this.length;
-  if (len % 4 !== 0) {
-    throw new RangeError('Buffer size must be a multiple of 32-bits');
-  }
-  for (var i = 0; i < len; i += 4) {
-    swap(this, i, i + 3);
-    swap(this, i + 1, i + 2);
-  }
-  return this;
-};
-
-Buffer.prototype.swap64 = function swap64() {
-  var len = this.length;
-  if (len % 8 !== 0) {
-    throw new RangeError('Buffer size must be a multiple of 64-bits');
-  }
-  for (var i = 0; i < len; i += 8) {
-    swap(this, i, i + 7);
-    swap(this, i + 1, i + 6);
-    swap(this, i + 2, i + 5);
-    swap(this, i + 3, i + 4);
-  }
-  return this;
-};
-
-Buffer.prototype.toString = function toString() {
-  var length = this.length | 0;
-  if (length === 0) return '';
-  if (arguments.length === 0) return utf8Slice(this, 0, length);
-  return slowToString.apply(this, arguments);
-};
-
-Buffer.prototype.equals = function equals(b) {
-  if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer');
-  if (this === b) return true;
-  return Buffer.compare(this, b) === 0;
-};
-
-Buffer.prototype.inspect = function inspect() {
-  var str = '';
-  var max = exports.INSPECT_MAX_BYTES;
-  if (this.length > 0) {
-    str = this.toString('hex', 0, max).match(/.{2}/g).join(' ');
-    if (this.length > max) str += ' ... ';
-  }
-  return '<Buffer ' + str + '>';
-};
-
-Buffer.prototype.compare = function compare(target, start, end, thisStart, thisEnd) {
-  if (!Buffer.isBuffer(target)) {
-    throw new TypeError('Argument must be a Buffer');
-  }
-
-  if (start === undefined) {
-    start = 0;
-  }
-  if (end === undefined) {
-    end = target ? target.length : 0;
-  }
-  if (thisStart === undefined) {
-    thisStart = 0;
-  }
-  if (thisEnd === undefined) {
-    thisEnd = this.length;
-  }
-
-  if (start < 0 || end > target.length || thisStart < 0 || thisEnd > this.length) {
-    throw new RangeError('out of range index');
-  }
-
-  if (thisStart >= thisEnd && start >= end) {
-    return 0;
-  }
-  if (thisStart >= thisEnd) {
-    return -1;
-  }
-  if (start >= end) {
-    return 1;
-  }
-
-  start >>>= 0;
-  end >>>= 0;
-  thisStart >>>= 0;
-  thisEnd >>>= 0;
-
-  if (this === target) return 0;
-
-  var x = thisEnd - thisStart;
-  var y = end - start;
-  var len = Math.min(x, y);
-
-  var thisCopy = this.slice(thisStart, thisEnd);
-  var targetCopy = target.slice(start, end);
-
-  for (var i = 0; i < len; ++i) {
-    if (thisCopy[i] !== targetCopy[i]) {
-      x = thisCopy[i];
-      y = targetCopy[i];
-      break;
-    }
-  }
-
-  if (x < y) return -1;
-  if (y < x) return 1;
-  return 0;
-};
-
-// Finds either the first index of `val` in `buffer` at offset >= `byteOffset`,
-// OR the last index of `val` in `buffer` at offset <= `byteOffset`.
-//
-// Arguments:
-// - buffer - a Buffer to search
-// - val - a string, Buffer, or number
-// - byteOffset - an index into `buffer`; will be clamped to an int32
-// - encoding - an optional encoding, relevant is val is a string
-// - dir - true for indexOf, false for lastIndexOf
-function bidirectionalIndexOf(buffer, val, byteOffset, encoding, dir) {
-  // Empty buffer means no match
-  if (buffer.length === 0) return -1;
-
-  // Normalize byteOffset
-  if (typeof byteOffset === 'string') {
-    encoding = byteOffset;
-    byteOffset = 0;
-  } else if (byteOffset > 0x7fffffff) {
-    byteOffset = 0x7fffffff;
-  } else if (byteOffset < -0x80000000) {
-    byteOffset = -0x80000000;
-  }
-  byteOffset = +byteOffset; // Coerce to Number.
-  if (isNaN(byteOffset)) {
-    // byteOffset: it it's undefined, null, NaN, "foo", etc, search whole buffer
-    byteOffset = dir ? 0 : buffer.length - 1;
-  }
-
-  // Normalize byteOffset: negative offsets start from the end of the buffer
-  if (byteOffset < 0) byteOffset = buffer.length + byteOffset;
-  if (byteOffset >= buffer.length) {
-    if (dir) return -1;else byteOffset = buffer.length - 1;
-  } else if (byteOffset < 0) {
-    if (dir) byteOffset = 0;else return -1;
-  }
-
-  // Normalize val
-  if (typeof val === 'string') {
-    val = Buffer.from(val, encoding);
-  }
-
-  // Finally, search either indexOf (if dir is true) or lastIndexOf
-  if (Buffer.isBuffer(val)) {
-    // Special case: looking for empty string/buffer always fails
-    if (val.length === 0) {
-      return -1;
-    }
-    return arrayIndexOf(buffer, val, byteOffset, encoding, dir);
-  } else if (typeof val === 'number') {
-    val = val & 0xFF; // Search for a byte value [0-255]
-    if (Buffer.TYPED_ARRAY_SUPPORT && typeof Uint8Array.prototype.indexOf === 'function') {
-      if (dir) {
-        return Uint8Array.prototype.indexOf.call(buffer, val, byteOffset);
-      } else {
-        return Uint8Array.prototype.lastIndexOf.call(buffer, val, byteOffset);
-      }
-    }
-    return arrayIndexOf(buffer, [val], byteOffset, encoding, dir);
-  }
-
-  throw new TypeError('val must be string, number or Buffer');
-}
-
-function arrayIndexOf(arr, val, byteOffset, encoding, dir) {
-  var indexSize = 1;
-  var arrLength = arr.length;
-  var valLength = val.length;
-
-  if (encoding !== undefined) {
-    encoding = String(encoding).toLowerCase();
-    if (encoding === 'ucs2' || encoding === 'ucs-2' || encoding === 'utf16le' || encoding === 'utf-16le') {
-      if (arr.length < 2 || val.length < 2) {
-        return -1;
-      }
-      indexSize = 2;
-      arrLength /= 2;
-      valLength /= 2;
-      byteOffset /= 2;
-    }
-  }
-
-  function read(buf, i) {
-    if (indexSize === 1) {
-      return buf[i];
-    } else {
-      return buf.readUInt16BE(i * indexSize);
-    }
-  }
-
-  var i;
-  if (dir) {
-    var foundIndex = -1;
-    for (i = byteOffset; i < arrLength; i++) {
-      if (read(arr, i) === read(val, foundIndex === -1 ? 0 : i - foundIndex)) {
-        if (foundIndex === -1) foundIndex = i;
-        if (i - foundIndex + 1 === valLength) return foundIndex * indexSize;
-      } else {
-        if (foundIndex !== -1) i -= i - foundIndex;
-        foundIndex = -1;
-      }
-    }
-  } else {
-    if (byteOffset + valLength > arrLength) byteOffset = arrLength - valLength;
-    for (i = byteOffset; i >= 0; i--) {
-      var found = true;
-      for (var j = 0; j < valLength; j++) {
-        if (read(arr, i + j) !== read(val, j)) {
-          found = false;
-          break;
-        }
-      }
-      if (found) return i;
-    }
-  }
-
-  return -1;
-}
-
-Buffer.prototype.includes = function includes(val, byteOffset, encoding) {
-  return this.indexOf(val, byteOffset, encoding) !== -1;
-};
-
-Buffer.prototype.indexOf = function indexOf(val, byteOffset, encoding) {
-  return bidirectionalIndexOf(this, val, byteOffset, encoding, true);
-};
-
-Buffer.prototype.lastIndexOf = function lastIndexOf(val, byteOffset, encoding) {
-  return bidirectionalIndexOf(this, val, byteOffset, encoding, false);
-};
-
-function hexWrite(buf, string, offset, length) {
-  offset = Number(offset) || 0;
-  var remaining = buf.length - offset;
-  if (!length) {
-    length = remaining;
-  } else {
-    length = Number(length);
-    if (length > remaining) {
-      length = remaining;
-    }
-  }
-
-  // must be an even number of digits
-  var strLen = string.length;
-  if (strLen % 2 !== 0) throw new TypeError('Invalid hex string');
-
-  if (length > strLen / 2) {
-    length = strLen / 2;
-  }
-  for (var i = 0; i < length; ++i) {
-    var parsed = parseInt(string.substr(i * 2, 2), 16);
-    if (isNaN(parsed)) return i;
-    buf[offset + i] = parsed;
-  }
-  return i;
-}
-
-function utf8Write(buf, string, offset, length) {
-  return blitBuffer(utf8ToBytes(string, buf.length - offset), buf, offset, length);
-}
-
-function asciiWrite(buf, string, offset, length) {
-  return blitBuffer(asciiToBytes(string), buf, offset, length);
-}
-
-function latin1Write(buf, string, offset, length) {
-  return asciiWrite(buf, string, offset, length);
-}
-
-function base64Write(buf, string, offset, length) {
-  return blitBuffer(base64ToBytes(string), buf, offset, length);
-}
-
-function ucs2Write(buf, string, offset, length) {
-  return blitBuffer(utf16leToBytes(string, buf.length - offset), buf, offset, length);
-}
-
-Buffer.prototype.write = function write(string, offset, length, encoding) {
-  // Buffer#write(string)
-  if (offset === undefined) {
-    encoding = 'utf8';
-    length = this.length;
-    offset = 0;
-    // Buffer#write(string, encoding)
-  } else if (length === undefined && typeof offset === 'string') {
-    encoding = offset;
-    length = this.length;
-    offset = 0;
-    // Buffer#write(string, offset[, length][, encoding])
-  } else if (isFinite(offset)) {
-    offset = offset | 0;
-    if (isFinite(length)) {
-      length = length | 0;
-      if (encoding === undefined) encoding = 'utf8';
-    } else {
-      encoding = length;
-      length = undefined;
-    }
-    // legacy write(string, encoding, offset, length) - remove in v0.13
-  } else {
-    throw new Error('Buffer.write(string, encoding, offset[, length]) is no longer supported');
-  }
-
-  var remaining = this.length - offset;
-  if (length === undefined || length > remaining) length = remaining;
-
-  if (string.length > 0 && (length < 0 || offset < 0) || offset > this.length) {
-    throw new RangeError('Attempt to write outside buffer bounds');
-  }
-
-  if (!encoding) encoding = 'utf8';
-
-  var loweredCase = false;
-  for (;;) {
-    switch (encoding) {
-      case 'hex':
-        return hexWrite(this, string, offset, length);
-
-      case 'utf8':
-      case 'utf-8':
-        return utf8Write(this, string, offset, length);
-
-      case 'ascii':
-        return asciiWrite(this, string, offset, length);
-
-      case 'latin1':
-      case 'binary':
-        return latin1Write(this, string, offset, length);
-
-      case 'base64':
-        // Warning: maxLength not taken into account in base64Write
-        return base64Write(this, string, offset, length);
-
-      case 'ucs2':
-      case 'ucs-2':
-      case 'utf16le':
-      case 'utf-16le':
-        return ucs2Write(this, string, offset, length);
-
-      default:
-        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding);
-        encoding = ('' + encoding).toLowerCase();
-        loweredCase = true;
-    }
-  }
-};
-
-Buffer.prototype.toJSON = function toJSON() {
-  return {
-    type: 'Buffer',
-    data: Array.prototype.slice.call(this._arr || this, 0)
-  };
-};
-
-function base64Slice(buf, start, end) {
-  if (start === 0 && end === buf.length) {
-    return base64.fromByteArray(buf);
-  } else {
-    return base64.fromByteArray(buf.slice(start, end));
-  }
-}
-
-function utf8Slice(buf, start, end) {
-  end = Math.min(buf.length, end);
-  var res = [];
-
-  var i = start;
-  while (i < end) {
-    var firstByte = buf[i];
-    var codePoint = null;
-    var bytesPerSequence = firstByte > 0xEF ? 4 : firstByte > 0xDF ? 3 : firstByte > 0xBF ? 2 : 1;
-
-    if (i + bytesPerSequence <= end) {
-      var secondByte, thirdByte, fourthByte, tempCodePoint;
-
-      switch (bytesPerSequence) {
-        case 1:
-          if (firstByte < 0x80) {
-            codePoint = firstByte;
-          }
-          break;
-        case 2:
-          secondByte = buf[i + 1];
-          if ((secondByte & 0xC0) === 0x80) {
-            tempCodePoint = (firstByte & 0x1F) << 0x6 | secondByte & 0x3F;
-            if (tempCodePoint > 0x7F) {
-              codePoint = tempCodePoint;
-            }
-          }
-          break;
-        case 3:
-          secondByte = buf[i + 1];
-          thirdByte = buf[i + 2];
-          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80) {
-            tempCodePoint = (firstByte & 0xF) << 0xC | (secondByte & 0x3F) << 0x6 | thirdByte & 0x3F;
-            if (tempCodePoint > 0x7FF && (tempCodePoint < 0xD800 || tempCodePoint > 0xDFFF)) {
-              codePoint = tempCodePoint;
-            }
-          }
-          break;
-        case 4:
-          secondByte = buf[i + 1];
-          thirdByte = buf[i + 2];
-          fourthByte = buf[i + 3];
-          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80 && (fourthByte & 0xC0) === 0x80) {
-            tempCodePoint = (firstByte & 0xF) << 0x12 | (secondByte & 0x3F) << 0xC | (thirdByte & 0x3F) << 0x6 | fourthByte & 0x3F;
-            if (tempCodePoint > 0xFFFF && tempCodePoint < 0x110000) {
-              codePoint = tempCodePoint;
-            }
-          }
-      }
-    }
-
-    if (codePoint === null) {
-      // we did not generate a valid codePoint so insert a
-      // replacement char (U+FFFD) and advance only 1 byte
-      codePoint = 0xFFFD;
-      bytesPerSequence = 1;
-    } else if (codePoint > 0xFFFF) {
-      // encode to utf16 (surrogate pair dance)
-      codePoint -= 0x10000;
-      res.push(codePoint >>> 10 & 0x3FF | 0xD800);
-      codePoint = 0xDC00 | codePoint & 0x3FF;
-    }
-
-    res.push(codePoint);
-    i += bytesPerSequence;
-  }
-
-  return decodeCodePointsArray(res);
-}
-
-// Based on http://stackoverflow.com/a/22747272/680742, the browser with
-// the lowest limit is Chrome, with 0x10000 args.
-// We go 1 magnitude less, for safety
-var MAX_ARGUMENTS_LENGTH = 0x1000;
-
-function decodeCodePointsArray(codePoints) {
-  var len = codePoints.length;
-  if (len <= MAX_ARGUMENTS_LENGTH) {
-    return String.fromCharCode.apply(String, codePoints); // avoid extra slice()
-  }
-
-  // Decode in chunks to avoid "call stack size exceeded".
-  var res = '';
-  var i = 0;
-  while (i < len) {
-    res += String.fromCharCode.apply(String, codePoints.slice(i, i += MAX_ARGUMENTS_LENGTH));
-  }
-  return res;
-}
-
-function asciiSlice(buf, start, end) {
-  var ret = '';
-  end = Math.min(buf.length, end);
-
-  for (var i = start; i < end; ++i) {
-    ret += String.fromCharCode(buf[i] & 0x7F);
-  }
-  return ret;
-}
-
-function latin1Slice(buf, start, end) {
-  var ret = '';
-  end = Math.min(buf.length, end);
-
-  for (var i = start; i < end; ++i) {
-    ret += String.fromCharCode(buf[i]);
-  }
-  return ret;
-}
-
-function hexSlice(buf, start, end) {
-  var len = buf.length;
-
-  if (!start || start < 0) start = 0;
-  if (!end || end < 0 || end > len) end = len;
-
-  var out = '';
-  for (var i = start; i < end; ++i) {
-    out += toHex(buf[i]);
-  }
-  return out;
-}
-
-function utf16leSlice(buf, start, end) {
-  var bytes = buf.slice(start, end);
-  var res = '';
-  for (var i = 0; i < bytes.length; i += 2) {
-    res += String.fromCharCode(bytes[i] + bytes[i + 1] * 256);
-  }
-  return res;
-}
-
-Buffer.prototype.slice = function slice(start, end) {
-  var len = this.length;
-  start = ~~start;
-  end = end === undefined ? len : ~~end;
-
-  if (start < 0) {
-    start += len;
-    if (start < 0) start = 0;
-  } else if (start > len) {
-    start = len;
-  }
-
-  if (end < 0) {
-    end += len;
-    if (end < 0) end = 0;
-  } else if (end > len) {
-    end = len;
-  }
-
-  if (end < start) end = start;
-
-  var newBuf;
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    newBuf = this.subarray(start, end);
-    newBuf.__proto__ = Buffer.prototype;
-  } else {
-    var sliceLen = end - start;
-    newBuf = new Buffer(sliceLen, undefined);
-    for (var i = 0; i < sliceLen; ++i) {
-      newBuf[i] = this[i + start];
-    }
-  }
-
-  return newBuf;
-};
-
-/*
- * Need to make sure that buffer isn't trying to write out of bounds.
- */
-function checkOffset(offset, ext, length) {
-  if (offset % 1 !== 0 || offset < 0) throw new RangeError('offset is not uint');
-  if (offset + ext > length) throw new RangeError('Trying to access beyond buffer length');
-}
-
-Buffer.prototype.readUIntLE = function readUIntLE(offset, byteLength, noAssert) {
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) checkOffset(offset, byteLength, this.length);
-
-  var val = this[offset];
-  var mul = 1;
-  var i = 0;
-  while (++i < byteLength && (mul *= 0x100)) {
-    val += this[offset + i] * mul;
-  }
-
-  return val;
-};
-
-Buffer.prototype.readUIntBE = function readUIntBE(offset, byteLength, noAssert) {
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) {
-    checkOffset(offset, byteLength, this.length);
-  }
-
-  var val = this[offset + --byteLength];
-  var mul = 1;
-  while (byteLength > 0 && (mul *= 0x100)) {
-    val += this[offset + --byteLength] * mul;
-  }
-
-  return val;
-};
-
-Buffer.prototype.readUInt8 = function readUInt8(offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 1, this.length);
-  return this[offset];
-};
-
-Buffer.prototype.readUInt16LE = function readUInt16LE(offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 2, this.length);
-  return this[offset] | this[offset + 1] << 8;
-};
-
-Buffer.prototype.readUInt16BE = function readUInt16BE(offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 2, this.length);
-  return this[offset] << 8 | this[offset + 1];
-};
-
-Buffer.prototype.readUInt32LE = function readUInt32LE(offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 4, this.length);
-
-  return (this[offset] | this[offset + 1] << 8 | this[offset + 2] << 16) + this[offset + 3] * 0x1000000;
-};
-
-Buffer.prototype.readUInt32BE = function readUInt32BE(offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 4, this.length);
-
-  return this[offset] * 0x1000000 + (this[offset + 1] << 16 | this[offset + 2] << 8 | this[offset + 3]);
-};
-
-Buffer.prototype.readIntLE = function readIntLE(offset, byteLength, noAssert) {
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) checkOffset(offset, byteLength, this.length);
-
-  var val = this[offset];
-  var mul = 1;
-  var i = 0;
-  while (++i < byteLength && (mul *= 0x100)) {
-    val += this[offset + i] * mul;
-  }
-  mul *= 0x80;
-
-  if (val >= mul) val -= Math.pow(2, 8 * byteLength);
-
-  return val;
-};
-
-Buffer.prototype.readIntBE = function readIntBE(offset, byteLength, noAssert) {
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) checkOffset(offset, byteLength, this.length);
-
-  var i = byteLength;
-  var mul = 1;
-  var val = this[offset + --i];
-  while (i > 0 && (mul *= 0x100)) {
-    val += this[offset + --i] * mul;
-  }
-  mul *= 0x80;
-
-  if (val >= mul) val -= Math.pow(2, 8 * byteLength);
-
-  return val;
-};
-
-Buffer.prototype.readInt8 = function readInt8(offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 1, this.length);
-  if (!(this[offset] & 0x80)) return this[offset];
-  return (0xff - this[offset] + 1) * -1;
-};
-
-Buffer.prototype.readInt16LE = function readInt16LE(offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 2, this.length);
-  var val = this[offset] | this[offset + 1] << 8;
-  return val & 0x8000 ? val | 0xFFFF0000 : val;
-};
-
-Buffer.prototype.readInt16BE = function readInt16BE(offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 2, this.length);
-  var val = this[offset + 1] | this[offset] << 8;
-  return val & 0x8000 ? val | 0xFFFF0000 : val;
-};
-
-Buffer.prototype.readInt32LE = function readInt32LE(offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 4, this.length);
-
-  return this[offset] | this[offset + 1] << 8 | this[offset + 2] << 16 | this[offset + 3] << 24;
-};
-
-Buffer.prototype.readInt32BE = function readInt32BE(offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 4, this.length);
-
-  return this[offset] << 24 | this[offset + 1] << 16 | this[offset + 2] << 8 | this[offset + 3];
-};
-
-Buffer.prototype.readFloatLE = function readFloatLE(offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 4, this.length);
-  return ieee754.read(this, offset, true, 23, 4);
-};
-
-Buffer.prototype.readFloatBE = function readFloatBE(offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 4, this.length);
-  return ieee754.read(this, offset, false, 23, 4);
-};
-
-Buffer.prototype.readDoubleLE = function readDoubleLE(offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 8, this.length);
-  return ieee754.read(this, offset, true, 52, 8);
-};
-
-Buffer.prototype.readDoubleBE = function readDoubleBE(offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 8, this.length);
-  return ieee754.read(this, offset, false, 52, 8);
-};
-
-function checkInt(buf, value, offset, ext, max, min) {
-  if (!Buffer.isBuffer(buf)) throw new TypeError('"buffer" argument must be a Buffer instance');
-  if (value > max || value < min) throw new RangeError('"value" argument is out of bounds');
-  if (offset + ext > buf.length) throw new RangeError('Index out of range');
-}
-
-Buffer.prototype.writeUIntLE = function writeUIntLE(value, offset, byteLength, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) {
-    var maxBytes = Math.pow(2, 8 * byteLength) - 1;
-    checkInt(this, value, offset, byteLength, maxBytes, 0);
-  }
-
-  var mul = 1;
-  var i = 0;
-  this[offset] = value & 0xFF;
-  while (++i < byteLength && (mul *= 0x100)) {
-    this[offset + i] = value / mul & 0xFF;
-  }
-
-  return offset + byteLength;
-};
-
-Buffer.prototype.writeUIntBE = function writeUIntBE(value, offset, byteLength, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  byteLength = byteLength | 0;
-  if (!noAssert) {
-    var maxBytes = Math.pow(2, 8 * byteLength) - 1;
-    checkInt(this, value, offset, byteLength, maxBytes, 0);
-  }
-
-  var i = byteLength - 1;
-  var mul = 1;
-  this[offset + i] = value & 0xFF;
-  while (--i >= 0 && (mul *= 0x100)) {
-    this[offset + i] = value / mul & 0xFF;
-  }
-
-  return offset + byteLength;
-};
-
-Buffer.prototype.writeUInt8 = function writeUInt8(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0);
-  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value);
-  this[offset] = value & 0xff;
-  return offset + 1;
-};
-
-function objectWriteUInt16(buf, value, offset, littleEndian) {
-  if (value < 0) value = 0xffff + value + 1;
-  for (var i = 0, j = Math.min(buf.length - offset, 2); i < j; ++i) {
-    buf[offset + i] = (value & 0xff << 8 * (littleEndian ? i : 1 - i)) >>> (littleEndian ? i : 1 - i) * 8;
-  }
-}
-
-Buffer.prototype.writeUInt16LE = function writeUInt16LE(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0);
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value & 0xff;
-    this[offset + 1] = value >>> 8;
-  } else {
-    objectWriteUInt16(this, value, offset, true);
-  }
-  return offset + 2;
-};
-
-Buffer.prototype.writeUInt16BE = function writeUInt16BE(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0);
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value >>> 8;
-    this[offset + 1] = value & 0xff;
-  } else {
-    objectWriteUInt16(this, value, offset, false);
-  }
-  return offset + 2;
-};
-
-function objectWriteUInt32(buf, value, offset, littleEndian) {
-  if (value < 0) value = 0xffffffff + value + 1;
-  for (var i = 0, j = Math.min(buf.length - offset, 4); i < j; ++i) {
-    buf[offset + i] = value >>> (littleEndian ? i : 3 - i) * 8 & 0xff;
-  }
-}
-
-Buffer.prototype.writeUInt32LE = function writeUInt32LE(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0);
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset + 3] = value >>> 24;
-    this[offset + 2] = value >>> 16;
-    this[offset + 1] = value >>> 8;
-    this[offset] = value & 0xff;
-  } else {
-    objectWriteUInt32(this, value, offset, true);
-  }
-  return offset + 4;
-};
-
-Buffer.prototype.writeUInt32BE = function writeUInt32BE(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0);
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value >>> 24;
-    this[offset + 1] = value >>> 16;
-    this[offset + 2] = value >>> 8;
-    this[offset + 3] = value & 0xff;
-  } else {
-    objectWriteUInt32(this, value, offset, false);
-  }
-  return offset + 4;
-};
-
-Buffer.prototype.writeIntLE = function writeIntLE(value, offset, byteLength, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) {
-    var limit = Math.pow(2, 8 * byteLength - 1);
-
-    checkInt(this, value, offset, byteLength, limit - 1, -limit);
-  }
-
-  var i = 0;
-  var mul = 1;
-  var sub = 0;
-  this[offset] = value & 0xFF;
-  while (++i < byteLength && (mul *= 0x100)) {
-    if (value < 0 && sub === 0 && this[offset + i - 1] !== 0) {
-      sub = 1;
-    }
-    this[offset + i] = (value / mul >> 0) - sub & 0xFF;
-  }
-
-  return offset + byteLength;
-};
-
-Buffer.prototype.writeIntBE = function writeIntBE(value, offset, byteLength, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) {
-    var limit = Math.pow(2, 8 * byteLength - 1);
-
-    checkInt(this, value, offset, byteLength, limit - 1, -limit);
-  }
-
-  var i = byteLength - 1;
-  var mul = 1;
-  var sub = 0;
-  this[offset + i] = value & 0xFF;
-  while (--i >= 0 && (mul *= 0x100)) {
-    if (value < 0 && sub === 0 && this[offset + i + 1] !== 0) {
-      sub = 1;
-    }
-    this[offset + i] = (value / mul >> 0) - sub & 0xFF;
-  }
-
-  return offset + byteLength;
-};
-
-Buffer.prototype.writeInt8 = function writeInt8(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80);
-  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value);
-  if (value < 0) value = 0xff + value + 1;
-  this[offset] = value & 0xff;
-  return offset + 1;
-};
-
-Buffer.prototype.writeInt16LE = function writeInt16LE(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000);
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value & 0xff;
-    this[offset + 1] = value >>> 8;
-  } else {
-    objectWriteUInt16(this, value, offset, true);
-  }
-  return offset + 2;
-};
-
-Buffer.prototype.writeInt16BE = function writeInt16BE(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000);
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value >>> 8;
-    this[offset + 1] = value & 0xff;
-  } else {
-    objectWriteUInt16(this, value, offset, false);
-  }
-  return offset + 2;
-};
-
-Buffer.prototype.writeInt32LE = function writeInt32LE(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000);
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value & 0xff;
-    this[offset + 1] = value >>> 8;
-    this[offset + 2] = value >>> 16;
-    this[offset + 3] = value >>> 24;
-  } else {
-    objectWriteUInt32(this, value, offset, true);
-  }
-  return offset + 4;
-};
-
-Buffer.prototype.writeInt32BE = function writeInt32BE(value, offset, noAssert) {
-  value = +value;
-  offset = offset | 0;
-  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000);
-  if (value < 0) value = 0xffffffff + value + 1;
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = value >>> 24;
-    this[offset + 1] = value >>> 16;
-    this[offset + 2] = value >>> 8;
-    this[offset + 3] = value & 0xff;
-  } else {
-    objectWriteUInt32(this, value, offset, false);
-  }
-  return offset + 4;
-};
-
-function checkIEEE754(buf, value, offset, ext, max, min) {
-  if (offset + ext > buf.length) throw new RangeError('Index out of range');
-  if (offset < 0) throw new RangeError('Index out of range');
-}
-
-function writeFloat(buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    checkIEEE754(buf, value, offset, 4, 3.4028234663852886e+38, -3.4028234663852886e+38);
-  }
-  ieee754.write(buf, value, offset, littleEndian, 23, 4);
-  return offset + 4;
-}
-
-Buffer.prototype.writeFloatLE = function writeFloatLE(value, offset, noAssert) {
-  return writeFloat(this, value, offset, true, noAssert);
-};
-
-Buffer.prototype.writeFloatBE = function writeFloatBE(value, offset, noAssert) {
-  return writeFloat(this, value, offset, false, noAssert);
-};
-
-function writeDouble(buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    checkIEEE754(buf, value, offset, 8, 1.7976931348623157E+308, -1.7976931348623157E+308);
-  }
-  ieee754.write(buf, value, offset, littleEndian, 52, 8);
-  return offset + 8;
-}
-
-Buffer.prototype.writeDoubleLE = function writeDoubleLE(value, offset, noAssert) {
-  return writeDouble(this, value, offset, true, noAssert);
-};
-
-Buffer.prototype.writeDoubleBE = function writeDoubleBE(value, offset, noAssert) {
-  return writeDouble(this, value, offset, false, noAssert);
-};
-
-// copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
-Buffer.prototype.copy = function copy(target, targetStart, start, end) {
-  if (!start) start = 0;
-  if (!end && end !== 0) end = this.length;
-  if (targetStart >= target.length) targetStart = target.length;
-  if (!targetStart) targetStart = 0;
-  if (end > 0 && end < start) end = start;
-
-  // Copy 0 bytes; we're done
-  if (end === start) return 0;
-  if (target.length === 0 || this.length === 0) return 0;
-
-  // Fatal error conditions
-  if (targetStart < 0) {
-    throw new RangeError('targetStart out of bounds');
-  }
-  if (start < 0 || start >= this.length) throw new RangeError('sourceStart out of bounds');
-  if (end < 0) throw new RangeError('sourceEnd out of bounds');
-
-  // Are we oob?
-  if (end > this.length) end = this.length;
-  if (target.length - targetStart < end - start) {
-    end = target.length - targetStart + start;
-  }
-
-  var len = end - start;
-  var i;
-
-  if (this === target && start < targetStart && targetStart < end) {
-    // descending copy from end
-    for (i = len - 1; i >= 0; --i) {
-      target[i + targetStart] = this[i + start];
-    }
-  } else if (len < 1000 || !Buffer.TYPED_ARRAY_SUPPORT) {
-    // ascending copy from start
-    for (i = 0; i < len; ++i) {
-      target[i + targetStart] = this[i + start];
-    }
-  } else {
-    Uint8Array.prototype.set.call(target, this.subarray(start, start + len), targetStart);
-  }
-
-  return len;
-};
-
-// Usage:
-//    buffer.fill(number[, offset[, end]])
-//    buffer.fill(buffer[, offset[, end]])
-//    buffer.fill(string[, offset[, end]][, encoding])
-Buffer.prototype.fill = function fill(val, start, end, encoding) {
-  // Handle string cases:
-  if (typeof val === 'string') {
-    if (typeof start === 'string') {
-      encoding = start;
-      start = 0;
-      end = this.length;
-    } else if (typeof end === 'string') {
-      encoding = end;
-      end = this.length;
-    }
-    if (val.length === 1) {
-      var code = val.charCodeAt(0);
-      if (code < 256) {
-        val = code;
-      }
-    }
-    if (encoding !== undefined && typeof encoding !== 'string') {
-      throw new TypeError('encoding must be a string');
-    }
-    if (typeof encoding === 'string' && !Buffer.isEncoding(encoding)) {
-      throw new TypeError('Unknown encoding: ' + encoding);
-    }
-  } else if (typeof val === 'number') {
-    val = val & 255;
-  }
-
-  // Invalid ranges are not set to a default, so can range check early.
-  if (start < 0 || this.length < start || this.length < end) {
-    throw new RangeError('Out of range index');
-  }
-
-  if (end <= start) {
-    return this;
-  }
-
-  start = start >>> 0;
-  end = end === undefined ? this.length : end >>> 0;
-
-  if (!val) val = 0;
-
-  var i;
-  if (typeof val === 'number') {
-    for (i = start; i < end; ++i) {
-      this[i] = val;
-    }
-  } else {
-    var bytes = Buffer.isBuffer(val) ? val : utf8ToBytes(new Buffer(val, encoding).toString());
-    var len = bytes.length;
-    for (i = 0; i < end - start; ++i) {
-      this[i + start] = bytes[i % len];
-    }
-  }
-
-  return this;
-};
-
-// HELPER FUNCTIONS
-// ================
-
-var INVALID_BASE64_RE = /[^+\/0-9A-Za-z-_]/g;
-
-function base64clean(str) {
-  // Node strips out invalid characters like \n and \t from the string, base64-js does not
-  str = stringtrim(str).replace(INVALID_BASE64_RE, '');
-  // Node converts strings with length < 2 to ''
-  if (str.length < 2) return '';
-  // Node allows for non-padded base64 strings (missing trailing ===), base64-js does not
-  while (str.length % 4 !== 0) {
-    str = str + '=';
-  }
-  return str;
-}
-
-function stringtrim(str) {
-  if (str.trim) return str.trim();
-  return str.replace(/^\s+|\s+$/g, '');
-}
-
-function toHex(n) {
-  if (n < 16) return '0' + n.toString(16);
-  return n.toString(16);
-}
-
-function utf8ToBytes(string, units) {
-  units = units || Infinity;
-  var codePoint;
-  var length = string.length;
-  var leadSurrogate = null;
-  var bytes = [];
-
-  for (var i = 0; i < length; ++i) {
-    codePoint = string.charCodeAt(i);
-
-    // is surrogate component
-    if (codePoint > 0xD7FF && codePoint < 0xE000) {
-      // last char was a lead
-      if (!leadSurrogate) {
-        // no lead yet
-        if (codePoint > 0xDBFF) {
-          // unexpected trail
-          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-          continue;
-        } else if (i + 1 === length) {
-          // unpaired lead
-          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-          continue;
-        }
-
-        // valid lead
-        leadSurrogate = codePoint;
-
-        continue;
-      }
-
-      // 2 leads in a row
-      if (codePoint < 0xDC00) {
-        if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-        leadSurrogate = codePoint;
-        continue;
-      }
-
-      // valid surrogate pair
-      codePoint = (leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00) + 0x10000;
-    } else if (leadSurrogate) {
-      // valid bmp char, but last char was a lead
-      if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD);
-    }
-
-    leadSurrogate = null;
-
-    // encode utf8
-    if (codePoint < 0x80) {
-      if ((units -= 1) < 0) break;
-      bytes.push(codePoint);
-    } else if (codePoint < 0x800) {
-      if ((units -= 2) < 0) break;
-      bytes.push(codePoint >> 0x6 | 0xC0, codePoint & 0x3F | 0x80);
-    } else if (codePoint < 0x10000) {
-      if ((units -= 3) < 0) break;
-      bytes.push(codePoint >> 0xC | 0xE0, codePoint >> 0x6 & 0x3F | 0x80, codePoint & 0x3F | 0x80);
-    } else if (codePoint < 0x110000) {
-      if ((units -= 4) < 0) break;
-      bytes.push(codePoint >> 0x12 | 0xF0, codePoint >> 0xC & 0x3F | 0x80, codePoint >> 0x6 & 0x3F | 0x80, codePoint & 0x3F | 0x80);
-    } else {
-      throw new Error('Invalid code point');
-    }
-  }
-
-  return bytes;
-}
-
-function asciiToBytes(str) {
-  var byteArray = [];
-  for (var i = 0; i < str.length; ++i) {
-    // Node's code seems to be doing this and not & 0x7F..
-    byteArray.push(str.charCodeAt(i) & 0xFF);
-  }
-  return byteArray;
-}
-
-function utf16leToBytes(str, units) {
-  var c, hi, lo;
-  var byteArray = [];
-  for (var i = 0; i < str.length; ++i) {
-    if ((units -= 2) < 0) break;
-
-    c = str.charCodeAt(i);
-    hi = c >> 8;
-    lo = c % 256;
-    byteArray.push(lo);
-    byteArray.push(hi);
-  }
-
-  return byteArray;
-}
-
-function base64ToBytes(str) {
-  return base64.toByteArray(base64clean(str));
-}
-
-function blitBuffer(src, dst, offset, length) {
-  for (var i = 0; i < length; ++i) {
-    if (i + offset >= dst.length || i >= src.length) break;
-    dst[i + offset] = src[i];
-  }
-  return i;
-}
-
-function isnan(val) {
-  return val !== val; // eslint-disable-line no-self-compare
-}
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(201)))
-
-/***/ }),
-/* 205 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(process) {
-
-if (!process.version || process.version.indexOf('v0.') === 0 || process.version.indexOf('v1.') === 0 && process.version.indexOf('v1.8.') !== 0) {
-  module.exports = nextTick;
-} else {
-  module.exports = process.nextTick;
-}
-
-function nextTick(fn, arg1, arg2, arg3) {
-  if (typeof fn !== 'function') {
-    throw new TypeError('"callback" argument must be a function');
-  }
-  var len = arguments.length;
-  var args, i;
-  switch (len) {
-    case 0:
-    case 1:
-      return process.nextTick(fn);
-    case 2:
-      return process.nextTick(function afterTickOne() {
-        fn.call(null, arg1);
-      });
-    case 3:
-      return process.nextTick(function afterTickTwo() {
-        fn.call(null, arg1, arg2);
-      });
-    case 4:
-      return process.nextTick(function afterTickThree() {
-        fn.call(null, arg1, arg2, arg3);
-      });
-    default:
-      args = new Array(len - 1);
-      i = 0;
-      while (i < args.length) {
-        args[i++] = arguments[i];
-      }
-      return process.nextTick(function afterTick() {
-        fn.apply(null, args);
-      });
-  }
-}
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
-
-/***/ }),
-/* 206 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-function EventEmitter() {
-  this._events = this._events || {};
-  this._maxListeners = this._maxListeners || undefined;
-}
-module.exports = EventEmitter;
-
-// Backwards-compat with node 0.10.x
-EventEmitter.EventEmitter = EventEmitter;
-
-EventEmitter.prototype._events = undefined;
-EventEmitter.prototype._maxListeners = undefined;
-
-// By default EventEmitters will print a warning if more than 10 listeners are
-// added to it. This is a useful default which helps finding memory leaks.
-EventEmitter.defaultMaxListeners = 10;
-
-// Obviously not all Emitters should be limited to 10. This function allows
-// that to be increased. Set to zero for unlimited.
-EventEmitter.prototype.setMaxListeners = function (n) {
-  if (!isNumber(n) || n < 0 || isNaN(n)) throw TypeError('n must be a positive number');
-  this._maxListeners = n;
-  return this;
-};
-
-EventEmitter.prototype.emit = function (type) {
-  var er, handler, len, args, i, listeners;
-
-  if (!this._events) this._events = {};
-
-  // If there is no 'error' event listener then throw.
-  if (type === 'error') {
-    if (!this._events.error || isObject(this._events.error) && !this._events.error.length) {
-      er = arguments[1];
-      if (er instanceof Error) {
-        throw er; // Unhandled 'error' event
-      } else {
-        // At least give some kind of context to the user
-        var err = new Error('Uncaught, unspecified "error" event. (' + er + ')');
-        err.context = er;
-        throw err;
-      }
-    }
-  }
-
-  handler = this._events[type];
-
-  if (isUndefined(handler)) return false;
-
-  if (isFunction(handler)) {
-    switch (arguments.length) {
-      // fast cases
-      case 1:
-        handler.call(this);
-        break;
-      case 2:
-        handler.call(this, arguments[1]);
-        break;
-      case 3:
-        handler.call(this, arguments[1], arguments[2]);
-        break;
-      // slower
-      default:
-        args = Array.prototype.slice.call(arguments, 1);
-        handler.apply(this, args);
-    }
-  } else if (isObject(handler)) {
-    args = Array.prototype.slice.call(arguments, 1);
-    listeners = handler.slice();
-    len = listeners.length;
-    for (i = 0; i < len; i++) {
-      listeners[i].apply(this, args);
-    }
-  }
-
-  return true;
-};
-
-EventEmitter.prototype.addListener = function (type, listener) {
-  var m;
-
-  if (!isFunction(listener)) throw TypeError('listener must be a function');
-
-  if (!this._events) this._events = {};
-
-  // To avoid recursion in the case that type === "newListener"! Before
-  // adding it to the listeners, first emit "newListener".
-  if (this._events.newListener) this.emit('newListener', type, isFunction(listener.listener) ? listener.listener : listener);
-
-  if (!this._events[type])
-    // Optimize the case of one listener. Don't need the extra array object.
-    this._events[type] = listener;else if (isObject(this._events[type]))
-    // If we've already got an array, just append.
-    this._events[type].push(listener);else
-    // Adding the second element, need to change to array.
-    this._events[type] = [this._events[type], listener];
-
-  // Check for listener leak
-  if (isObject(this._events[type]) && !this._events[type].warned) {
-    if (!isUndefined(this._maxListeners)) {
-      m = this._maxListeners;
-    } else {
-      m = EventEmitter.defaultMaxListeners;
-    }
-
-    if (m && m > 0 && this._events[type].length > m) {
-      this._events[type].warned = true;
-      console.error('(node) warning: possible EventEmitter memory ' + 'leak detected. %d listeners added. ' + 'Use emitter.setMaxListeners() to increase limit.', this._events[type].length);
-      if (typeof console.trace === 'function') {
-        // not supported in IE 10
-        console.trace();
-      }
-    }
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-
-EventEmitter.prototype.once = function (type, listener) {
-  if (!isFunction(listener)) throw TypeError('listener must be a function');
-
-  var fired = false;
-
-  function g() {
-    this.removeListener(type, g);
-
-    if (!fired) {
-      fired = true;
-      listener.apply(this, arguments);
-    }
-  }
-
-  g.listener = listener;
-  this.on(type, g);
-
-  return this;
-};
-
-// emits a 'removeListener' event iff the listener was removed
-EventEmitter.prototype.removeListener = function (type, listener) {
-  var list, position, length, i;
-
-  if (!isFunction(listener)) throw TypeError('listener must be a function');
-
-  if (!this._events || !this._events[type]) return this;
-
-  list = this._events[type];
-  length = list.length;
-  position = -1;
-
-  if (list === listener || isFunction(list.listener) && list.listener === listener) {
-    delete this._events[type];
-    if (this._events.removeListener) this.emit('removeListener', type, listener);
-  } else if (isObject(list)) {
-    for (i = length; i-- > 0;) {
-      if (list[i] === listener || list[i].listener && list[i].listener === listener) {
-        position = i;
-        break;
-      }
-    }
-
-    if (position < 0) return this;
-
-    if (list.length === 1) {
-      list.length = 0;
-      delete this._events[type];
-    } else {
-      list.splice(position, 1);
-    }
-
-    if (this._events.removeListener) this.emit('removeListener', type, listener);
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.removeAllListeners = function (type) {
-  var key, listeners;
-
-  if (!this._events) return this;
-
-  // not listening for removeListener, no need to emit
-  if (!this._events.removeListener) {
-    if (arguments.length === 0) this._events = {};else if (this._events[type]) delete this._events[type];
-    return this;
-  }
-
-  // emit removeListener for all listeners on all events
-  if (arguments.length === 0) {
-    for (key in this._events) {
-      if (key === 'removeListener') continue;
-      this.removeAllListeners(key);
-    }
-    this.removeAllListeners('removeListener');
-    this._events = {};
-    return this;
-  }
-
-  listeners = this._events[type];
-
-  if (isFunction(listeners)) {
-    this.removeListener(type, listeners);
-  } else if (listeners) {
-    // LIFO order
-    while (listeners.length) {
-      this.removeListener(type, listeners[listeners.length - 1]);
-    }
-  }
-  delete this._events[type];
-
-  return this;
-};
-
-EventEmitter.prototype.listeners = function (type) {
-  var ret;
-  if (!this._events || !this._events[type]) ret = [];else if (isFunction(this._events[type])) ret = [this._events[type]];else ret = this._events[type].slice();
-  return ret;
-};
-
-EventEmitter.prototype.listenerCount = function (type) {
-  if (this._events) {
-    var evlistener = this._events[type];
-
-    if (isFunction(evlistener)) return 1;else if (evlistener) return evlistener.length;
-  }
-  return 0;
-};
-
-EventEmitter.listenerCount = function (emitter, type) {
-  return emitter.listenerCount(type);
-};
-
-function isFunction(arg) {
-  return typeof arg === 'function';
-}
-
-function isNumber(arg) {
-  return typeof arg === 'number';
-}
-
-function isObject(arg) {
-  return (typeof arg === 'undefined' ? 'undefined' : _typeof(arg)) === 'object' && arg !== null;
-}
-
-function isUndefined(arg) {
-  return arg === void 0;
-}
-
-/***/ }),
-/* 207 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-exports = module.exports = __webpack_require__(213);
-exports.Stream = exports;
-exports.Readable = exports;
-exports.Writable = __webpack_require__(209);
-exports.Duplex = __webpack_require__(200);
-exports.Transform = __webpack_require__(217);
-exports.PassThrough = __webpack_require__(225);
-
-/***/ }),
-/* 208 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-/* eslint-disable node/no-deprecated-api */
-var buffer = __webpack_require__(204);
-var Buffer = buffer.Buffer;
-
-// alternative to using Object.keys for old browsers
-function copyProps(src, dst) {
-  for (var key in src) {
-    dst[key] = src[key];
-  }
-}
-if (Buffer.from && Buffer.alloc && Buffer.allocUnsafe && Buffer.allocUnsafeSlow) {
-  module.exports = buffer;
-} else {
-  // Copy properties from require('buffer')
-  copyProps(buffer, exports);
-  exports.Buffer = SafeBuffer;
-}
-
-function SafeBuffer(arg, encodingOrOffset, length) {
-  return Buffer(arg, encodingOrOffset, length);
-}
-
-// Copy static methods from Buffer
-copyProps(Buffer, SafeBuffer);
-
-SafeBuffer.from = function (arg, encodingOrOffset, length) {
-  if (typeof arg === 'number') {
-    throw new TypeError('Argument must not be a number');
-  }
-  return Buffer(arg, encodingOrOffset, length);
-};
-
-SafeBuffer.alloc = function (size, fill, encoding) {
-  if (typeof size !== 'number') {
-    throw new TypeError('Argument must be a number');
-  }
-  var buf = Buffer(size);
-  if (fill !== undefined) {
-    if (typeof encoding === 'string') {
-      buf.fill(fill, encoding);
-    } else {
-      buf.fill(fill);
-    }
-  } else {
-    buf.fill(0);
-  }
-  return buf;
-};
-
-SafeBuffer.allocUnsafe = function (size) {
-  if (typeof size !== 'number') {
-    throw new TypeError('Argument must be a number');
-  }
-  return Buffer(size);
-};
-
-SafeBuffer.allocUnsafeSlow = function (size) {
-  if (typeof size !== 'number') {
-    throw new TypeError('Argument must be a number');
-  }
-  return buffer.SlowBuffer(size);
-};
-
-/***/ }),
-/* 209 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(process, setImmediate, global) {// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-// A bit simpler than readable streams.
-// Implement an async ._write(chunk, encoding, cb), and it'll handle all
-// the drain event emission and buffering.
-
-
-
-/*<replacement>*/
-
-var processNextTick = __webpack_require__(205);
-/*</replacement>*/
-
-module.exports = Writable;
-
-/* <replacement> */
-function WriteReq(chunk, encoding, cb) {
-  this.chunk = chunk;
-  this.encoding = encoding;
-  this.callback = cb;
-  this.next = null;
-}
-
-// It seems a linked list but it is not
-// there will be only 2 of these for each stream
-function CorkedRequest(state) {
-  var _this = this;
-
-  this.next = null;
-  this.entry = null;
-  this.finish = function () {
-    onCorkedFinish(_this, state);
-  };
-}
-/* </replacement> */
-
-/*<replacement>*/
-var asyncWrite = !process.browser && ['v0.10', 'v0.9.'].indexOf(process.version.slice(0, 5)) > -1 ? setImmediate : processNextTick;
-/*</replacement>*/
-
-/*<replacement>*/
-var Duplex;
-/*</replacement>*/
-
-Writable.WritableState = WritableState;
-
-/*<replacement>*/
-var util = __webpack_require__(203);
-util.inherits = __webpack_require__(202);
-/*</replacement>*/
-
-/*<replacement>*/
-var internalUtil = {
-  deprecate: __webpack_require__(224)
-};
-/*</replacement>*/
-
-/*<replacement>*/
-var Stream = __webpack_require__(214);
-/*</replacement>*/
-
-/*<replacement>*/
-var Buffer = __webpack_require__(208).Buffer;
-var OurUint8Array = global.Uint8Array || function () {};
-function _uint8ArrayToBuffer(chunk) {
-  return Buffer.from(chunk);
-}
-function _isUint8Array(obj) {
-  return Buffer.isBuffer(obj) || obj instanceof OurUint8Array;
-}
-/*</replacement>*/
-
-var destroyImpl = __webpack_require__(215);
-
-util.inherits(Writable, Stream);
-
-function nop() {}
-
-function WritableState(options, stream) {
-  Duplex = Duplex || __webpack_require__(200);
-
-  options = options || {};
-
-  // object stream flag to indicate whether or not this stream
-  // contains buffers or objects.
-  this.objectMode = !!options.objectMode;
-
-  if (stream instanceof Duplex) this.objectMode = this.objectMode || !!options.writableObjectMode;
-
-  // the point at which write() starts returning false
-  // Note: 0 is a valid value, means that we always return false if
-  // the entire buffer is not flushed immediately on write()
-  var hwm = options.highWaterMark;
-  var defaultHwm = this.objectMode ? 16 : 16 * 1024;
-  this.highWaterMark = hwm || hwm === 0 ? hwm : defaultHwm;
-
-  // cast to ints.
-  this.highWaterMark = Math.floor(this.highWaterMark);
-
-  // if _final has been called
-  this.finalCalled = false;
-
-  // drain event flag.
-  this.needDrain = false;
-  // at the start of calling end()
-  this.ending = false;
-  // when end() has been called, and returned
-  this.ended = false;
-  // when 'finish' is emitted
-  this.finished = false;
-
-  // has it been destroyed
-  this.destroyed = false;
-
-  // should we decode strings into buffers before passing to _write?
-  // this is here so that some node-core streams can optimize string
-  // handling at a lower level.
-  var noDecode = options.decodeStrings === false;
-  this.decodeStrings = !noDecode;
-
-  // Crypto is kind of old and crusty.  Historically, its default string
-  // encoding is 'binary' so we have to make this configurable.
-  // Everything else in the universe uses 'utf8', though.
-  this.defaultEncoding = options.defaultEncoding || 'utf8';
-
-  // not an actual buffer we keep track of, but a measurement
-  // of how much we're waiting to get pushed to some underlying
-  // socket or file.
-  this.length = 0;
-
-  // a flag to see when we're in the middle of a write.
-  this.writing = false;
-
-  // when true all writes will be buffered until .uncork() call
-  this.corked = 0;
-
-  // a flag to be able to tell if the onwrite cb is called immediately,
-  // or on a later tick.  We set this to true at first, because any
-  // actions that shouldn't happen until "later" should generally also
-  // not happen before the first write call.
-  this.sync = true;
-
-  // a flag to know if we're processing previously buffered items, which
-  // may call the _write() callback in the same tick, so that we don't
-  // end up in an overlapped onwrite situation.
-  this.bufferProcessing = false;
-
-  // the callback that's passed to _write(chunk,cb)
-  this.onwrite = function (er) {
-    onwrite(stream, er);
-  };
-
-  // the callback that the user supplies to write(chunk,encoding,cb)
-  this.writecb = null;
-
-  // the amount that is being written when _write is called.
-  this.writelen = 0;
-
-  this.bufferedRequest = null;
-  this.lastBufferedRequest = null;
-
-  // number of pending user-supplied write callbacks
-  // this must be 0 before 'finish' can be emitted
-  this.pendingcb = 0;
-
-  // emit prefinish if the only thing we're waiting for is _write cbs
-  // This is relevant for synchronous Transform streams
-  this.prefinished = false;
-
-  // True if the error was already emitted and should not be thrown again
-  this.errorEmitted = false;
-
-  // count buffered requests
-  this.bufferedRequestCount = 0;
-
-  // allocate the first CorkedRequest, there is always
-  // one allocated and free to use, and we maintain at most two
-  this.corkedRequestsFree = new CorkedRequest(this);
-}
-
-WritableState.prototype.getBuffer = function getBuffer() {
-  var current = this.bufferedRequest;
-  var out = [];
-  while (current) {
-    out.push(current);
-    current = current.next;
-  }
-  return out;
-};
-
-(function () {
-  try {
-    Object.defineProperty(WritableState.prototype, 'buffer', {
-      get: internalUtil.deprecate(function () {
-        return this.getBuffer();
-      }, '_writableState.buffer is deprecated. Use _writableState.getBuffer ' + 'instead.', 'DEP0003')
-    });
-  } catch (_) {}
-})();
-
-// Test _writableState for inheritance to account for Duplex streams,
-// whose prototype chain only points to Readable.
-var realHasInstance;
-if (typeof Symbol === 'function' && Symbol.hasInstance && typeof Function.prototype[Symbol.hasInstance] === 'function') {
-  realHasInstance = Function.prototype[Symbol.hasInstance];
-  Object.defineProperty(Writable, Symbol.hasInstance, {
-    value: function value(object) {
-      if (realHasInstance.call(this, object)) return true;
-
-      return object && object._writableState instanceof WritableState;
-    }
-  });
-} else {
-  realHasInstance = function realHasInstance(object) {
-    return object instanceof this;
-  };
-}
-
-function Writable(options) {
-  Duplex = Duplex || __webpack_require__(200);
-
-  // Writable ctor is applied to Duplexes, too.
-  // `realHasInstance` is necessary because using plain `instanceof`
-  // would return false, as no `_writableState` property is attached.
-
-  // Trying to use the custom `instanceof` for Writable here will also break the
-  // Node.js LazyTransform implementation, which has a non-trivial getter for
-  // `_writableState` that would lead to infinite recursion.
-  if (!realHasInstance.call(Writable, this) && !(this instanceof Duplex)) {
-    return new Writable(options);
-  }
-
-  this._writableState = new WritableState(options, this);
-
-  // legacy.
-  this.writable = true;
-
-  if (options) {
-    if (typeof options.write === 'function') this._write = options.write;
-
-    if (typeof options.writev === 'function') this._writev = options.writev;
-
-    if (typeof options.destroy === 'function') this._destroy = options.destroy;
-
-    if (typeof options.final === 'function') this._final = options.final;
-  }
-
-  Stream.call(this);
-}
-
-// Otherwise people can pipe Writable streams, which is just wrong.
-Writable.prototype.pipe = function () {
-  this.emit('error', new Error('Cannot pipe, not readable'));
-};
-
-function writeAfterEnd(stream, cb) {
-  var er = new Error('write after end');
-  // TODO: defer error events consistently everywhere, not just the cb
-  stream.emit('error', er);
-  processNextTick(cb, er);
-}
-
-// Checks that a user-supplied chunk is valid, especially for the particular
-// mode the stream is in. Currently this means that `null` is never accepted
-// and undefined/non-string values are only allowed in object mode.
-function validChunk(stream, state, chunk, cb) {
-  var valid = true;
-  var er = false;
-
-  if (chunk === null) {
-    er = new TypeError('May not write null values to stream');
-  } else if (typeof chunk !== 'string' && chunk !== undefined && !state.objectMode) {
-    er = new TypeError('Invalid non-string/buffer chunk');
-  }
-  if (er) {
-    stream.emit('error', er);
-    processNextTick(cb, er);
-    valid = false;
-  }
-  return valid;
-}
-
-Writable.prototype.write = function (chunk, encoding, cb) {
-  var state = this._writableState;
-  var ret = false;
-  var isBuf = _isUint8Array(chunk) && !state.objectMode;
-
-  if (isBuf && !Buffer.isBuffer(chunk)) {
-    chunk = _uint8ArrayToBuffer(chunk);
-  }
-
-  if (typeof encoding === 'function') {
-    cb = encoding;
-    encoding = null;
-  }
-
-  if (isBuf) encoding = 'buffer';else if (!encoding) encoding = state.defaultEncoding;
-
-  if (typeof cb !== 'function') cb = nop;
-
-  if (state.ended) writeAfterEnd(this, cb);else if (isBuf || validChunk(this, state, chunk, cb)) {
-    state.pendingcb++;
-    ret = writeOrBuffer(this, state, isBuf, chunk, encoding, cb);
-  }
-
-  return ret;
-};
-
-Writable.prototype.cork = function () {
-  var state = this._writableState;
-
-  state.corked++;
-};
-
-Writable.prototype.uncork = function () {
-  var state = this._writableState;
-
-  if (state.corked) {
-    state.corked--;
-
-    if (!state.writing && !state.corked && !state.finished && !state.bufferProcessing && state.bufferedRequest) clearBuffer(this, state);
-  }
-};
-
-Writable.prototype.setDefaultEncoding = function setDefaultEncoding(encoding) {
-  // node::ParseEncoding() requires lower case.
-  if (typeof encoding === 'string') encoding = encoding.toLowerCase();
-  if (!(['hex', 'utf8', 'utf-8', 'ascii', 'binary', 'base64', 'ucs2', 'ucs-2', 'utf16le', 'utf-16le', 'raw'].indexOf((encoding + '').toLowerCase()) > -1)) throw new TypeError('Unknown encoding: ' + encoding);
-  this._writableState.defaultEncoding = encoding;
-  return this;
-};
-
-function decodeChunk(state, chunk, encoding) {
-  if (!state.objectMode && state.decodeStrings !== false && typeof chunk === 'string') {
-    chunk = Buffer.from(chunk, encoding);
-  }
-  return chunk;
-}
-
-// if we're already writing something, then just put this
-// in the queue, and wait our turn.  Otherwise, call _write
-// If we return false, then we need a drain event, so set that flag.
-function writeOrBuffer(stream, state, isBuf, chunk, encoding, cb) {
-  if (!isBuf) {
-    var newChunk = decodeChunk(state, chunk, encoding);
-    if (chunk !== newChunk) {
-      isBuf = true;
-      encoding = 'buffer';
-      chunk = newChunk;
-    }
-  }
-  var len = state.objectMode ? 1 : chunk.length;
-
-  state.length += len;
-
-  var ret = state.length < state.highWaterMark;
-  // we must ensure that previous needDrain will not be reset to false.
-  if (!ret) state.needDrain = true;
-
-  if (state.writing || state.corked) {
-    var last = state.lastBufferedRequest;
-    state.lastBufferedRequest = {
-      chunk: chunk,
-      encoding: encoding,
-      isBuf: isBuf,
-      callback: cb,
-      next: null
-    };
-    if (last) {
-      last.next = state.lastBufferedRequest;
-    } else {
-      state.bufferedRequest = state.lastBufferedRequest;
-    }
-    state.bufferedRequestCount += 1;
-  } else {
-    doWrite(stream, state, false, len, chunk, encoding, cb);
-  }
-
-  return ret;
-}
-
-function doWrite(stream, state, writev, len, chunk, encoding, cb) {
-  state.writelen = len;
-  state.writecb = cb;
-  state.writing = true;
-  state.sync = true;
-  if (writev) stream._writev(chunk, state.onwrite);else stream._write(chunk, encoding, state.onwrite);
-  state.sync = false;
-}
-
-function onwriteError(stream, state, sync, er, cb) {
-  --state.pendingcb;
-
-  if (sync) {
-    // defer the callback if we are being called synchronously
-    // to avoid piling up things on the stack
-    processNextTick(cb, er);
-    // this can emit finish, and it will always happen
-    // after error
-    processNextTick(finishMaybe, stream, state);
-    stream._writableState.errorEmitted = true;
-    stream.emit('error', er);
-  } else {
-    // the caller expect this to happen before if
-    // it is async
-    cb(er);
-    stream._writableState.errorEmitted = true;
-    stream.emit('error', er);
-    // this can emit finish, but finish must
-    // always follow error
-    finishMaybe(stream, state);
-  }
-}
-
-function onwriteStateUpdate(state) {
-  state.writing = false;
-  state.writecb = null;
-  state.length -= state.writelen;
-  state.writelen = 0;
-}
-
-function onwrite(stream, er) {
-  var state = stream._writableState;
-  var sync = state.sync;
-  var cb = state.writecb;
-
-  onwriteStateUpdate(state);
-
-  if (er) onwriteError(stream, state, sync, er, cb);else {
-    // Check if we're actually ready to finish, but don't emit yet
-    var finished = needFinish(state);
-
-    if (!finished && !state.corked && !state.bufferProcessing && state.bufferedRequest) {
-      clearBuffer(stream, state);
-    }
-
-    if (sync) {
-      /*<replacement>*/
-      asyncWrite(afterWrite, stream, state, finished, cb);
-      /*</replacement>*/
-    } else {
-      afterWrite(stream, state, finished, cb);
-    }
-  }
-}
-
-function afterWrite(stream, state, finished, cb) {
-  if (!finished) onwriteDrain(stream, state);
-  state.pendingcb--;
-  cb();
-  finishMaybe(stream, state);
-}
-
-// Must force callback to be called on nextTick, so that we don't
-// emit 'drain' before the write() consumer gets the 'false' return
-// value, and has a chance to attach a 'drain' listener.
-function onwriteDrain(stream, state) {
-  if (state.length === 0 && state.needDrain) {
-    state.needDrain = false;
-    stream.emit('drain');
-  }
-}
-
-// if there's something in the buffer waiting, then process it
-function clearBuffer(stream, state) {
-  state.bufferProcessing = true;
-  var entry = state.bufferedRequest;
-
-  if (stream._writev && entry && entry.next) {
-    // Fast case, write everything using _writev()
-    var l = state.bufferedRequestCount;
-    var buffer = new Array(l);
-    var holder = state.corkedRequestsFree;
-    holder.entry = entry;
-
-    var count = 0;
-    var allBuffers = true;
-    while (entry) {
-      buffer[count] = entry;
-      if (!entry.isBuf) allBuffers = false;
-      entry = entry.next;
-      count += 1;
-    }
-    buffer.allBuffers = allBuffers;
-
-    doWrite(stream, state, true, state.length, buffer, '', holder.finish);
-
-    // doWrite is almost always async, defer these to save a bit of time
-    // as the hot path ends with doWrite
-    state.pendingcb++;
-    state.lastBufferedRequest = null;
-    if (holder.next) {
-      state.corkedRequestsFree = holder.next;
-      holder.next = null;
-    } else {
-      state.corkedRequestsFree = new CorkedRequest(state);
-    }
-  } else {
-    // Slow case, write chunks one-by-one
-    while (entry) {
-      var chunk = entry.chunk;
-      var encoding = entry.encoding;
-      var cb = entry.callback;
-      var len = state.objectMode ? 1 : chunk.length;
-
-      doWrite(stream, state, false, len, chunk, encoding, cb);
-      entry = entry.next;
-      // if we didn't call the onwrite immediately, then
-      // it means that we need to wait until it does.
-      // also, that means that the chunk and cb are currently
-      // being processed, so move the buffer counter past them.
-      if (state.writing) {
-        break;
-      }
-    }
-
-    if (entry === null) state.lastBufferedRequest = null;
-  }
-
-  state.bufferedRequestCount = 0;
-  state.bufferedRequest = entry;
-  state.bufferProcessing = false;
-}
-
-Writable.prototype._write = function (chunk, encoding, cb) {
-  cb(new Error('_write() is not implemented'));
-};
-
-Writable.prototype._writev = null;
-
-Writable.prototype.end = function (chunk, encoding, cb) {
-  var state = this._writableState;
-
-  if (typeof chunk === 'function') {
-    cb = chunk;
-    chunk = null;
-    encoding = null;
-  } else if (typeof encoding === 'function') {
-    cb = encoding;
-    encoding = null;
-  }
-
-  if (chunk !== null && chunk !== undefined) this.write(chunk, encoding);
-
-  // .end() fully uncorks
-  if (state.corked) {
-    state.corked = 1;
-    this.uncork();
-  }
-
-  // ignore unnecessary end() calls.
-  if (!state.ending && !state.finished) endWritable(this, state, cb);
-};
-
-function needFinish(state) {
-  return state.ending && state.length === 0 && state.bufferedRequest === null && !state.finished && !state.writing;
-}
-function callFinal(stream, state) {
-  stream._final(function (err) {
-    state.pendingcb--;
-    if (err) {
-      stream.emit('error', err);
-    }
-    state.prefinished = true;
-    stream.emit('prefinish');
-    finishMaybe(stream, state);
-  });
-}
-function prefinish(stream, state) {
-  if (!state.prefinished && !state.finalCalled) {
-    if (typeof stream._final === 'function') {
-      state.pendingcb++;
-      state.finalCalled = true;
-      processNextTick(callFinal, stream, state);
-    } else {
-      state.prefinished = true;
-      stream.emit('prefinish');
-    }
-  }
-}
-
-function finishMaybe(stream, state) {
-  var need = needFinish(state);
-  if (need) {
-    prefinish(stream, state);
-    if (state.pendingcb === 0) {
-      state.finished = true;
-      stream.emit('finish');
-    }
-  }
-  return need;
-}
-
-function endWritable(stream, state, cb) {
-  state.ending = true;
-  finishMaybe(stream, state);
-  if (cb) {
-    if (state.finished) processNextTick(cb);else stream.once('finish', cb);
-  }
-  state.ended = true;
-  stream.writable = false;
-}
-
-function onCorkedFinish(corkReq, state, err) {
-  var entry = corkReq.entry;
-  corkReq.entry = null;
-  while (entry) {
-    var cb = entry.callback;
-    state.pendingcb--;
-    cb(err);
-    entry = entry.next;
-  }
-  if (state.corkedRequestsFree) {
-    state.corkedRequestsFree.next = corkReq;
-  } else {
-    state.corkedRequestsFree = corkReq;
-  }
-}
-
-Object.defineProperty(Writable.prototype, 'destroyed', {
-  get: function get() {
-    if (this._writableState === undefined) {
-      return false;
-    }
-    return this._writableState.destroyed;
-  },
-  set: function set(value) {
-    // we ignore the value if the stream
-    // has not been initialized yet
-    if (!this._writableState) {
-      return;
-    }
-
-    // backward compatibility, the user is explicitly
-    // managing destroyed
-    this._writableState.destroyed = value;
-  }
-});
-
-Writable.prototype.destroy = destroyImpl.destroy;
-Writable.prototype._undestroy = destroyImpl.undestroy;
-Writable.prototype._destroy = function (err, cb) {
-  this.end();
-  cb(err);
-};
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11), __webpack_require__(211).setImmediate, __webpack_require__(201)))
-
-/***/ }),
-/* 210 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var toString = {}.toString;
-
-module.exports = Array.isArray || function (arr) {
-  return toString.call(arr) == '[object Array]';
-};
-
-/***/ }),
-/* 211 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var apply = Function.prototype.apply;
-
-// DOM APIs, for completeness
-
-exports.setTimeout = function () {
-  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
-};
-exports.setInterval = function () {
-  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
-};
-exports.clearTimeout = exports.clearInterval = function (timeout) {
-  if (timeout) {
-    timeout.close();
-  }
-};
-
-function Timeout(id, clearFn) {
-  this._id = id;
-  this._clearFn = clearFn;
-}
-Timeout.prototype.unref = Timeout.prototype.ref = function () {};
-Timeout.prototype.close = function () {
-  this._clearFn.call(window, this._id);
-};
-
-// Does not start the time, just sets up the members needed.
-exports.enroll = function (item, msecs) {
-  clearTimeout(item._idleTimeoutId);
-  item._idleTimeout = msecs;
-};
-
-exports.unenroll = function (item) {
-  clearTimeout(item._idleTimeoutId);
-  item._idleTimeout = -1;
-};
-
-exports._unrefActive = exports.active = function (item) {
-  clearTimeout(item._idleTimeoutId);
-
-  var msecs = item._idleTimeout;
-  if (msecs >= 0) {
-    item._idleTimeoutId = setTimeout(function onTimeout() {
-      if (item._onTimeout) item._onTimeout();
-    }, msecs);
-  }
-};
-
-// setimmediate attaches itself to the global object
-__webpack_require__(221);
-exports.setImmediate = setImmediate;
-exports.clearImmediate = clearImmediate;
-
-/***/ }),
-/* 212 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-module.exports = Stream;
-
-var EE = __webpack_require__(206).EventEmitter;
-var inherits = __webpack_require__(202);
-
-inherits(Stream, EE);
-Stream.Readable = __webpack_require__(207);
-Stream.Writable = __webpack_require__(226);
-Stream.Duplex = __webpack_require__(227);
-Stream.Transform = __webpack_require__(228);
-Stream.PassThrough = __webpack_require__(229);
-
-// Backwards-compat with node 0.4.x
-Stream.Stream = Stream;
-
-// old-style streams.  Note that the pipe method (the only relevant
-// part of this class) is overridden in the Readable class.
-
-function Stream() {
-  EE.call(this);
-}
-
-Stream.prototype.pipe = function (dest, options) {
-  var source = this;
-
-  function ondata(chunk) {
-    if (dest.writable) {
-      if (false === dest.write(chunk) && source.pause) {
-        source.pause();
-      }
-    }
-  }
-
-  source.on('data', ondata);
-
-  function ondrain() {
-    if (source.readable && source.resume) {
-      source.resume();
-    }
-  }
-
-  dest.on('drain', ondrain);
-
-  // If the 'end' option is not supplied, dest.end() will be called when
-  // source gets the 'end' or 'close' events.  Only dest.end() once.
-  if (!dest._isStdio && (!options || options.end !== false)) {
-    source.on('end', onend);
-    source.on('close', onclose);
-  }
-
-  var didOnEnd = false;
-  function onend() {
-    if (didOnEnd) return;
-    didOnEnd = true;
-
-    dest.end();
-  }
-
-  function onclose() {
-    if (didOnEnd) return;
-    didOnEnd = true;
-
-    if (typeof dest.destroy === 'function') dest.destroy();
-  }
-
-  // don't leave dangling pipes when there are errors.
-  function onerror(er) {
-    cleanup();
-    if (EE.listenerCount(this, 'error') === 0) {
-      throw er; // Unhandled stream error in pipe.
-    }
-  }
-
-  source.on('error', onerror);
-  dest.on('error', onerror);
-
-  // remove all the event listeners that were added.
-  function cleanup() {
-    source.removeListener('data', ondata);
-    dest.removeListener('drain', ondrain);
-
-    source.removeListener('end', onend);
-    source.removeListener('close', onclose);
-
-    source.removeListener('error', onerror);
-    dest.removeListener('error', onerror);
-
-    source.removeListener('end', cleanup);
-    source.removeListener('close', cleanup);
-
-    dest.removeListener('close', cleanup);
-  }
-
-  source.on('end', cleanup);
-  source.on('close', cleanup);
-
-  dest.on('close', cleanup);
-
-  dest.emit('pipe', source);
-
-  // Allow for unix-like usage: A.pipe(B).pipe(C)
-  return dest;
-};
-
-/***/ }),
-/* 213 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
-
-/*<replacement>*/
-
-var processNextTick = __webpack_require__(205);
-/*</replacement>*/
-
-module.exports = Readable;
-
-/*<replacement>*/
-var isArray = __webpack_require__(210);
-/*</replacement>*/
-
-/*<replacement>*/
-var Duplex;
-/*</replacement>*/
-
-Readable.ReadableState = ReadableState;
-
-/*<replacement>*/
-var EE = __webpack_require__(206).EventEmitter;
-
-var EElistenerCount = function EElistenerCount(emitter, type) {
-  return emitter.listeners(type).length;
-};
-/*</replacement>*/
-
-/*<replacement>*/
-var Stream = __webpack_require__(214);
-/*</replacement>*/
-
-// TODO(bmeurer): Change this back to const once hole checks are
-// properly optimized away early in Ignition+TurboFan.
-/*<replacement>*/
-var Buffer = __webpack_require__(208).Buffer;
-var OurUint8Array = global.Uint8Array || function () {};
-function _uint8ArrayToBuffer(chunk) {
-  return Buffer.from(chunk);
-}
-function _isUint8Array(obj) {
-  return Buffer.isBuffer(obj) || obj instanceof OurUint8Array;
-}
-/*</replacement>*/
-
-/*<replacement>*/
-var util = __webpack_require__(203);
-util.inherits = __webpack_require__(202);
-/*</replacement>*/
-
-/*<replacement>*/
-var debugUtil = __webpack_require__(222);
-var debug = void 0;
-if (debugUtil && debugUtil.debuglog) {
-  debug = debugUtil.debuglog('stream');
-} else {
-  debug = function debug() {};
-}
-/*</replacement>*/
-
-var BufferList = __webpack_require__(223);
-var destroyImpl = __webpack_require__(215);
-var StringDecoder;
-
-util.inherits(Readable, Stream);
-
-var kProxyEvents = ['error', 'close', 'destroy', 'pause', 'resume'];
-
-function prependListener(emitter, event, fn) {
-  // Sadly this is not cacheable as some libraries bundle their own
-  // event emitter implementation with them.
-  if (typeof emitter.prependListener === 'function') {
-    return emitter.prependListener(event, fn);
-  } else {
-    // This is a hack to make sure that our error handler is attached before any
-    // userland ones.  NEVER DO THIS. This is here only because this code needs
-    // to continue to work with older versions of Node.js that do not include
-    // the prependListener() method. The goal is to eventually remove this hack.
-    if (!emitter._events || !emitter._events[event]) emitter.on(event, fn);else if (isArray(emitter._events[event])) emitter._events[event].unshift(fn);else emitter._events[event] = [fn, emitter._events[event]];
-  }
-}
-
-function ReadableState(options, stream) {
-  Duplex = Duplex || __webpack_require__(200);
-
-  options = options || {};
-
-  // object stream flag. Used to make read(n) ignore n and to
-  // make all the buffer merging and length checks go away
-  this.objectMode = !!options.objectMode;
-
-  if (stream instanceof Duplex) this.objectMode = this.objectMode || !!options.readableObjectMode;
-
-  // the point at which it stops calling _read() to fill the buffer
-  // Note: 0 is a valid value, means "don't call _read preemptively ever"
-  var hwm = options.highWaterMark;
-  var defaultHwm = this.objectMode ? 16 : 16 * 1024;
-  this.highWaterMark = hwm || hwm === 0 ? hwm : defaultHwm;
-
-  // cast to ints.
-  this.highWaterMark = Math.floor(this.highWaterMark);
-
-  // A linked list is used to store data chunks instead of an array because the
-  // linked list can remove elements from the beginning faster than
-  // array.shift()
-  this.buffer = new BufferList();
-  this.length = 0;
-  this.pipes = null;
-  this.pipesCount = 0;
-  this.flowing = null;
-  this.ended = false;
-  this.endEmitted = false;
-  this.reading = false;
-
-  // a flag to be able to tell if the event 'readable'/'data' is emitted
-  // immediately, or on a later tick.  We set this to true at first, because
-  // any actions that shouldn't happen until "later" should generally also
-  // not happen before the first read call.
-  this.sync = true;
-
-  // whenever we return null, then we set a flag to say
-  // that we're awaiting a 'readable' event emission.
-  this.needReadable = false;
-  this.emittedReadable = false;
-  this.readableListening = false;
-  this.resumeScheduled = false;
-
-  // has it been destroyed
-  this.destroyed = false;
-
-  // Crypto is kind of old and crusty.  Historically, its default string
-  // encoding is 'binary' so we have to make this configurable.
-  // Everything else in the universe uses 'utf8', though.
-  this.defaultEncoding = options.defaultEncoding || 'utf8';
-
-  // the number of writers that are awaiting a drain event in .pipe()s
-  this.awaitDrain = 0;
-
-  // if true, a maybeReadMore has been scheduled
-  this.readingMore = false;
-
-  this.decoder = null;
-  this.encoding = null;
-  if (options.encoding) {
-    if (!StringDecoder) StringDecoder = __webpack_require__(216).StringDecoder;
-    this.decoder = new StringDecoder(options.encoding);
-    this.encoding = options.encoding;
-  }
-}
-
-function Readable(options) {
-  Duplex = Duplex || __webpack_require__(200);
-
-  if (!(this instanceof Readable)) return new Readable(options);
-
-  this._readableState = new ReadableState(options, this);
-
-  // legacy
-  this.readable = true;
-
-  if (options) {
-    if (typeof options.read === 'function') this._read = options.read;
-
-    if (typeof options.destroy === 'function') this._destroy = options.destroy;
-  }
-
-  Stream.call(this);
-}
-
-Object.defineProperty(Readable.prototype, 'destroyed', {
-  get: function get() {
-    if (this._readableState === undefined) {
-      return false;
-    }
-    return this._readableState.destroyed;
-  },
-  set: function set(value) {
-    // we ignore the value if the stream
-    // has not been initialized yet
-    if (!this._readableState) {
-      return;
-    }
-
-    // backward compatibility, the user is explicitly
-    // managing destroyed
-    this._readableState.destroyed = value;
-  }
-});
-
-Readable.prototype.destroy = destroyImpl.destroy;
-Readable.prototype._undestroy = destroyImpl.undestroy;
-Readable.prototype._destroy = function (err, cb) {
-  this.push(null);
-  cb(err);
-};
-
-// Manually shove something into the read() buffer.
-// This returns true if the highWaterMark has not been hit yet,
-// similar to how Writable.write() returns true if you should
-// write() some more.
-Readable.prototype.push = function (chunk, encoding) {
-  var state = this._readableState;
-  var skipChunkCheck;
-
-  if (!state.objectMode) {
-    if (typeof chunk === 'string') {
-      encoding = encoding || state.defaultEncoding;
-      if (encoding !== state.encoding) {
-        chunk = Buffer.from(chunk, encoding);
-        encoding = '';
-      }
-      skipChunkCheck = true;
-    }
-  } else {
-    skipChunkCheck = true;
-  }
-
-  return readableAddChunk(this, chunk, encoding, false, skipChunkCheck);
-};
-
-// Unshift should *always* be something directly out of read()
-Readable.prototype.unshift = function (chunk) {
-  return readableAddChunk(this, chunk, null, true, false);
-};
-
-function readableAddChunk(stream, chunk, encoding, addToFront, skipChunkCheck) {
-  var state = stream._readableState;
-  if (chunk === null) {
-    state.reading = false;
-    onEofChunk(stream, state);
-  } else {
-    var er;
-    if (!skipChunkCheck) er = chunkInvalid(state, chunk);
-    if (er) {
-      stream.emit('error', er);
-    } else if (state.objectMode || chunk && chunk.length > 0) {
-      if (typeof chunk !== 'string' && !state.objectMode && Object.getPrototypeOf(chunk) !== Buffer.prototype) {
-        chunk = _uint8ArrayToBuffer(chunk);
-      }
-
-      if (addToFront) {
-        if (state.endEmitted) stream.emit('error', new Error('stream.unshift() after end event'));else addChunk(stream, state, chunk, true);
-      } else if (state.ended) {
-        stream.emit('error', new Error('stream.push() after EOF'));
-      } else {
-        state.reading = false;
-        if (state.decoder && !encoding) {
-          chunk = state.decoder.write(chunk);
-          if (state.objectMode || chunk.length !== 0) addChunk(stream, state, chunk, false);else maybeReadMore(stream, state);
-        } else {
-          addChunk(stream, state, chunk, false);
-        }
-      }
-    } else if (!addToFront) {
-      state.reading = false;
-    }
-  }
-
-  return needMoreData(state);
-}
-
-function addChunk(stream, state, chunk, addToFront) {
-  if (state.flowing && state.length === 0 && !state.sync) {
-    stream.emit('data', chunk);
-    stream.read(0);
-  } else {
-    // update the buffer info.
-    state.length += state.objectMode ? 1 : chunk.length;
-    if (addToFront) state.buffer.unshift(chunk);else state.buffer.push(chunk);
-
-    if (state.needReadable) emitReadable(stream);
-  }
-  maybeReadMore(stream, state);
-}
-
-function chunkInvalid(state, chunk) {
-  var er;
-  if (!_isUint8Array(chunk) && typeof chunk !== 'string' && chunk !== undefined && !state.objectMode) {
-    er = new TypeError('Invalid non-string/buffer chunk');
-  }
-  return er;
-}
-
-// if it's past the high water mark, we can push in some more.
-// Also, if we have no data yet, we can stand some
-// more bytes.  This is to work around cases where hwm=0,
-// such as the repl.  Also, if the push() triggered a
-// readable event, and the user called read(largeNumber) such that
-// needReadable was set, then we ought to push more, so that another
-// 'readable' event will be triggered.
-function needMoreData(state) {
-  return !state.ended && (state.needReadable || state.length < state.highWaterMark || state.length === 0);
-}
-
-Readable.prototype.isPaused = function () {
-  return this._readableState.flowing === false;
-};
-
-// backwards compatibility.
-Readable.prototype.setEncoding = function (enc) {
-  if (!StringDecoder) StringDecoder = __webpack_require__(216).StringDecoder;
-  this._readableState.decoder = new StringDecoder(enc);
-  this._readableState.encoding = enc;
-  return this;
-};
-
-// Don't raise the hwm > 8MB
-var MAX_HWM = 0x800000;
-function computeNewHighWaterMark(n) {
-  if (n >= MAX_HWM) {
-    n = MAX_HWM;
-  } else {
-    // Get the next highest power of 2 to prevent increasing hwm excessively in
-    // tiny amounts
-    n--;
-    n |= n >>> 1;
-    n |= n >>> 2;
-    n |= n >>> 4;
-    n |= n >>> 8;
-    n |= n >>> 16;
-    n++;
-  }
-  return n;
-}
-
-// This function is designed to be inlinable, so please take care when making
-// changes to the function body.
-function howMuchToRead(n, state) {
-  if (n <= 0 || state.length === 0 && state.ended) return 0;
-  if (state.objectMode) return 1;
-  if (n !== n) {
-    // Only flow one buffer at a time
-    if (state.flowing && state.length) return state.buffer.head.data.length;else return state.length;
-  }
-  // If we're asking for more than the current hwm, then raise the hwm.
-  if (n > state.highWaterMark) state.highWaterMark = computeNewHighWaterMark(n);
-  if (n <= state.length) return n;
-  // Don't have enough
-  if (!state.ended) {
-    state.needReadable = true;
-    return 0;
-  }
-  return state.length;
-}
-
-// you can override either this method, or the async _read(n) below.
-Readable.prototype.read = function (n) {
-  debug('read', n);
-  n = parseInt(n, 10);
-  var state = this._readableState;
-  var nOrig = n;
-
-  if (n !== 0) state.emittedReadable = false;
-
-  // if we're doing read(0) to trigger a readable event, but we
-  // already have a bunch of data in the buffer, then just trigger
-  // the 'readable' event and move on.
-  if (n === 0 && state.needReadable && (state.length >= state.highWaterMark || state.ended)) {
-    debug('read: emitReadable', state.length, state.ended);
-    if (state.length === 0 && state.ended) endReadable(this);else emitReadable(this);
-    return null;
-  }
-
-  n = howMuchToRead(n, state);
-
-  // if we've ended, and we're now clear, then finish it up.
-  if (n === 0 && state.ended) {
-    if (state.length === 0) endReadable(this);
-    return null;
-  }
-
-  // All the actual chunk generation logic needs to be
-  // *below* the call to _read.  The reason is that in certain
-  // synthetic stream cases, such as passthrough streams, _read
-  // may be a completely synchronous operation which may change
-  // the state of the read buffer, providing enough data when
-  // before there was *not* enough.
-  //
-  // So, the steps are:
-  // 1. Figure out what the state of things will be after we do
-  // a read from the buffer.
-  //
-  // 2. If that resulting state will trigger a _read, then call _read.
-  // Note that this may be asynchronous, or synchronous.  Yes, it is
-  // deeply ugly to write APIs this way, but that still doesn't mean
-  // that the Readable class should behave improperly, as streams are
-  // designed to be sync/async agnostic.
-  // Take note if the _read call is sync or async (ie, if the read call
-  // has returned yet), so that we know whether or not it's safe to emit
-  // 'readable' etc.
-  //
-  // 3. Actually pull the requested chunks out of the buffer and return.
-
-  // if we need a readable event, then we need to do some reading.
-  var doRead = state.needReadable;
-  debug('need readable', doRead);
-
-  // if we currently have less than the highWaterMark, then also read some
-  if (state.length === 0 || state.length - n < state.highWaterMark) {
-    doRead = true;
-    debug('length less than watermark', doRead);
-  }
-
-  // however, if we've ended, then there's no point, and if we're already
-  // reading, then it's unnecessary.
-  if (state.ended || state.reading) {
-    doRead = false;
-    debug('reading or ended', doRead);
-  } else if (doRead) {
-    debug('do read');
-    state.reading = true;
-    state.sync = true;
-    // if the length is currently zero, then we *need* a readable event.
-    if (state.length === 0) state.needReadable = true;
-    // call internal read method
-    this._read(state.highWaterMark);
-    state.sync = false;
-    // If _read pushed data synchronously, then `reading` will be false,
-    // and we need to re-evaluate how much data we can return to the user.
-    if (!state.reading) n = howMuchToRead(nOrig, state);
-  }
-
-  var ret;
-  if (n > 0) ret = fromList(n, state);else ret = null;
-
-  if (ret === null) {
-    state.needReadable = true;
-    n = 0;
-  } else {
-    state.length -= n;
-  }
-
-  if (state.length === 0) {
-    // If we have nothing in the buffer, then we want to know
-    // as soon as we *do* get something into the buffer.
-    if (!state.ended) state.needReadable = true;
-
-    // If we tried to read() past the EOF, then emit end on the next tick.
-    if (nOrig !== n && state.ended) endReadable(this);
-  }
-
-  if (ret !== null) this.emit('data', ret);
-
-  return ret;
-};
-
-function onEofChunk(stream, state) {
-  if (state.ended) return;
-  if (state.decoder) {
-    var chunk = state.decoder.end();
-    if (chunk && chunk.length) {
-      state.buffer.push(chunk);
-      state.length += state.objectMode ? 1 : chunk.length;
-    }
-  }
-  state.ended = true;
-
-  // emit 'readable' now to make sure it gets picked up.
-  emitReadable(stream);
-}
-
-// Don't emit readable right away in sync mode, because this can trigger
-// another read() call => stack overflow.  This way, it might trigger
-// a nextTick recursion warning, but that's not so bad.
-function emitReadable(stream) {
-  var state = stream._readableState;
-  state.needReadable = false;
-  if (!state.emittedReadable) {
-    debug('emitReadable', state.flowing);
-    state.emittedReadable = true;
-    if (state.sync) processNextTick(emitReadable_, stream);else emitReadable_(stream);
-  }
-}
-
-function emitReadable_(stream) {
-  debug('emit readable');
-  stream.emit('readable');
-  flow(stream);
-}
-
-// at this point, the user has presumably seen the 'readable' event,
-// and called read() to consume some data.  that may have triggered
-// in turn another _read(n) call, in which case reading = true if
-// it's in progress.
-// However, if we're not ended, or reading, and the length < hwm,
-// then go ahead and try to read some more preemptively.
-function maybeReadMore(stream, state) {
-  if (!state.readingMore) {
-    state.readingMore = true;
-    processNextTick(maybeReadMore_, stream, state);
-  }
-}
-
-function maybeReadMore_(stream, state) {
-  var len = state.length;
-  while (!state.reading && !state.flowing && !state.ended && state.length < state.highWaterMark) {
-    debug('maybeReadMore read 0');
-    stream.read(0);
-    if (len === state.length)
-      // didn't get any data, stop spinning.
-      break;else len = state.length;
-  }
-  state.readingMore = false;
-}
-
-// abstract method.  to be overridden in specific implementation classes.
-// call cb(er, data) where data is <= n in length.
-// for virtual (non-string, non-buffer) streams, "length" is somewhat
-// arbitrary, and perhaps not very meaningful.
-Readable.prototype._read = function (n) {
-  this.emit('error', new Error('_read() is not implemented'));
-};
-
-Readable.prototype.pipe = function (dest, pipeOpts) {
-  var src = this;
-  var state = this._readableState;
-
-  switch (state.pipesCount) {
-    case 0:
-      state.pipes = dest;
-      break;
-    case 1:
-      state.pipes = [state.pipes, dest];
-      break;
-    default:
-      state.pipes.push(dest);
-      break;
-  }
-  state.pipesCount += 1;
-  debug('pipe count=%d opts=%j', state.pipesCount, pipeOpts);
-
-  var doEnd = (!pipeOpts || pipeOpts.end !== false) && dest !== process.stdout && dest !== process.stderr;
-
-  var endFn = doEnd ? onend : unpipe;
-  if (state.endEmitted) processNextTick(endFn);else src.once('end', endFn);
-
-  dest.on('unpipe', onunpipe);
-  function onunpipe(readable, unpipeInfo) {
-    debug('onunpipe');
-    if (readable === src) {
-      if (unpipeInfo && unpipeInfo.hasUnpiped === false) {
-        unpipeInfo.hasUnpiped = true;
-        cleanup();
-      }
-    }
-  }
-
-  function onend() {
-    debug('onend');
-    dest.end();
-  }
-
-  // when the dest drains, it reduces the awaitDrain counter
-  // on the source.  This would be more elegant with a .once()
-  // handler in flow(), but adding and removing repeatedly is
-  // too slow.
-  var ondrain = pipeOnDrain(src);
-  dest.on('drain', ondrain);
-
-  var cleanedUp = false;
-  function cleanup() {
-    debug('cleanup');
-    // cleanup event handlers once the pipe is broken
-    dest.removeListener('close', onclose);
-    dest.removeListener('finish', onfinish);
-    dest.removeListener('drain', ondrain);
-    dest.removeListener('error', onerror);
-    dest.removeListener('unpipe', onunpipe);
-    src.removeListener('end', onend);
-    src.removeListener('end', unpipe);
-    src.removeListener('data', ondata);
-
-    cleanedUp = true;
-
-    // if the reader is waiting for a drain event from this
-    // specific writer, then it would cause it to never start
-    // flowing again.
-    // So, if this is awaiting a drain, then we just call it now.
-    // If we don't know, then assume that we are waiting for one.
-    if (state.awaitDrain && (!dest._writableState || dest._writableState.needDrain)) ondrain();
-  }
-
-  // If the user pushes more data while we're writing to dest then we'll end up
-  // in ondata again. However, we only want to increase awaitDrain once because
-  // dest will only emit one 'drain' event for the multiple writes.
-  // => Introduce a guard on increasing awaitDrain.
-  var increasedAwaitDrain = false;
-  src.on('data', ondata);
-  function ondata(chunk) {
-    debug('ondata');
-    increasedAwaitDrain = false;
-    var ret = dest.write(chunk);
-    if (false === ret && !increasedAwaitDrain) {
-      // If the user unpiped during `dest.write()`, it is possible
-      // to get stuck in a permanently paused state if that write
-      // also returned false.
-      // => Check whether `dest` is still a piping destination.
-      if ((state.pipesCount === 1 && state.pipes === dest || state.pipesCount > 1 && indexOf(state.pipes, dest) !== -1) && !cleanedUp) {
-        debug('false write response, pause', src._readableState.awaitDrain);
-        src._readableState.awaitDrain++;
-        increasedAwaitDrain = true;
-      }
-      src.pause();
-    }
-  }
-
-  // if the dest has an error, then stop piping into it.
-  // however, don't suppress the throwing behavior for this.
-  function onerror(er) {
-    debug('onerror', er);
-    unpipe();
-    dest.removeListener('error', onerror);
-    if (EElistenerCount(dest, 'error') === 0) dest.emit('error', er);
-  }
-
-  // Make sure our error handler is attached before userland ones.
-  prependListener(dest, 'error', onerror);
-
-  // Both close and finish should trigger unpipe, but only once.
-  function onclose() {
-    dest.removeListener('finish', onfinish);
-    unpipe();
-  }
-  dest.once('close', onclose);
-  function onfinish() {
-    debug('onfinish');
-    dest.removeListener('close', onclose);
-    unpipe();
-  }
-  dest.once('finish', onfinish);
-
-  function unpipe() {
-    debug('unpipe');
-    src.unpipe(dest);
-  }
-
-  // tell the dest that it's being piped to
-  dest.emit('pipe', src);
-
-  // start the flow if it hasn't been started already.
-  if (!state.flowing) {
-    debug('pipe resume');
-    src.resume();
-  }
-
-  return dest;
-};
-
-function pipeOnDrain(src) {
-  return function () {
-    var state = src._readableState;
-    debug('pipeOnDrain', state.awaitDrain);
-    if (state.awaitDrain) state.awaitDrain--;
-    if (state.awaitDrain === 0 && EElistenerCount(src, 'data')) {
-      state.flowing = true;
-      flow(src);
-    }
-  };
-}
-
-Readable.prototype.unpipe = function (dest) {
-  var state = this._readableState;
-  var unpipeInfo = { hasUnpiped: false };
-
-  // if we're not piping anywhere, then do nothing.
-  if (state.pipesCount === 0) return this;
-
-  // just one destination.  most common case.
-  if (state.pipesCount === 1) {
-    // passed in one, but it's not the right one.
-    if (dest && dest !== state.pipes) return this;
-
-    if (!dest) dest = state.pipes;
-
-    // got a match.
-    state.pipes = null;
-    state.pipesCount = 0;
-    state.flowing = false;
-    if (dest) dest.emit('unpipe', this, unpipeInfo);
-    return this;
-  }
-
-  // slow case. multiple pipe destinations.
-
-  if (!dest) {
-    // remove all.
-    var dests = state.pipes;
-    var len = state.pipesCount;
-    state.pipes = null;
-    state.pipesCount = 0;
-    state.flowing = false;
-
-    for (var i = 0; i < len; i++) {
-      dests[i].emit('unpipe', this, unpipeInfo);
-    }return this;
-  }
-
-  // try to find the right one.
-  var index = indexOf(state.pipes, dest);
-  if (index === -1) return this;
-
-  state.pipes.splice(index, 1);
-  state.pipesCount -= 1;
-  if (state.pipesCount === 1) state.pipes = state.pipes[0];
-
-  dest.emit('unpipe', this, unpipeInfo);
-
-  return this;
-};
-
-// set up data events if they are asked for
-// Ensure readable listeners eventually get something
-Readable.prototype.on = function (ev, fn) {
-  var res = Stream.prototype.on.call(this, ev, fn);
-
-  if (ev === 'data') {
-    // Start flowing on next tick if stream isn't explicitly paused
-    if (this._readableState.flowing !== false) this.resume();
-  } else if (ev === 'readable') {
-    var state = this._readableState;
-    if (!state.endEmitted && !state.readableListening) {
-      state.readableListening = state.needReadable = true;
-      state.emittedReadable = false;
-      if (!state.reading) {
-        processNextTick(nReadingNextTick, this);
-      } else if (state.length) {
-        emitReadable(this);
-      }
-    }
-  }
-
-  return res;
-};
-Readable.prototype.addListener = Readable.prototype.on;
-
-function nReadingNextTick(self) {
-  debug('readable nexttick read 0');
-  self.read(0);
-}
-
-// pause() and resume() are remnants of the legacy readable stream API
-// If the user uses them, then switch into old mode.
-Readable.prototype.resume = function () {
-  var state = this._readableState;
-  if (!state.flowing) {
-    debug('resume');
-    state.flowing = true;
-    resume(this, state);
-  }
-  return this;
-};
-
-function resume(stream, state) {
-  if (!state.resumeScheduled) {
-    state.resumeScheduled = true;
-    processNextTick(resume_, stream, state);
-  }
-}
-
-function resume_(stream, state) {
-  if (!state.reading) {
-    debug('resume read 0');
-    stream.read(0);
-  }
-
-  state.resumeScheduled = false;
-  state.awaitDrain = 0;
-  stream.emit('resume');
-  flow(stream);
-  if (state.flowing && !state.reading) stream.read(0);
-}
-
-Readable.prototype.pause = function () {
-  debug('call pause flowing=%j', this._readableState.flowing);
-  if (false !== this._readableState.flowing) {
-    debug('pause');
-    this._readableState.flowing = false;
-    this.emit('pause');
-  }
-  return this;
-};
-
-function flow(stream) {
-  var state = stream._readableState;
-  debug('flow', state.flowing);
-  while (state.flowing && stream.read() !== null) {}
-}
-
-// wrap an old-style stream as the async data source.
-// This is *not* part of the readable stream interface.
-// It is an ugly unfortunate mess of history.
-Readable.prototype.wrap = function (stream) {
-  var state = this._readableState;
-  var paused = false;
-
-  var self = this;
-  stream.on('end', function () {
-    debug('wrapped end');
-    if (state.decoder && !state.ended) {
-      var chunk = state.decoder.end();
-      if (chunk && chunk.length) self.push(chunk);
-    }
-
-    self.push(null);
-  });
-
-  stream.on('data', function (chunk) {
-    debug('wrapped data');
-    if (state.decoder) chunk = state.decoder.write(chunk);
-
-    // don't skip over falsy values in objectMode
-    if (state.objectMode && (chunk === null || chunk === undefined)) return;else if (!state.objectMode && (!chunk || !chunk.length)) return;
-
-    var ret = self.push(chunk);
-    if (!ret) {
-      paused = true;
-      stream.pause();
-    }
-  });
-
-  // proxy all the other methods.
-  // important when wrapping filters and duplexes.
-  for (var i in stream) {
-    if (this[i] === undefined && typeof stream[i] === 'function') {
-      this[i] = function (method) {
-        return function () {
-          return stream[method].apply(stream, arguments);
-        };
-      }(i);
-    }
-  }
-
-  // proxy certain important events.
-  for (var n = 0; n < kProxyEvents.length; n++) {
-    stream.on(kProxyEvents[n], self.emit.bind(self, kProxyEvents[n]));
-  }
-
-  // when we try to consume some more bytes, simply unpause the
-  // underlying stream.
-  self._read = function (n) {
-    debug('wrapped _read', n);
-    if (paused) {
-      paused = false;
-      stream.resume();
-    }
-  };
-
-  return self;
-};
-
-// exposed for testing purposes only.
-Readable._fromList = fromList;
-
-// Pluck off n bytes from an array of buffers.
-// Length is the combined lengths of all the buffers in the list.
-// This function is designed to be inlinable, so please take care when making
-// changes to the function body.
-function fromList(n, state) {
-  // nothing buffered
-  if (state.length === 0) return null;
-
-  var ret;
-  if (state.objectMode) ret = state.buffer.shift();else if (!n || n >= state.length) {
-    // read it all, truncate the list
-    if (state.decoder) ret = state.buffer.join('');else if (state.buffer.length === 1) ret = state.buffer.head.data;else ret = state.buffer.concat(state.length);
-    state.buffer.clear();
-  } else {
-    // read part of list
-    ret = fromListPartial(n, state.buffer, state.decoder);
-  }
-
-  return ret;
-}
-
-// Extracts only enough buffered data to satisfy the amount requested.
-// This function is designed to be inlinable, so please take care when making
-// changes to the function body.
-function fromListPartial(n, list, hasStrings) {
-  var ret;
-  if (n < list.head.data.length) {
-    // slice is the same for buffers and strings
-    ret = list.head.data.slice(0, n);
-    list.head.data = list.head.data.slice(n);
-  } else if (n === list.head.data.length) {
-    // first chunk is a perfect match
-    ret = list.shift();
-  } else {
-    // result spans more than one buffer
-    ret = hasStrings ? copyFromBufferString(n, list) : copyFromBuffer(n, list);
-  }
-  return ret;
-}
-
-// Copies a specified amount of characters from the list of buffered data
-// chunks.
-// This function is designed to be inlinable, so please take care when making
-// changes to the function body.
-function copyFromBufferString(n, list) {
-  var p = list.head;
-  var c = 1;
-  var ret = p.data;
-  n -= ret.length;
-  while (p = p.next) {
-    var str = p.data;
-    var nb = n > str.length ? str.length : n;
-    if (nb === str.length) ret += str;else ret += str.slice(0, n);
-    n -= nb;
-    if (n === 0) {
-      if (nb === str.length) {
-        ++c;
-        if (p.next) list.head = p.next;else list.head = list.tail = null;
-      } else {
-        list.head = p;
-        p.data = str.slice(nb);
-      }
-      break;
-    }
-    ++c;
-  }
-  list.length -= c;
-  return ret;
-}
-
-// Copies a specified amount of bytes from the list of buffered data chunks.
-// This function is designed to be inlinable, so please take care when making
-// changes to the function body.
-function copyFromBuffer(n, list) {
-  var ret = Buffer.allocUnsafe(n);
-  var p = list.head;
-  var c = 1;
-  p.data.copy(ret);
-  n -= p.data.length;
-  while (p = p.next) {
-    var buf = p.data;
-    var nb = n > buf.length ? buf.length : n;
-    buf.copy(ret, ret.length - n, 0, nb);
-    n -= nb;
-    if (n === 0) {
-      if (nb === buf.length) {
-        ++c;
-        if (p.next) list.head = p.next;else list.head = list.tail = null;
-      } else {
-        list.head = p;
-        p.data = buf.slice(nb);
-      }
-      break;
-    }
-    ++c;
-  }
-  list.length -= c;
-  return ret;
-}
-
-function endReadable(stream) {
-  var state = stream._readableState;
-
-  // If we get here before consuming all the bytes, then that is a
-  // bug in node.  Should never happen.
-  if (state.length > 0) throw new Error('"endReadable()" called on non-empty stream');
-
-  if (!state.endEmitted) {
-    state.ended = true;
-    processNextTick(endReadableNT, state, stream);
-  }
-}
-
-function endReadableNT(state, stream) {
-  // Check that we didn't get one last unshift.
-  if (!state.endEmitted && state.length === 0) {
-    state.endEmitted = true;
-    stream.readable = false;
-    stream.emit('end');
-  }
-}
-
-function forEach(xs, f) {
-  for (var i = 0, l = xs.length; i < l; i++) {
-    f(xs[i], i);
-  }
-}
-
-function indexOf(xs, x) {
-  for (var i = 0, l = xs.length; i < l; i++) {
-    if (xs[i] === x) return i;
-  }
-  return -1;
-}
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(201), __webpack_require__(11)))
-
-/***/ }),
-/* 214 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = __webpack_require__(206).EventEmitter;
-
-/***/ }),
-/* 215 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-/*<replacement>*/
-
-var processNextTick = __webpack_require__(205);
-/*</replacement>*/
-
-// undocumented cb() API, needed for core, not for public API
-function destroy(err, cb) {
-  var _this = this;
-
-  var readableDestroyed = this._readableState && this._readableState.destroyed;
-  var writableDestroyed = this._writableState && this._writableState.destroyed;
-
-  if (readableDestroyed || writableDestroyed) {
-    if (cb) {
-      cb(err);
-    } else if (err && (!this._writableState || !this._writableState.errorEmitted)) {
-      processNextTick(emitErrorNT, this, err);
-    }
-    return;
-  }
-
-  // we set destroyed to true before firing error callbacks in order
-  // to make it re-entrance safe in case destroy() is called within callbacks
-
-  if (this._readableState) {
-    this._readableState.destroyed = true;
-  }
-
-  // if this is a duplex stream mark the writable part as destroyed as well
-  if (this._writableState) {
-    this._writableState.destroyed = true;
-  }
-
-  this._destroy(err || null, function (err) {
-    if (!cb && err) {
-      processNextTick(emitErrorNT, _this, err);
-      if (_this._writableState) {
-        _this._writableState.errorEmitted = true;
-      }
-    } else if (cb) {
-      cb(err);
-    }
-  });
-}
-
-function undestroy() {
-  if (this._readableState) {
-    this._readableState.destroyed = false;
-    this._readableState.reading = false;
-    this._readableState.ended = false;
-    this._readableState.endEmitted = false;
-  }
-
-  if (this._writableState) {
-    this._writableState.destroyed = false;
-    this._writableState.ended = false;
-    this._writableState.ending = false;
-    this._writableState.finished = false;
-    this._writableState.errorEmitted = false;
-  }
-}
-
-function emitErrorNT(self, err) {
-  self.emit('error', err);
-}
-
-module.exports = {
-  destroy: destroy,
-  undestroy: undestroy
-};
-
-/***/ }),
-/* 216 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-var Buffer = __webpack_require__(204).Buffer;
-
-var isBufferEncoding = Buffer.isEncoding || function (encoding) {
-  switch (encoding && encoding.toLowerCase()) {
-    case 'hex':case 'utf8':case 'utf-8':case 'ascii':case 'binary':case 'base64':case 'ucs2':case 'ucs-2':case 'utf16le':case 'utf-16le':case 'raw':
-      return true;
-    default:
-      return false;
-  }
-};
-
-function assertEncoding(encoding) {
-  if (encoding && !isBufferEncoding(encoding)) {
-    throw new Error('Unknown encoding: ' + encoding);
-  }
-}
-
-// StringDecoder provides an interface for efficiently splitting a series of
-// buffers into a series of JS strings without breaking apart multi-byte
-// characters. CESU-8 is handled as part of the UTF-8 encoding.
-//
-// @TODO Handling all encodings inside a single object makes it very difficult
-// to reason about this code, so it should be split up in the future.
-// @TODO There should be a utf8-strict encoding that rejects invalid UTF-8 code
-// points as used by CESU-8.
-var StringDecoder = exports.StringDecoder = function (encoding) {
-  this.encoding = (encoding || 'utf8').toLowerCase().replace(/[-_]/, '');
-  assertEncoding(encoding);
-  switch (this.encoding) {
-    case 'utf8':
-      // CESU-8 represents each of Surrogate Pair by 3-bytes
-      this.surrogateSize = 3;
-      break;
-    case 'ucs2':
-    case 'utf16le':
-      // UTF-16 represents each of Surrogate Pair by 2-bytes
-      this.surrogateSize = 2;
-      this.detectIncompleteChar = utf16DetectIncompleteChar;
-      break;
-    case 'base64':
-      // Base-64 stores 3 bytes in 4 chars, and pads the remainder.
-      this.surrogateSize = 3;
-      this.detectIncompleteChar = base64DetectIncompleteChar;
-      break;
-    default:
-      this.write = passThroughWrite;
-      return;
-  }
-
-  // Enough space to store all bytes of a single character. UTF-8 needs 4
-  // bytes, but CESU-8 may require up to 6 (3 bytes per surrogate).
-  this.charBuffer = new Buffer(6);
-  // Number of bytes received for the current incomplete multi-byte character.
-  this.charReceived = 0;
-  // Number of bytes expected for the current incomplete multi-byte character.
-  this.charLength = 0;
-};
-
-// write decodes the given buffer and returns it as JS string that is
-// guaranteed to not contain any partial multi-byte characters. Any partial
-// character found at the end of the buffer is buffered up, and will be
-// returned when calling write again with the remaining bytes.
-//
-// Note: Converting a Buffer containing an orphan surrogate to a String
-// currently works, but converting a String to a Buffer (via `new Buffer`, or
-// Buffer#write) will replace incomplete surrogates with the unicode
-// replacement character. See https://codereview.chromium.org/121173009/ .
-StringDecoder.prototype.write = function (buffer) {
-  var charStr = '';
-  // if our last write ended with an incomplete multibyte character
-  while (this.charLength) {
-    // determine how many remaining bytes this buffer has to offer for this char
-    var available = buffer.length >= this.charLength - this.charReceived ? this.charLength - this.charReceived : buffer.length;
-
-    // add the new bytes to the char buffer
-    buffer.copy(this.charBuffer, this.charReceived, 0, available);
-    this.charReceived += available;
-
-    if (this.charReceived < this.charLength) {
-      // still not enough chars in this buffer? wait for more ...
-      return '';
-    }
-
-    // remove bytes belonging to the current character from the buffer
-    buffer = buffer.slice(available, buffer.length);
-
-    // get the character that was split
-    charStr = this.charBuffer.slice(0, this.charLength).toString(this.encoding);
-
-    // CESU-8: lead surrogate (D800-DBFF) is also the incomplete character
-    var charCode = charStr.charCodeAt(charStr.length - 1);
-    if (charCode >= 0xD800 && charCode <= 0xDBFF) {
-      this.charLength += this.surrogateSize;
-      charStr = '';
-      continue;
-    }
-    this.charReceived = this.charLength = 0;
-
-    // if there are no more bytes in this buffer, just emit our char
-    if (buffer.length === 0) {
-      return charStr;
-    }
-    break;
-  }
-
-  // determine and set charLength / charReceived
-  this.detectIncompleteChar(buffer);
-
-  var end = buffer.length;
-  if (this.charLength) {
-    // buffer the incomplete character bytes we got
-    buffer.copy(this.charBuffer, 0, buffer.length - this.charReceived, end);
-    end -= this.charReceived;
-  }
-
-  charStr += buffer.toString(this.encoding, 0, end);
-
-  var end = charStr.length - 1;
-  var charCode = charStr.charCodeAt(end);
-  // CESU-8: lead surrogate (D800-DBFF) is also the incomplete character
-  if (charCode >= 0xD800 && charCode <= 0xDBFF) {
-    var size = this.surrogateSize;
-    this.charLength += size;
-    this.charReceived += size;
-    this.charBuffer.copy(this.charBuffer, size, 0, size);
-    buffer.copy(this.charBuffer, 0, 0, size);
-    return charStr.substring(0, end);
-  }
-
-  // or just emit the charStr
-  return charStr;
-};
-
-// detectIncompleteChar determines if there is an incomplete UTF-8 character at
-// the end of the given buffer. If so, it sets this.charLength to the byte
-// length that character, and sets this.charReceived to the number of bytes
-// that are available for this character.
-StringDecoder.prototype.detectIncompleteChar = function (buffer) {
-  // determine how many bytes we have to check at the end of this buffer
-  var i = buffer.length >= 3 ? 3 : buffer.length;
-
-  // Figure out if one of the last i bytes of our buffer announces an
-  // incomplete char.
-  for (; i > 0; i--) {
-    var c = buffer[buffer.length - i];
-
-    // See http://en.wikipedia.org/wiki/UTF-8#Description
-
-    // 110XXXXX
-    if (i == 1 && c >> 5 == 0x06) {
-      this.charLength = 2;
-      break;
-    }
-
-    // 1110XXXX
-    if (i <= 2 && c >> 4 == 0x0E) {
-      this.charLength = 3;
-      break;
-    }
-
-    // 11110XXX
-    if (i <= 3 && c >> 3 == 0x1E) {
-      this.charLength = 4;
-      break;
-    }
-  }
-  this.charReceived = i;
-};
-
-StringDecoder.prototype.end = function (buffer) {
-  var res = '';
-  if (buffer && buffer.length) res = this.write(buffer);
-
-  if (this.charReceived) {
-    var cr = this.charReceived;
-    var buf = this.charBuffer;
-    var enc = this.encoding;
-    res += buf.slice(0, cr).toString(enc);
-  }
-
-  return res;
-};
-
-function passThroughWrite(buffer) {
-  return buffer.toString(this.encoding);
-}
-
-function utf16DetectIncompleteChar(buffer) {
-  this.charReceived = buffer.length % 2;
-  this.charLength = this.charReceived ? 2 : 0;
-}
-
-function base64DetectIncompleteChar(buffer) {
-  this.charReceived = buffer.length % 3;
-  this.charLength = this.charReceived ? 3 : 0;
-}
-
-/***/ }),
-/* 217 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-// a transform stream is a readable/writable stream where you do
-// something with the data.  Sometimes it's called a "filter",
-// but that's not a great name for it, since that implies a thing where
-// some bits pass through, and others are simply ignored.  (That would
-// be a valid example of a transform, of course.)
-//
-// While the output is causally related to the input, it's not a
-// necessarily symmetric or synchronous transformation.  For example,
-// a zlib stream might take multiple plain-text writes(), and then
-// emit a single compressed chunk some time in the future.
-//
-// Here's how this works:
-//
-// The Transform stream has all the aspects of the readable and writable
-// stream classes.  When you write(chunk), that calls _write(chunk,cb)
-// internally, and returns false if there's a lot of pending writes
-// buffered up.  When you call read(), that calls _read(n) until
-// there's enough pending readable data buffered up.
-//
-// In a transform stream, the written data is placed in a buffer.  When
-// _read(n) is called, it transforms the queued up data, calling the
-// buffered _write cb's as it consumes chunks.  If consuming a single
-// written chunk would result in multiple output chunks, then the first
-// outputted bit calls the readcb, and subsequent chunks just go into
-// the read buffer, and will cause it to emit 'readable' if necessary.
-//
-// This way, back-pressure is actually determined by the reading side,
-// since _read has to be called to start processing a new chunk.  However,
-// a pathological inflate type of transform can cause excessive buffering
-// here.  For example, imagine a stream where every byte of input is
-// interpreted as an integer from 0-255, and then results in that many
-// bytes of output.  Writing the 4 bytes {ff,ff,ff,ff} would result in
-// 1kb of data being output.  In this case, you could write a very small
-// amount of input, and end up with a very large amount of output.  In
-// such a pathological inflating mechanism, there'd be no way to tell
-// the system to stop doing the transform.  A single 4MB write could
-// cause the system to run out of memory.
-//
-// However, even in such a pathological case, only a single written chunk
-// would be consumed, and then the rest would wait (un-transformed) until
-// the results of the previous transformed chunk were consumed.
-
-
-
-module.exports = Transform;
-
-var Duplex = __webpack_require__(200);
-
-/*<replacement>*/
-var util = __webpack_require__(203);
-util.inherits = __webpack_require__(202);
-/*</replacement>*/
-
-util.inherits(Transform, Duplex);
-
-function TransformState(stream) {
-  this.afterTransform = function (er, data) {
-    return afterTransform(stream, er, data);
-  };
-
-  this.needTransform = false;
-  this.transforming = false;
-  this.writecb = null;
-  this.writechunk = null;
-  this.writeencoding = null;
-}
-
-function afterTransform(stream, er, data) {
-  var ts = stream._transformState;
-  ts.transforming = false;
-
-  var cb = ts.writecb;
-
-  if (!cb) {
-    return stream.emit('error', new Error('write callback called multiple times'));
-  }
-
-  ts.writechunk = null;
-  ts.writecb = null;
-
-  if (data !== null && data !== undefined) stream.push(data);
-
-  cb(er);
-
-  var rs = stream._readableState;
-  rs.reading = false;
-  if (rs.needReadable || rs.length < rs.highWaterMark) {
-    stream._read(rs.highWaterMark);
-  }
-}
-
-function Transform(options) {
-  if (!(this instanceof Transform)) return new Transform(options);
-
-  Duplex.call(this, options);
-
-  this._transformState = new TransformState(this);
-
-  var stream = this;
-
-  // start out asking for a readable event once data is transformed.
-  this._readableState.needReadable = true;
-
-  // we have implemented the _read method, and done the other things
-  // that Readable wants before the first _read call, so unset the
-  // sync guard flag.
-  this._readableState.sync = false;
-
-  if (options) {
-    if (typeof options.transform === 'function') this._transform = options.transform;
-
-    if (typeof options.flush === 'function') this._flush = options.flush;
-  }
-
-  // When the writable side finishes, then flush out anything remaining.
-  this.once('prefinish', function () {
-    if (typeof this._flush === 'function') this._flush(function (er, data) {
-      done(stream, er, data);
-    });else done(stream);
-  });
-}
-
-Transform.prototype.push = function (chunk, encoding) {
-  this._transformState.needTransform = false;
-  return Duplex.prototype.push.call(this, chunk, encoding);
-};
-
-// This is the part where you do stuff!
-// override this function in implementation classes.
-// 'chunk' is an input chunk.
-//
-// Call `push(newChunk)` to pass along transformed output
-// to the readable side.  You may call 'push' zero or more times.
-//
-// Call `cb(err)` when you are done with this chunk.  If you pass
-// an error, then that'll put the hurt on the whole operation.  If you
-// never call cb(), then you'll never get another chunk.
-Transform.prototype._transform = function (chunk, encoding, cb) {
-  throw new Error('_transform() is not implemented');
-};
-
-Transform.prototype._write = function (chunk, encoding, cb) {
-  var ts = this._transformState;
-  ts.writecb = cb;
-  ts.writechunk = chunk;
-  ts.writeencoding = encoding;
-  if (!ts.transforming) {
-    var rs = this._readableState;
-    if (ts.needTransform || rs.needReadable || rs.length < rs.highWaterMark) this._read(rs.highWaterMark);
-  }
-};
-
-// Doesn't matter what the args are here.
-// _transform does all the work.
-// That we got here means that the readable side wants more data.
-Transform.prototype._read = function (n) {
-  var ts = this._transformState;
-
-  if (ts.writechunk !== null && ts.writecb && !ts.transforming) {
-    ts.transforming = true;
-    this._transform(ts.writechunk, ts.writeencoding, ts.afterTransform);
-  } else {
-    // mark that we need a transform, so that any data that comes in
-    // will get processed, now that we've asked for it.
-    ts.needTransform = true;
-  }
-};
-
-Transform.prototype._destroy = function (err, cb) {
-  var _this = this;
-
-  Duplex.prototype._destroy.call(this, err, function (err2) {
-    cb(err2);
-    _this.emit('close');
-  });
-};
-
-function done(stream, er, data) {
-  if (er) return stream.emit('error', er);
-
-  if (data !== null && data !== undefined) stream.push(data);
-
-  // if there's nothing in the write buffer, then that means
-  // that nothing more will ever be provided
-  var ws = stream._writableState;
-  var ts = stream._transformState;
-
-  if (ws.length) throw new Error('Calling transform done when ws.length != 0');
-
-  if (ts.transforming) throw new Error('Calling transform done when still transforming');
-
-  return stream.push(null);
-}
-
-/***/ }),
-/* 218 */
+/* 193 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -33120,7 +33027,7 @@ var LZUTF8;
         };
         AsyncCompressor.createCompressionStream = function () {
             var compressor = new LZUTF8.Compressor();
-            var NodeStream = __webpack_require__(212);
+            var NodeStream = __webpack_require__(147);
             var compressionStream = new NodeStream.Transform({ decodeStrings: true, highWaterMark: 65536 });
             compressionStream._transform = function (data, encoding, done) {
                 var buffer;
@@ -33195,7 +33102,7 @@ var LZUTF8;
         };
         AsyncDecompressor.createDecompressionStream = function () {
             var decompressor = new LZUTF8.Decompressor();
-            var NodeStream = __webpack_require__(212);
+            var NodeStream = __webpack_require__(147);
             var decompressionStream = new NodeStream.Transform({ decodeStrings: true, highWaterMark: 65536 });
             decompressionStream._transform = function (data, encoding, done) {
                 var buffer;
@@ -34401,10 +34308,10 @@ var LZUTF8;
     }
     LZUTF8.decodeBinaryString = decodeBinaryString;
 })(LZUTF8 || (LZUTF8 = {}));
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11), __webpack_require__(168)(module), __webpack_require__(201), __webpack_require__(204).Buffer, __webpack_require__(211).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(25)(module), __webpack_require__(6), __webpack_require__(16).Buffer, __webpack_require__(146).setImmediate))
 
 /***/ }),
-/* 219 */
+/* 194 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -34524,7 +34431,7 @@ function fromByteArray(uint8) {
 }
 
 /***/ }),
-/* 220 */
+/* 195 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -34616,7 +34523,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 };
 
 /***/ }),
-/* 221 */
+/* 196 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -34804,16 +34711,16 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
     attachTo.setImmediate = setImmediate;
     attachTo.clearImmediate = clearImmediate;
 })(typeof self === "undefined" ? typeof global === "undefined" ? undefined : global : self);
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(201), __webpack_require__(11)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6), __webpack_require__(5)))
 
 /***/ }),
-/* 222 */
+/* 197 */
 /***/ (function(module, exports) {
 
 /* (ignored) */
 
 /***/ }),
-/* 223 */
+/* 198 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -34827,7 +34734,7 @@ function _classCallCheck(instance, Constructor) {
   }
 }
 
-var Buffer = __webpack_require__(208).Buffer;
+var Buffer = __webpack_require__(22).Buffer;
 /*</replacement>*/
 
 function copyBuffer(src, target, offset) {
@@ -34897,7 +34804,7 @@ module.exports = function () {
 }();
 
 /***/ }),
-/* 224 */
+/* 199 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -34969,10 +34876,10 @@ function config(name) {
   if (null == val) return false;
   return String(val).toLowerCase() === 'true';
 }
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(201)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
 
 /***/ }),
-/* 225 */
+/* 200 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -35005,11 +34912,11 @@ function config(name) {
 
 module.exports = PassThrough;
 
-var Transform = __webpack_require__(217);
+var Transform = __webpack_require__(152);
 
 /*<replacement>*/
-var util = __webpack_require__(203);
-util.inherits = __webpack_require__(202);
+var util = __webpack_require__(12);
+util.inherits = __webpack_require__(7);
 /*</replacement>*/
 
 util.inherits(PassThrough, Transform);
@@ -35025,40 +34932,40 @@ PassThrough.prototype._transform = function (chunk, encoding, cb) {
 };
 
 /***/ }),
-/* 226 */
+/* 201 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-module.exports = __webpack_require__(209);
+module.exports = __webpack_require__(23);
 
 /***/ }),
-/* 227 */
+/* 202 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-module.exports = __webpack_require__(200);
+module.exports = __webpack_require__(4);
 
 /***/ }),
-/* 228 */
+/* 203 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-module.exports = __webpack_require__(207).Transform;
+module.exports = __webpack_require__(21).Transform;
 
 /***/ }),
-/* 229 */
+/* 204 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-module.exports = __webpack_require__(207).PassThrough;
+module.exports = __webpack_require__(21).PassThrough;
 
 /***/ })
 /******/ ]);

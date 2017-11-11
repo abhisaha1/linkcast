@@ -1,4 +1,4 @@
-import { request } from "./request";
+import { request } from "../lib/request";
 import { deepFind, escape } from "./common";
 
 export const fetchItems = (state, actions) => ({ stateKey, tab_id, q }) => {
@@ -102,24 +102,42 @@ export const fetchComments = (state, actions) => ({ item, model, key }) => {
 export const handleFavourite = (state, actions) => ({ e, key }) => {
     let model = e.target.parentElement.closest("[model]").model;
     let item = deepFind(state, model).data.rows[key];
-    let favourite = parseInt(item.favourite);
-    item.favourite = favourite ? 0 : 1;
+    let favourite = !parseInt(item.favourite);
+    item.favourite = favourite ? 1 : 0;
+
+    let tabs = ["mainNav.tabs.feed", "linkTabs.tabs.sent"];
+
+    tabs.forEach(tab => {
+        deepFind(state, tab).data.rows.forEach((sent, idx, arr) => {
+            if (sent.id == item.id) {
+                arr[idx].favourite = favourite ? 1 : 0;
+                return;
+            }
+        });
+    });
     let [root] = model.split(".");
     if (root == "modals") {
         state[root].notification.data.rows[key] = item;
-    } else {
-        state[root].tabs[state[root].active].data.rows[key] = item;
     }
     let params = {
         queryParams: {
             chrome_id: state.user.data.chrome_id,
             item_id: item.id,
-            action: favourite ? "removeFromFavourite" : "addToFavourite"
+            action: favourite ? "addToFavourite" : "removeFromFavourite"
         }
     };
     _gaq.push(["_trackEvent", "clicked", "favourite"]);
     request(params).then(result => {
         if (result.flag) {
+            let favData = state.linkTabs.tabs.favourites.data.rows;
+            if (favourite) {
+                favData.push(item);
+            } else {
+                favData = favData.filter(fav => {
+                    return fav.id != item.id;
+                });
+            }
+            state.linkTabs.tabs.favourites.data.rows = favData;
             actions.updateState(state);
         }
     });

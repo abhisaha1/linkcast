@@ -2,18 +2,22 @@ const path = require("path");
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const BabiliPlugin = require("babili-webpack-plugin");
 const webpack = require("webpack");
+const config = require("../app.config");
 
-const extractSass1 = new ExtractTextPlugin({
+const extractPcss1 = new ExtractTextPlugin({
     filename: "../public/css/style.css"
 });
-const extractSass2 = new ExtractTextPlugin({
+const extractPcss2 = new ExtractTextPlugin({
     filename: "../public/css/dark.css"
 });
 
 const plugins = [
-    extractSass1,
-    extractSass2,
-    new webpack.optimize.ModuleConcatenationPlugin()
+    extractPcss1,
+    extractPcss2,
+    new webpack.optimize.ModuleConcatenationPlugin(),
+    new webpack.DefinePlugin({
+        ENDPOINT: JSON.stringify(config.dev)
+    })
 ];
 
 module.exports = function webpackStuff(env) {
@@ -21,15 +25,16 @@ module.exports = function webpackStuff(env) {
 
     return {
         devtool: "source-map",
-        entry: [
-            "./dev/src/index.js",
-            "./dev/public/scss/style.scss",
-            "./dev/public/scss/themes/dark/dark.scss"
-        ],
+        entry: {
+            popup: "./dev/src/index.js",
+            "background/background": "./dev/src/background/background.dev.js",
+            "../public/pcss/style": "./dev/public/pcss/style.pcss",
+            "../public/pcss/dark": "./dev/public/pcss/themes/dark/dark.pcss"
+        },
         output: {
             path: path.join(__dirname, "../dev/src"),
             publicPath: "src",
-            filename: "popup.js"
+            filename: "[name].js"
         },
         module: {
             rules: [
@@ -43,32 +48,29 @@ module.exports = function webpackStuff(env) {
                     include: [path.resolve(__dirname, "../")]
                 },
                 {
-                    test: /\.css$/,
-                    use: ExtractTextPlugin.extract({
-                        use: "css-loader?importLoaders=1"
+                    test: /style\.pcss/,
+                    use: extractPcss1.extract({
+                        fallback: "style-loader",
+                        use: [
+                            {
+                                loader: "css-loader",
+                                options: { importLoaders: 1 }
+                            },
+                            "postcss-loader"
+                        ]
                     })
                 },
                 {
-                    test: /\.scss$/,
-                    include: path.resolve(__dirname, "../dev/public/scss"),
-                    exclude: path.resolve(
-                        __dirname,
-                        "../dev/public/scss/themes"
-                    ),
-                    use: extractSass1.extract({
+                    test: /dark\.pcss/,
+                    use: extractPcss2.extract({
                         fallback: "style-loader",
-                        use: ["css-loader", "sass-loader"]
-                    })
-                },
-                {
-                    test: /\.scss$/,
-                    include: path.resolve(
-                        __dirname,
-                        "../dev/public/scss/themes/dark/"
-                    ),
-                    use: extractSass2.extract({
-                        fallback: "style-loader",
-                        use: ["css-loader", "sass-loader"]
+                        use: [
+                            {
+                                loader: "css-loader",
+                                options: { importLoaders: 1 }
+                            },
+                            "postcss-loader"
+                        ]
                     })
                 },
                 {

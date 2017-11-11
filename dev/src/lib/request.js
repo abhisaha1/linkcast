@@ -1,5 +1,3 @@
-import config from "../config.json";
-
 const queryParams = params => {
     const esc = encodeURIComponent;
     return Object.keys(params)
@@ -8,7 +6,7 @@ const queryParams = params => {
 };
 
 export const request = (options = {}) => {
-    let url = config.endpoint;
+    let url = ENDPOINT;
     options = Object.assign(
         {
             credentials: "same-origin",
@@ -31,7 +29,9 @@ export const request = (options = {}) => {
         }
         delete options.queryParams;
     }
-    return fetch(url, options).then(data => data.json());
+    return fetch(url, options).then(data => {
+        return data.json();
+    });
 };
 
 const getFormData = params => {

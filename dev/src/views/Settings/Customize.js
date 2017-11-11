@@ -49,7 +49,7 @@ const Customize = ({ state, actions }) => {
                         </div>
                     </div>
                 </div>
-                <div class="form-group" id="persist-setting">
+                <div class="form-group hide" id="persist-setting">
                     <label class="control-label col-sm-3">Allow offline</label>
                     <div class="col-sm-9">
                         <div class="btn-group" data-toggle="buttons">

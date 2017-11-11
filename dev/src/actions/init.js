@@ -17,7 +17,7 @@ const observeSizeChanges = () => {
 
 export const init = (state, actions) => data => {
     setTimeout(observeSizeChanges, 100);
-
+    state.modals.notification.open = false;
     if (localStorage.chrome_id) {
         actions.fetchUserInfo({
             chrome_id: localStorage.chrome_id,
@@ -31,11 +31,10 @@ export const init = (state, actions) => data => {
                     actions.setVersion(version);
                 }
                 actions.onTabChange({
-                    stateKey: "notificationTabs",
-                    tab_id: "notLinks"
+                    stateKey: "mainNav",
+                    tab_id: state.mainNav.active
                 });
                 actions.fetchGroups();
-                actions.detectSite();
 
                 state.user.customize.sound = parseInt(Storage.get("sound"));
                 state.user.customize.notification = parseInt(

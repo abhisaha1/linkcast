@@ -1,4 +1,4 @@
-import { request } from "./request";
+import { request } from "../lib/request";
 
 export const navClicked = (state, actions) => data => {
     let id = data.currentTarget.dataset.id;

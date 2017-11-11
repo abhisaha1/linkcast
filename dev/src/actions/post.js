@@ -1,4 +1,4 @@
-import { request } from "./request";
+import { request } from "../lib/request";
 
 export const doPost = (state, actions) => data => {
     state.post = Object.assign(state.post, data);
@@ -19,9 +19,17 @@ export const doPost = (state, actions) => data => {
         queryParams: data
     };
     request(params).then(result => {
+        _gaq.push(["_trackEvent", "posted", "link"]);
         state.post.posting = false;
         state.groups.defaultGroup = data.group;
         state.mainNav.active = "feed";
+        state.post = {
+            title: "",
+            url: "",
+            comments: "",
+            thumbnail: "",
+            posting: false
+        };
         actions.fetchItems({ stateKey: "mainNav", tab_id: "feed" });
         actions.updateState(state);
     });
@@ -36,9 +44,7 @@ export const detectSite = (state, actions) => {
     if (chrome.tabs) {
         chrome.tabs.query({ currentWindow: true, active: true }, tabs => {
             //var url = tabs[0].url;
-
             let payload = { action: "get-meta" };
-
             chrome.extension
                 .getBackgroundPage()
                 .retrieveSiteMeta(payload, data => {

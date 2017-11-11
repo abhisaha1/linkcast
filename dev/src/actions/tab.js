@@ -1,5 +1,5 @@
 export const onTabChange = (state, actions) => ({ stateKey, tab_id }) => {
-    if (state[stateKey].tabs[tab_id].isFetching) {
+    if (state[stateKey].tabs[tab_id].hasOwnProperty("isFetching")) {
         state[stateKey].tabs[tab_id].isFetching = true;
     }
     state.message = "";
@@ -24,6 +24,7 @@ export const onTabChange = (state, actions) => ({ stateKey, tab_id }) => {
             break;
         case "search":
             state[stateKey].tabs[tab_id].q = "";
+            state[stateKey].tabs[tab_id].isFetching = false;
             state[stateKey].tabs[tab_id].data = {
                 rows: [],
                 page: 1,
@@ -53,6 +54,10 @@ export const onTabChange = (state, actions) => ({ stateKey, tab_id }) => {
             actions.fetchAllGroups(params);
             break;
         case "manage":
+            break;
+        case "post":
+            actions.detectSite();
+            break;
         //actions.fetchAllGroups(params);
     }
 

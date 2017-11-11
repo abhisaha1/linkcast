@@ -238,8 +238,7 @@ header #img-logo {
     padding: 16px 24px;
 }
 .footer {
-    height: 40px;
-    padding: 8px;
+    padding: 16px;
     border-bottom: 1px solid #393939;
 }
 footer#footer {
@@ -406,12 +405,18 @@ h3 {
 }
 
 .scroll {
-    height: 360px;
+    height: 410px;
     overflow-y: scroll;
 }
 
 .notLinks .scroll {
-    height: 300px;
+    height: 410px;
+}
+#group-users-block.scroll {
+    height: 368px;
+}
+.groups .scroll {
+    height: 380px;
 }
 .main-nav .notLinks .tab-pane,
 .main-nav .notGroups .tab-pane {
@@ -429,7 +434,6 @@ select:focus {
 }
 .footer .groups-dd {
     margin-left: 8px;
-    border-color: var(--border);
 }
 
 #instructions {
@@ -561,43 +565,6 @@ input.search-box {
     outline: none;
 }
 
-body {
-    .tab-content {
-        background: red !important;
-    }
-}
-
-/*Halloween*/
-.halloween .notification {
-    background: url(../images/halloween.webp);
-    background-repeat: no-repeat;
-    background-size: 200px;
-    background-position: 600px 290px;
-    animation: swingImage 20s infinite;
-}
-.halloween .container {
-    background: #000;
-}
-
-@keyframes swingImage {
-    0% {
-        opacity: 0.8;
-    }
-    25% {
-        background-position: 600px 200px;
-    }
-    50% {
-        background-position: 600px 150px;
-    }
-    75% {
-        background-position: 600px 60px;
-    }
-    90% {
-        background-position: 600px 280px;
-        opacity: 1;
-    }
-}
-
 .background {
     position: absolute;
     overflow: hidden;
@@ -606,7 +573,7 @@ body {
     height: 430px;
 }
 .bg-image {
-    background: url(src../../../images/bg.jpg);
+    background: url(src../../../images/bg.jpg) #000;
     background-size: cover;
     background-repeat: no-repeat;
 }

@@ -7,18 +7,17 @@ import MyLinks from "./MyLinks";
 import Groups from "./Groups";
 import Settings from "./Settings";
 import Search from "./Search";
-import request from "../actions/request";
 import ProfileModal from "./Modals/ProfileModal";
 import InviteModal from "./Modals/InviteModal";
 import ForgotPasswordModal from "./Modals/ForgotPasswordModal";
 import EditCommentModal from "./Modals/EditCommentModal";
-import events from "../events";
-
+import dark from "../../public/pcss/themes/dark/dark.pcss";
+import style from "../../public/pcss/style.pcss";
 window.moment = require("moment");
 require("../lib/jquery");
 require("../lib/token-input");
 require("./Track");
-let loaded = false;
+
 const main = (state, actions) => {
     let data = null;
     const appHeight = document.body.clientHeight;

@@ -119,8 +119,6 @@ const settingsTabs = {
         },
         about: {
             name: "About",
-            isFetching: false,
-            loadMore: false,
             data: []
         }
     },
@@ -148,15 +146,7 @@ const groupTabs = {
             }
         },
         create: {
-            name: "Create",
-            isFetching: false,
-            loadMore: false,
-            data: {
-                rows: [],
-                page: 1,
-                pages: 0,
-                total: 0
-            }
+            name: "Create"
         }
     },
     active: "public"
@@ -199,7 +189,6 @@ export default {
         profile: {
             open: false,
             links: {
-                isFetching: false,
                 data: {
                     rows: [],
                     page: 0,

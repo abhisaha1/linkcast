@@ -103,7 +103,7 @@ const Info = ({ state, actions, loggedIn }) => {
                                 />
                             </div>
                         </div>
-                        <div class="col-xs-offset-3">
+                        <div class="col-xs-offset-3 col-xs-12">
                             <button
                                 type="submit"
                                 style="margin-left: 14px;"

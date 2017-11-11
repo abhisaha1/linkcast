@@ -1,4 +1,4 @@
-import { request } from "./request";
+import { request } from "../lib/request";
 import { trigger } from "../lib/utils";
 
 // fetch all groups of logged in user

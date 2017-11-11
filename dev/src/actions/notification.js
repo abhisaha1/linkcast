@@ -1,4 +1,4 @@
-import { request } from "./request";
+import { request } from "../lib/request";
 
 export const fetchNotifications = (state, actions) => tab_id => {
     let tab = state.notificationTabs.tabs[tab_id];

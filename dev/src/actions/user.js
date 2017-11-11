@@ -1,4 +1,4 @@
-import { request } from "./request";
+import { request } from "../lib/request";
 import { validateEmail, getRandomToken, Storage } from "../actions/common";
 
 export const saveProfile = (state, actions) => ({ e, data }) => {

@@ -17,7 +17,11 @@ const PublicGroups = ({ actions, state, tab }) => {
                 if you have the permission.
             </p>
             <div class="scroll">
-                <table style="margin-bottom:0px;" class="table table-hover">
+                <table
+                    style="margin-bottom:0px;"
+                    class="table table-hover"
+                    id="groups-table"
+                >
                     <thead>
                         <tr>
                             <th width="160">Name</th>

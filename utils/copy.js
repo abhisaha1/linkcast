@@ -4,7 +4,7 @@ var fs = require("fs");
 var path = require("path");
 
 module.exports = function(rootPath) {
-    console.log("copying");
+    console.log("copying files from dev to build");
     return new CopyWebpackPlugin(
         [
             // {output}/file.txt
