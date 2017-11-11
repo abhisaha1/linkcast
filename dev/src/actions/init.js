@@ -6,7 +6,7 @@ let $bgEle, $container;
 const changeBackgroundSize = () => {
     $bgEle.forEach(ele => {
         ele.style.width = $container.offsetWidth + "px";
-        ele.style.height = $container.offsetHeight + "px";
+        ele.style.minHeight = $container.offsetHeight + "px";
     });
 };
 const observeSizeChanges = () => {

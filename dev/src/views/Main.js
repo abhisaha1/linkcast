@@ -11,8 +11,10 @@ import ProfileModal from "./Modals/ProfileModal";
 import InviteModal from "./Modals/InviteModal";
 import ForgotPasswordModal from "./Modals/ForgotPasswordModal";
 import EditCommentModal from "./Modals/EditCommentModal";
+
 import dark from "../../public/pcss/themes/dark/dark.pcss";
 import style from "../../public/pcss/style.pcss";
+
 window.moment = require("moment");
 require("../lib/jquery");
 require("../lib/token-input");

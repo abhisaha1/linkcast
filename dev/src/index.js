@@ -19,5 +19,5 @@ setTimeout(() => {
         Storage.set({ offline: 0 });
     }
     appActions.init();
-    document.querySelector("#app").style.height = "560px";
-}, 100);
+    document.querySelector("#app").style.minHeight = "560px";
+}, 300);

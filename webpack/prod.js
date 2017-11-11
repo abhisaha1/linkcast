@@ -2,14 +2,15 @@ const path = require("path");
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const BabiliPlugin = require("babili-webpack-plugin");
 const webpack = require("webpack");
-var publisher = require("../utils/publisher");
-var tokens = require("../tokens");
-var pack = require("../utils/pack");
-var CopyWebpackPlugin = require("copy-webpack-plugin");
+const publisher = require("../utils/publisher");
+const CleanWebpackPlugin = require("clean-webpack-plugin");
+const tokens = require("../tokens");
+const pack = require("../utils/pack");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 const config = require("../app.config");
-var exec = require("child_process").exec;
+const exec = require("child_process").exec;
 const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin");
-var postCSSConfig = require("../postcss.config");
+const postCSSConfig = require("../postcss.config");
 
 const extractPcss1 = new ExtractTextPlugin({
     filename: "../public/css/style.css"
@@ -18,6 +19,9 @@ const extractPcss2 = new ExtractTextPlugin({
     filename: "../public/css/dark.css"
 });
 const plugins = [
+    new CleanWebpackPlugin([path.resolve(__dirname, "../build")], {
+        allowExternal: true
+    }),
     new CopyWebpackPlugin(
         [
             {
@@ -30,7 +34,7 @@ const plugins = [
             { context: "dev", from: "options.html", to: "../" }
         ],
         {
-            ignore: ["*.pcss", "pcss/**/*", "css/**/*"]
+            ignore: ["*.pcss", "pcss/**/*", "css/**/*", "fonts/**/*"]
         }
     ),
     extractPcss1,
@@ -131,7 +135,10 @@ module.exports = function webpackStuff(env) {
                     test: /\.(jpg|jpe|jpeg|svg)(\?.*$|$)/,
                     use: [
                         {
-                            loader: "file-loader?name=../images/[name].[ext]"
+                            loader: "file-loader",
+                            options: {
+                                name: "../images/[name].[ext]"
+                            }
                         }
                     ]
                 },
@@ -139,7 +146,11 @@ module.exports = function webpackStuff(env) {
                     test: /\.(woff|woff2|eot|ttf)(\?.*$|$)/,
                     use: [
                         {
-                            loader: "file-loader?name=../fonts/[name].[ext]"
+                            loader: "file-loader",
+                            options: {
+                                name: "../fonts/[name].[ext]",
+                                publicPath: "public"
+                            }
                         }
                     ]
                 }

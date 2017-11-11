@@ -7842,13 +7842,13 @@ function nextTick(fn, arg1, arg2, arg3) {
 /* 18 */
 /***/ (function(module, exports) {
 
-// removed by extract-text-webpack-plugin
+throw new Error("Module build failed: ModuleBuildError: Module build failed: Error: ENOENT: no such file or directory, open '/Users/ajaxtown/Sites/localhost/linkcast/dev/public/pcss/themes/dark/dark.pcss'\n    at Error (native)\n    at runLoaders (/Users/ajaxtown/Sites/localhost/linkcast/node_modules/webpack/lib/NormalModule.js:195:19)\n    at /Users/ajaxtown/Sites/localhost/linkcast/node_modules/loader-runner/lib/LoaderRunner.js:364:11\n    at /Users/ajaxtown/Sites/localhost/linkcast/node_modules/loader-runner/lib/LoaderRunner.js:200:19\n    at /Users/ajaxtown/Sites/localhost/linkcast/node_modules/enhanced-resolve/lib/CachedInputFileSystem.js:70:14\n    at _combinedTickCallback (internal/process/next_tick.js:67:7)\n    at process._tickCallback (internal/process/next_tick.js:98:9)");
 
 /***/ }),
 /* 19 */
 /***/ (function(module, exports) {
 
-// removed by extract-text-webpack-plugin
+throw new Error("Module build failed: ModuleBuildError: Module build failed: Error: ENOENT: no such file or directory, open '/Users/ajaxtown/Sites/localhost/linkcast/dev/public/pcss/style.pcss'\n    at Error (native)\n    at runLoaders (/Users/ajaxtown/Sites/localhost/linkcast/node_modules/webpack/lib/NormalModule.js:195:19)\n    at /Users/ajaxtown/Sites/localhost/linkcast/node_modules/loader-runner/lib/LoaderRunner.js:364:11\n    at /Users/ajaxtown/Sites/localhost/linkcast/node_modules/loader-runner/lib/LoaderRunner.js:200:19\n    at /Users/ajaxtown/Sites/localhost/linkcast/node_modules/enhanced-resolve/lib/CachedInputFileSystem.js:70:14\n    at _combinedTickCallback (internal/process/next_tick.js:67:7)\n    at process._tickCallback (internal/process/next_tick.js:98:9)");
 
 /***/ }),
 /* 20 */
@@ -22501,8 +22501,8 @@ setTimeout(function () {
         _common.Storage.set({ offline: 0 });
     }
     appActions.init();
-    document.querySelector("#app").style.height = "560px";
-}, 100);
+    document.querySelector("#app").style.minHeight = "560px";
+}, 300);
 
 /***/ }),
 /* 154 */
@@ -22617,7 +22617,7 @@ var $bgEle = void 0,
 var changeBackgroundSize = function changeBackgroundSize() {
     $bgEle.forEach(function (ele) {
         ele.style.width = $container.offsetWidth + "px";
-        ele.style.height = $container.offsetHeight + "px";
+        ele.style.minHeight = $container.offsetHeight + "px";
     });
 };
 var observeSizeChanges = function observeSizeChanges() {
