@@ -51,22 +51,22 @@ Click `Load Unpacked Extensions` and add the `dev` directory
 
 ## Screenshots
 #### Notification
-<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/notification.png" width="600">
+<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/notification.jpg" width="600">
 
 #### Feed
-<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/feed.png" width="600">
+<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/feed.jpg" width="600">
 
 #### Groups
-<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/groups.png" width="600">
+<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/groups.jpg" width="600">
 
 #### Manage Groups (Admin)
-<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/manage.png" width="600">
+<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/manage.jpg" width="600">
 
 #### Profile
-<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/profile.png" width="600">
+<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/profile.jpg" width="600">
 
-#### Customize
-<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/customize.png" width="600">
+#### Your Links
+<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/customize.sent" width="600">
 
 
 ## Contribute

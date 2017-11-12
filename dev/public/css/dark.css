@@ -136,6 +136,9 @@ label.radio-inline input[type="radio"]:checked ~ .circle {
   font-size: 11px;
   font-style: italic;
 }
+.notification-item .comment {
+  color: #FFF;
+}
 .notification-item .fa-heart {
   color: #b33660;
 }
