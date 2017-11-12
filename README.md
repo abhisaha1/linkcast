@@ -66,7 +66,7 @@ Click `Load Unpacked Extensions` and add the `dev` directory
 <img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/profile.jpg" width="600">
 
 #### Your Links
-<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/customize.sent" width="600">
+<img src="https://raw.githubusercontent.com/ajaxtown/linkcast/master/screenshots/sent.jpg" width="600">
 
 
 ## Contribute
