@@ -80,7 +80,7 @@ export const setDefaultGroup = (state, actions) => index => {
         total: 0
     };
     actions.fetchItems({ stateKey: "mainNav", tab_id: "feed" });
-    state.message = "Default group set to " + state.groups.data[index].name;
+    actions.setMessage("Default group set to " + state.groups.data[index].name);
 
     actions.updateState(state);
 };
@@ -226,7 +226,7 @@ export const saveEditedGroup = (state, actions) => data => {
     };
 
     request(params).then(result => {
-        state.message = result.msg;
+        actions.setMessage(result.msg);
         actions.updateState(state);
     });
 };
@@ -245,7 +245,7 @@ export const changePublicRights = (state, actions) => data => {
     request(params).then(result => {
         if (result.flag == 1) {
             state.groupUsers.data[data.index].group_rights = data.group_rights;
-            state.message = result.msg;
+            actions.setMessage(result.msg);
             actions.updateState(state);
         }
     });
@@ -265,7 +265,7 @@ export const removeUserFromGroup = (state, actions) => data => {
     request(params).then(result => {
         if (result.flag == 1) {
             delete state.groupUsers.data[data.index];
-            state.message = result.msg;
+            actions.setMessage(result.msg);
             actions.updateState(state);
         }
     });
@@ -273,7 +273,7 @@ export const removeUserFromGroup = (state, actions) => data => {
 
 export const createNewGroup = (state, actions) => data => {
     if (data.name.length == 0 || data.desc.length == 0) {
-        state.message = "All fields are mandatory";
+        actions.setMessage("All fields are mandatory");
         actions.updateState(state);
     }
 
@@ -292,7 +292,7 @@ export const createNewGroup = (state, actions) => data => {
     };
 
     request(params).then(result => {
-        state.message = result.msg;
+        actions.setMessage(result.msg);
         if (result.flag == 1) {
             state.groupTabs.active = "manage";
             actions.fetchAllGroups();

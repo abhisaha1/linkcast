@@ -1,4 +1,4 @@
 module.exports = {
-    dev: "http://playground.ajaxtown.com/linkcast/12-staging/index.php",
+    dev: "http://localhost:8000",
     prod: "http://playground.ajaxtown.com/linkcast/12/index.php"
 };

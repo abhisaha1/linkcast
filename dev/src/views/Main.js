@@ -24,7 +24,7 @@ const main = (state, actions) => {
     let data = null;
     const appHeight = document.body.clientHeight;
     const msgTopSpace = appHeight - 80;
-    actions.resetMessage();
+
     switch (state.mainNav.active) {
         case "notification":
             data = (
@@ -101,7 +101,7 @@ const main = (state, actions) => {
         default:
             console.log(state);
     }
-
+    const msgVisibility = state.message == "" ? "hide" : "";
     return (
         <div class="container">
             <TabComponent
@@ -130,15 +130,15 @@ const main = (state, actions) => {
                     name="forgotPassword"
                 />
             )}
-            {state.message != "" && (
-                <div
-                    id="msg"
-                    class="alert alert-warning"
-                    style={{ top: msgTopSpace + "px" }}
-                >
-                    {state.message}
-                </div>
-            )}
+
+            <div
+                id="msg"
+                class={`alert alert-warning ${msgVisibility}`}
+                style={{ top: msgTopSpace + "px" }}
+            >
+                {state.message}
+            </div>
+
             <div class="preloader center processor invisible">
                 <div
                     class="progress-bar progress-bar-striped active"
@@ -149,7 +149,10 @@ const main = (state, actions) => {
                     style="width:100%"
                 />
             </div>
-            <footer id="footer">Linkcast v{state.version}</footer>
+            <footer id="footer">
+                <span class="content-left" />
+                <span class="content-right">Linkcast v{state.version}</span>
+            </footer>
         </div>
     );
 };

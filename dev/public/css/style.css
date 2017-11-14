@@ -9281,9 +9281,24 @@ header #img-logo {
     overflow-y: scroll;
 }
 /*------------------------------PROFILE-------------------------------------*/
+.user-groups-list .group-title {
+    text-transform: uppercase;
+    font-size: 12px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 2px;
+}
 .groups-wrapper .group-item {
     text-transform: uppercase;
     font-size: 11px;
+}
+.groups-wrapper span.profile-group {
+    margin-right: 4px;
+}
+.groups-wrapper span.profile-group:after {
+    content: ", ";
+}
+.groups-wrapper span.profile-group:last-child:after {
+    content: "";
 }
 /*------------------------------MAIN NAV-------------------------------------*/
 .main-nav.nav > li > a {
@@ -9311,7 +9326,7 @@ header #img-logo {
     margin: auto;
     left: 50%;
     margin-left: -200px;
-    padding: 6px;
+    padding: 4px;
     text-align: center;
     z-index: 1100;
 }
@@ -9368,9 +9383,9 @@ footer#footer {
     display: flex;
     position: relative;
     padding: 8px;
-    -webkit-box-pack: end;
-        -ms-flex-pack: end;
-            justify-content: flex-end;
+    -webkit-box-pack: justify;
+        -ms-flex-pack: justify;
+            justify-content: space-between;
     border-top: 1px solid #393939;
 }
 /* notification */

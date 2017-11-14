@@ -3,12 +3,19 @@ import Links from "../Links/Links";
 import ModalHoc from "../Common/ModalHoc";
 
 const P = ({ state, actions, onScroll, loadMore }) => {
+    let groups = <p class="profile-group">Loading..</p>;
+    if (!state.modals.profile.links.isFetching) {
+        groups = state.modals.profile.user.groups.map(group => {
+            return <span class="profile-group">{group.name}</span>;
+        });
+    }
+
     return (
         <div model="modals.profile.links" class="row">
             <div class="col-sm-3">
                 <div class="user-groups-list">
                     <h5 class="group-title">Groups</h5>
-                    <div class="groups-wrapper" />
+                    <div class="groups-wrapper">{groups}</div>
                 </div>
             </div>
             <div class="col-sm-9">

@@ -109,7 +109,7 @@ export const withdrawInvite = (state, actions) => ({ e, invite_id, index }) => {
 
 export const sendInvites = (state, actions) => {
     if (invites.length == 0) {
-        state.message = "No users to invite";
+        actions.setMessage("No users to invite");
         actions.updateState(state);
     }
 

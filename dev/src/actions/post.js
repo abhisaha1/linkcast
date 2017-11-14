@@ -1,14 +1,14 @@
 import { request } from "../lib/request";
 
-export const doPost = (state, actions) => data => {
-    state.post = Object.assign(state.post, data);
+export const doPost = (state, actions) => () => {
+    let data = Object.assign({}, state.post);
     state.post.posting = true;
     if (data.title.length == 0) {
-        state.message = "Please enter a title";
+        actions.setMessage("Please enter a title");
         return actions.updateState(state);
     }
     if (data.url.length == 0) {
-        state.message = "Please enter an url";
+        actions.setMessage("Please enter an url");
         return actions.updateState(state);
     }
     actions.updateState(state);
@@ -22,6 +22,7 @@ export const doPost = (state, actions) => data => {
         _gaq.push(["_trackEvent", "posted", "link"]);
         state.post.posting = false;
         state.groups.defaultGroup = data.group;
+        state.mainNav.tabs.feed.initialized = false;
         state.mainNav.active = "feed";
         state.post = {
             title: "",

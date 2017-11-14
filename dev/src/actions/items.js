@@ -27,7 +27,8 @@ export const fetchItems = (state, actions) => ({ stateKey, tab_id, q }) => {
     }
     request(params).then(result => {
         if (tab.initialized) {
-            result.rows.length > 0 && tab.data.rows.unshift(result.rows);
+            if (result.rows.length > 0)
+                tab.data.rows = result.rows.concat(tab.data.rows);
         } else {
             result.page = tab.data.page;
             tab.data = result;

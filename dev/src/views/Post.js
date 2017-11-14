@@ -10,7 +10,11 @@ const Post = ({ state, actions }) => {
         group: state.groups.defaultGroup
     };
     const onChange = (e, key) => {
-        params[key] = e.target.value.trim();
+        let value = e.target.value;
+        if (value.length > 0) {
+            value = value.trim();
+        }
+        params[key] = value;
 
         if (e.target.tagName == "SELECT") {
             let selectedIdx = e.target.options.selectedIndex;
@@ -20,7 +24,7 @@ const Post = ({ state, actions }) => {
     };
     const handlePost = e => {
         e.preventDefault();
-        actions.doPost(params);
+        actions.doPost();
     };
 
     return (

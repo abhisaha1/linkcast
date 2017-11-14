@@ -38,12 +38,15 @@ class ExtensionBackground {
             var userid = items.userid;
             var group = localStorage.defaultGroup;
             if (!userid || !group) return false;
+            var manifest = chrome.runtime.getManifest();
+            var version = manifest.version;
 
             let params = {
                 queryParams: {
                     group: group,
                     action: "getNotificatonUpdates",
-                    chrome_id: userid
+                    chrome_id: userid,
+                    version: version
                 }
             };
             request(params).then(data => {
@@ -56,6 +59,9 @@ class ExtensionBackground {
                 var views = chrome.extension.getViews({
                     type: "popup"
                 });
+                countData = data;
+                localStorage.lastUpdateId = parseInt(data.lastUpdateId);
+
                 if (data.count === 0 || views.length != 0) return;
 
                 chrome.browserAction.setBadgeText({
@@ -127,9 +133,6 @@ class ExtensionBackground {
                         );
                     }
                 }
-
-                countData = data;
-                localStorage.lastUpdateId = parseInt(data.lastUpdateId);
             });
         });
     }
@@ -142,7 +145,6 @@ class ExtensionBackground {
         chrome.runtime.onInstalled.addListener(details => {
             this.updateVersion();
         });
-
         /**
          * Check for updates every 2 hours
          */

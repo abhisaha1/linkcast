@@ -2,7 +2,7 @@ export const onTabChange = (state, actions) => ({ stateKey, tab_id }) => {
     if (state[stateKey].tabs[tab_id].hasOwnProperty("isFetching")) {
         state[stateKey].tabs[tab_id].isFetching = true;
     }
-    state.message = "";
+    actions.setMessage("");
     state[stateKey].active = tab_id;
     let params = { stateKey, tab_id };
     _gaq.push(["_trackPageview", "/" + state[stateKey].tabs[tab_id].name]);

@@ -16,7 +16,7 @@ export const saveProfile = (state, actions) => ({ e, data }) => {
     };
     request(params).then(result => {
         state.user.data = data;
-        state.message = result.msg;
+        actions.setMessage(result.msg);
         actions.updateState(state);
     });
 };
@@ -119,7 +119,6 @@ export const doLogin = (state, actions) => data => {
             action: "loginUser"
         }
     };
-
     if (data.nickname.length > 0 && data.password.length > 0) {
         state.user.login.requesting = true;
         actions.updateState(state);
@@ -140,6 +139,7 @@ export const doLogin = (state, actions) => data => {
                     },
                     false // dont overwrite
                 );
+                state.message = "";
                 //update the state
                 state.user.data = result.data;
                 state.user.loggedIn = true;
@@ -157,7 +157,7 @@ export const doLogin = (state, actions) => data => {
                 actions.fetchGroups();
                 actions.fetchAllGroups();
             } else {
-                state.message = result.msg;
+                actions.setMessage(result.msg);
             }
             state.user.login.requesting = false;
             state.user.login.msg = result.msg;
@@ -166,7 +166,7 @@ export const doLogin = (state, actions) => data => {
             actions.updateState(state);
         });
     } else {
-        state.message = "All fields are required";
+        actions.setMessage("All fields are required");
         actions.updateState(state);
     }
 };
@@ -200,7 +200,7 @@ export const forgotPassword = (state, actions) => {
 
 export const sendRecoveryEmail = (state, actions) => data => {
     if (data.email.length == 0) {
-        state.message = "Enter an email";
+        actions.setMessage("Enter an email");
         actions.updateState(state);
     }
     let valid = validateEmail(data.email);
@@ -215,13 +215,13 @@ export const sendRecoveryEmail = (state, actions) => data => {
         request(params).then(result => {
             if (result.flag == 1) {
                 state.modals.forgotPassword.open = false;
-                state.message = "Check your email";
+                actions.setMessage("Check your email");
             }
-            state.message = result.msg;
+            actions.setMessage(result.msg);
             actions.updateState(state);
         });
     } else {
-        state.message = "Invalid Email";
+        actions.setMessage("Invalid Email");
         actions.updateState(state);
     }
 };

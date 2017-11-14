@@ -84,7 +84,7 @@ var queryParams = function queryParams(params) {
 var request = exports.request = function request() {
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-    var url = "http://playground.ajaxtown.com/linkcast/12-staging/index.php";
+    var url = "http://localhost:8000";
     options = Object.assign({
         credentials: "same-origin",
         redirect: "error"
@@ -180,12 +180,15 @@ var ExtensionBackground = function () {
                 var userid = items.userid;
                 var group = localStorage.defaultGroup;
                 if (!userid || !group) return false;
+                var manifest = chrome.runtime.getManifest();
+                var version = manifest.version;
 
                 var params = {
                     queryParams: {
                         group: group,
                         action: "getNotificatonUpdates",
-                        chrome_id: userid
+                        chrome_id: userid,
+                        version: version
                     }
                 };
                 (0, _request.request)(params).then(function (data) {
@@ -198,6 +201,9 @@ var ExtensionBackground = function () {
                     var views = chrome.extension.getViews({
                         type: "popup"
                     });
+                    countData = data;
+                    localStorage.lastUpdateId = parseInt(data.lastUpdateId);
+
                     if (data.count === 0 || views.length != 0) return;
 
                     chrome.browserAction.setBadgeText({
@@ -259,9 +265,6 @@ var ExtensionBackground = function () {
                             chrome.notifications.create(new Date().toString(), options);
                         }
                     }
-
-                    countData = data;
-                    localStorage.lastUpdateId = parseInt(data.lastUpdateId);
                 });
             });
         }
@@ -277,7 +280,6 @@ var ExtensionBackground = function () {
             chrome.runtime.onInstalled.addListener(function (details) {
                 _this2.updateVersion();
             });
-
             /**
              * Check for updates every 2 hours
              */

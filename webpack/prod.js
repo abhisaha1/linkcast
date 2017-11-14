@@ -149,7 +149,7 @@ module.exports = function webpackStuff(env) {
                             loader: "file-loader",
                             options: {
                                 name: "../fonts/[name].[ext]",
-                                publicPath: "public"
+                                publicPath: "../"
                             }
                         }
                     ]

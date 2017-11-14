@@ -1,4 +1,5 @@
 import { request } from "../lib/request";
+let msgTimeout = null;
 
 export const navClicked = (state, actions) => data => {
     let id = data.currentTarget.dataset.id;
@@ -28,18 +29,25 @@ export const closeModal = (state, actions) => name => {
 export const updateState = (state, actions) => newState => {
     return { newState };
 };
-export const resetMessage = (state, actions) => () => {
-    setTimeout(() => {
-        if (state.message != "") {
-            state.message = "";
-            actions.updateState(state);
-        }
-    }, 3000);
+
+export const clearMessage = (state, actions) => {
+    state.message = "";
+    actions.updateState(state);
+};
+
+export const resetMessage = (state, actions) => {
+    if (state.message != "") {
+        msgTimeout = setTimeout(() => {
+            actions.clearMessage();
+        }, 3000);
+    }
 };
 
 export const setMessage = (state, actions) => message => {
+    clearTimeout(msgTimeout);
     state.message = message;
     actions.updateState(state);
+    actions.resetMessage();
 };
 
 export const setVersion = (state, actions) => version => {

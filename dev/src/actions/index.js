@@ -7,7 +7,8 @@ import {
     setVersion,
     resetMessage,
     setMessage,
-    updateState
+    updateState,
+    clearMessage
 } from "./common";
 import {
     fetchNotifications,
@@ -116,6 +117,7 @@ export default {
     rejectGroupInvite,
     saveEditedGroup,
     resetMessage,
+    clearMessage,
     setMessage,
     changePublicRights,
     removeUserFromGroup,
