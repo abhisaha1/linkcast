@@ -15,11 +15,6 @@ const Post = ({ state, actions }) => {
             value = value.trim();
         }
         params[key] = value;
-
-        if (e.target.tagName == "SELECT") {
-            let selectedIdx = e.target.options.selectedIndex;
-            params[key] = state.groups.data[selectedIdx].group_id;
-        }
         actions.setPost(params);
     };
     const handlePost = e => {
@@ -27,6 +22,7 @@ const Post = ({ state, actions }) => {
         actions.doPost();
     };
 
+    const groups = state.groups.data.filter(item => item.group_id != 0);
     return (
         <div class="col-sm-12 pt20 form-horizontal">
             <div class="col-sm-9 col-sm-offset-3">
@@ -86,7 +82,7 @@ const Post = ({ state, actions }) => {
                 <div class="col-sm-9">
                     <DropDown
                         classes="form-control groups-dd"
-                        data={state.groups.data}
+                        data={groups}
                         selected={state.groups.defaultGroup}
                         onChange={e => onChange(e, "group")}
                         identifier="group_id"

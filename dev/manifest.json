@@ -3,7 +3,7 @@
     "short_name": "Linkcast",
     "name": "Chrome Extension - Linkcast",
     "description": "Share links, images, blogs and everything on the web with your friends in one click without email using Linkcast.",
-    "version": "12.6.13",
+    "version": "12.6.16",
     "content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'",
     "icons": {
         "16": "public/icons/icon16.png",

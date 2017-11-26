@@ -82,12 +82,10 @@ const plugins = [
 
 module.exports = function webpackStuff(env) {
     if (env === "production") plugins.push(new BabiliPlugin());
-    console.log("Deleting build folder");
-    // exec("rm -rf " + path.join("../build"));
     return {
         entry: {
             popup: "./dev/src/index.js",
-            "background/background": "./dev/src/background/background.js",
+            "background/background": "./dev/src/background/background.dev.js",
             "content/content": "./dev/src/content/content.js"
         },
         output: {

@@ -10,11 +10,10 @@ export const checkStorage = () => {
     localStorage.theme = "dark";
 };
 
-export const getTitle = (linkCount, commentCount, likeCount, others) => {
+export const getTitle = totalNotifications => {
     const getVerb = (count, word) => {
         return count > 1 ? word + "s" : word;
     };
-    let totalNotifications = linkCount + commentCount + likeCount + others;
     return `You have got ${totalNotifications} ${getVerb(
         totalNotifications,
         "notification"

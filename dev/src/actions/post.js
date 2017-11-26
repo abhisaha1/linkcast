@@ -1,4 +1,5 @@
 import { request } from "../lib/request";
+import { Storage } from "../actions/common";
 
 export const doPost = (state, actions) => () => {
     let data = Object.assign({}, state.post);
@@ -19,6 +20,9 @@ export const doPost = (state, actions) => () => {
         queryParams: data
     };
     request(params).then(result => {
+        Storage.set({
+            defaultGroup: data.group
+        });
         _gaq.push(["_trackEvent", "posted", "link"]);
         state.post.posting = false;
         state.groups.defaultGroup = data.group;
@@ -31,8 +35,8 @@ export const doPost = (state, actions) => () => {
             thumbnail: "",
             posting: false
         };
-        actions.fetchItems({ stateKey: "mainNav", tab_id: "feed" });
         actions.updateState(state);
+        actions.fetchItems({ stateKey: "mainNav", tab_id: "feed" });
     });
 };
 

@@ -4,16 +4,35 @@ import { getEmoji, getFormatedText, getTitle, checkStorage } from "./Utils";
 
 class ExtensionBackground {
     constructor() {
+        this.initialCountData = {
+            links: { rows: [], total: 0 },
+            groups: { rows: [], total: 0 },
+            lastUpdateId: 0
+        };
         this.events();
         this.listeners();
     }
     events() {
-        window.updateNotification = function(count) {
-            count = count > 99 ? "99+" : count;
-            chrome.browserAction.setBadgeText({ text: count.toString() });
-        };
         window.retrieveSiteMeta = SiteMeta;
-        window.countData = { links: { rows: [] }, groups: { rows: [] } };
+        window.countData = this.initialCountData;
+        if (localStorage.lastUpdateId) {
+            window.countData.lastUpdateId = parseInt(localStorage.lastUpdateId);
+        }
+        window.resetCountData = () => {
+            window.countData = this.initialCountData;
+            if (localStorage.lastUpdateId) {
+                window.countData.lastUpdateId = parseInt(
+                    localStorage.lastUpdateId
+                );
+            }
+        };
+        window.updateNotification = count => {
+            count = count > 99 ? "99+" : count;
+            chrome.browserAction.setBadgeText({
+                text: count.toString()
+            });
+            window.resetCountData();
+        };
         window.sendClickedStat = data => request(data);
         window.nData = {};
 
@@ -24,7 +43,7 @@ class ExtensionBackground {
             if (chrome && chrome.storage && chrome.storage.sync) {
                 this.checkUpdates();
             }
-        }, 10000);
+        }, 20000);
 
         chrome.notifications.onClicked.addListener(t => {
             if (nData.links.rows.length > 0) {
@@ -34,7 +53,7 @@ class ExtensionBackground {
     }
 
     checkUpdates() {
-        chrome.storage.sync.get("userid", function(items) {
+        chrome.storage.sync.get("userid", items => {
             var userid = items.userid;
             var group = localStorage.defaultGroup;
             if (!userid || !group) return false;
@@ -46,7 +65,8 @@ class ExtensionBackground {
                     group: group,
                     action: "getNotificatonUpdates",
                     chrome_id: userid,
-                    version: version
+                    version: version,
+                    lastUpdateId: window.countData.lastUpdateId
                 }
             };
             request(params).then(data => {
@@ -109,12 +129,7 @@ class ExtensionBackground {
                         });
                     });
 
-                    var title = getTitle(
-                        linkCount,
-                        commentCount,
-                        likeCount,
-                        others
-                    );
+                    var title = getTitle(data.count);
 
                     var options = {
                         type: "list",

@@ -138,6 +138,11 @@ var ExtensionBackground = function () {
     function ExtensionBackground() {
         _classCallCheck(this, ExtensionBackground);
 
+        this.initialCountData = {
+            links: { rows: [], total: 0 },
+            groups: { rows: [], total: 0 },
+            lastUpdateId: 0
+        };
         this.events();
         this.listeners();
     }
@@ -147,12 +152,24 @@ var ExtensionBackground = function () {
         value: function events() {
             var _this = this;
 
+            window.retrieveSiteMeta = _SiteMeta2.default;
+            window.countData = this.initialCountData;
+            if (localStorage.lastUpdateId) {
+                window.countData.lastUpdateId = parseInt(localStorage.lastUpdateId);
+            }
+            window.resetCountData = function () {
+                window.countData = _this.initialCountData;
+                if (localStorage.lastUpdateId) {
+                    window.countData.lastUpdateId = parseInt(localStorage.lastUpdateId);
+                }
+            };
             window.updateNotification = function (count) {
                 count = count > 99 ? "99+" : count;
-                chrome.browserAction.setBadgeText({ text: count.toString() });
+                chrome.browserAction.setBadgeText({
+                    text: count.toString()
+                });
+                window.resetCountData();
             };
-            window.retrieveSiteMeta = _SiteMeta2.default;
-            window.countData = { links: { rows: [] }, groups: { rows: [] } };
             window.sendClickedStat = function (data) {
                 return (0, _request.request)(data);
             };
@@ -165,7 +182,7 @@ var ExtensionBackground = function () {
                 if (chrome && chrome.storage && chrome.storage.sync) {
                     _this.checkUpdates();
                 }
-            }, 10000);
+            }, 20000);
 
             chrome.notifications.onClicked.addListener(function (t) {
                 if (nData.links.rows.length > 0) {
@@ -188,7 +205,8 @@ var ExtensionBackground = function () {
                         group: group,
                         action: "getNotificatonUpdates",
                         chrome_id: userid,
-                        version: version
+                        version: version,
+                        lastUpdateId: window.countData.lastUpdateId
                     }
                 };
                 (0, _request.request)(params).then(function (data) {
@@ -251,7 +269,7 @@ var ExtensionBackground = function () {
                             });
                         });
 
-                        var title = (0, _Utils.getTitle)(linkCount, commentCount, likeCount, others);
+                        var title = (0, _Utils.getTitle)(data.count);
 
                         var options = {
                             type: "list",
@@ -323,7 +341,7 @@ new ExtensionBackground();
 
 
 module.exports = function (passed_message, callback) {
-    chrome.tabs.query({ active: true }, function (tabs) {
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         if (tabs[0] && tabs[0].id) {
             chrome.tabs.sendMessage(tabs[0].id, passed_message, function (response) {
                 callback(response);
@@ -361,11 +379,10 @@ var checkStorage = exports.checkStorage = function checkStorage() {
     localStorage.theme = "dark";
 };
 
-var getTitle = exports.getTitle = function getTitle(linkCount, commentCount, likeCount, others) {
+var getTitle = exports.getTitle = function getTitle(totalNotifications) {
     var getVerb = function getVerb(count, word) {
         return count > 1 ? word + "s" : word;
     };
-    var totalNotifications = linkCount + commentCount + likeCount + others;
     return "You have got " + totalNotifications + " " + getVerb(totalNotifications, "notification");
 };
 

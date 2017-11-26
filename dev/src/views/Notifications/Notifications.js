@@ -32,7 +32,7 @@ const Notifications = props => {
     switch (props.active) {
         case "notLinks":
             data = props.tabs[props.active].data.rows.map((item, i) => {
-                let className = i < status.links.rows.length ? "highlight" : "";
+                let className = i < status.links.total ? "highlight" : "";
                 return (
                     <div
                         key={i}
@@ -131,10 +131,10 @@ const Notifications = props => {
             onChange={props.onTabChange}
             html={data}
             onBeforeLabelSet={label => {
-                if (label == "Links" && status.links.rows.length > 0) {
-                    return `${label} (${status.links.rows.length})`;
-                } else if (label == "Groups" && status.groups.rows.length > 0) {
-                    return `${label} (${status.groups.rows.length})`;
+                if (label == "Links" && status.links.total > 0) {
+                    return `${label} (${status.links.total})`;
+                } else if (label == "Groups" && status.groups.total > 0) {
+                    return `${label} (${status.groups.total})`;
                 }
                 return label;
             }}
